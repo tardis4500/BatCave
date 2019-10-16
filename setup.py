@@ -15,12 +15,12 @@ chmod(Path.cwd(), S_775, True)
 # Platform specific dependencies
 # p4python must be installed on Linux with additional arguments: --install-option="-ssl" --install-option="/usr/lib"
 SYS_PLATFORM = Platform().batcave_run
-DEPENDENCIES = ['docker==4.0.2', 'GitPython==3.0.2', 'google-cloud==0.34.0', 'psutil==5.6.3', 'requests==2.22.0', 'WMI==1.4.9']
+DEPENDENCIES = ['docker >= 4.0', 'GitPython >= 3.0', 'google-cloud', 'psutil >= 5.6', 'requests >= 2.22', 'WMI >= 1.4']
 if SYS_PLATFORM == 'win32':
-    DEPENDENCIES += ['pywin32==225']
+    DEPENDENCIES += ['pywin32 >= 225']
 
 if not SYS_PLATFORM.endswith('aarch64'):
-    DEPENDENCIES += ['PyQt5==5.13.1']
+    DEPENDENCIES += ['PyQt5 >= 5.13']
 
 setup(
     name=batcave.__title__,
@@ -35,9 +35,9 @@ setup(
     license=batcave.__license__,
 
     url=batcave.__uri__,
-    project_urls={
-        'BatCave source': 'https://gitlab.com/arisilon/batcave/',
-    },
+    # project_urls={
+    #     'Documentation': 'https://gitlab.com/arisilon/batcave/',
+    # },
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',

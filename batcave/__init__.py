@@ -6,7 +6,7 @@ __all__ = ('__title__', '__summary__', '__uri__',
 
 __title__ = '{var:product}'
 __summary__ = 'Python Programming Toolkit'
-__uri__ = 'https://pypi.org/project/batcave/'
+__uri__ = 'https://gitlab.com/arisilon/batcave/'
 
 __version__ = '{var:release}'
 __buildname__ = '{var:build_name}'

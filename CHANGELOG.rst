@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 [37.0.1] - Unreleased
 ---------------------
-- Added project links to setup.py. (GitLab #3)
+- Added
+    - Added project links to setup.py. (GitLab #3)
 
 - Changed
+    - Made dependencies less restrictive. (GitLab #2)
     - Cleaned up setup.py. (GitLab #3)
     - Downgraded build environment to Python 3.7 since psutil not built for 3.8 yet. (GitLab #4)
     - Fixed switch for Python 3.7 StopIteration behavior.
