@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 'This programs drives the build and release automation'
-# cSpell:ignore bdist, bldverfile, sdist
+# cSpell:ignore bdist, bldverfile, cibuild, sdist
 
 # Import standard modules
 from datetime import datetime
@@ -22,7 +22,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import BatCave modules
 from batcave.automation import Action  # noqa:E402, pylint: disable=wrong-import-position
-from batcave.commander import Argument, Commander  # noqa:E402, pylint: disable=wrong-import-position
+from batcave.commander import Argument, Commander, SubParser  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.expander import file_expander  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.fileutil import slurp, spew  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.platarch import Platform  # noqa:E402, pylint: disable=wrong-import-position
@@ -37,43 +37,41 @@ UNIT_TEST_FILE = UNIT_TEST_DIR / 'junit.xml'
 VERSION_FILE = SOURCE_DIR / '__init__.py'
 BUILD_INFO_FILE = BUILD_DIR / 'build_info.txt'
 
+MESSAGE_LOGGER = Action().log_message
+
 
 def main():
     'Main entry point'
-    args = Commander('BatCave builder', [Argument('-u', '--user'),
-                                         Argument('-r', '--release'),
-                                         {'options': {},
-                                          'args': [Argument('-t', '--test-publish', action='store_true'),
-                                                   Argument('-p', '--publish', action='store_true')]}]).parse_args()
+    Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
+                                             SubParser('test', test),
+                                             SubParser('cibuild', cibuild),
+                                             SubParser('stage', stage, [Argument('user')]),
+                                             SubParser('release', release, [Argument('user')])], default=devbuild).execute()
 
-    build_info = dict()
-    if args.test_publish or args.publish:
-        for line in slurp(BUILD_INFO_FILE):
-            (var, val) = line.strip().split('=')
-            build_info[var] = val
-    else:
-        build_info['build_num'] = 'devbuild'
-        build_info['release'] = '0.0.0'
-    use_release = args.release if (args.release and not args.publish) else build_info['release']
 
-    release_list = use_release.split('.')
-    build_vars = {'product': PRODUCT_NAME,
-                  'build_date': str(datetime.now()),
-                  'build_name': f'{PRODUCT_NAME}_{use_release}_{build_info["build_num"]}',
-                  'build_num': build_info['build_num'],
-                  'platform': Platform().bart,
-                  'release': use_release,
-                  'major_version': release_list[0],
-                  'minor_version': release_list[1],
-                  'patch_version': release_list[2]}
+def devbuild(args):
+    'Run a developer build'
+    test(args)
+    builder(args)
 
-    log_message = Action().log_message
-    log_message('Building BatCave', True, None)
-    log_message('Running unit tests', True)
+
+def test(args):  # pylint: disable=unused-argument
+    'Run unit tests'
+    MESSAGE_LOGGER('Running unit tests', True)
     remake_dir(UNIT_TEST_DIR, 'unit test')
     XMLTestRunner(output=str(UNIT_TEST_FILE)).run(defaultTestLoader.discover(PROJECT_ROOT))
 
-    log_message(f'Running setuptools build', True)
+
+def cibuild(args):
+    'Run the build on the CI server'
+    builder(args, False)
+
+
+def builder(args, is_devbuild=True):  # pylint: disable=unused-argument
+    'Run setuptools build'
+    build_vars = get_build_info(is_devbuild)
+
+    MESSAGE_LOGGER(f'Running setuptools build', True)
     pushd(PROJECT_ROOT)
     remake_dir(ARTIFACTS_DIR, 'artifacts')
     try:
@@ -85,14 +83,49 @@ def main():
         popd()
         update_version_file(reset=True)
 
-    if args.test_publish or args.publish:
-        repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/'] if args.test_publish else list()
-        user_arg = ['--user', args.user] if args.user else list()
-        upload(repo_arg + user_arg + [f'{ARTIFACTS_DIR}/*'])
-        build_info['build_num'] = int(build_info['build_num']) + 1
-        if args.publish:
-            build_info['release'] = f'{release_list[0]}.{release_list[1]}.{int(release_list[2])+1}'
-        spew(BUILD_INFO_FILE, [f'{var}={val}\n' for (var, val) in build_info.items()])
+
+def stage(args):
+    'Publish to the PyPi test server'
+    publish(args, 'https://test.pypi.org/legacy/')
+
+
+def release(args):
+    'Publish to the PyPi production server'
+    publish(args)
+
+
+def publish(args, repo=None):
+    'Publish to the specified PyPi server'
+    build_vars = get_build_info(False)
+    repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/'] if repo else list()
+    upload(repo_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/*'])
+    build_vars['build_num'] = int(build_vars['build_num']) + 1
+    if not repo:
+        build_vars['release'] = f'{build_vars["major_version"]}.{build_vars["minor_version"]}.{int(build_vars["patch_version"])+1}'
+    spew(BUILD_INFO_FILE, [f'release={build_vars["release"]}\n', f'build_num={build_vars["build_num"]}\n'])
+
+
+def get_build_info(is_devbuild):
+    'Get the build information'
+    if is_devbuild:
+        build_info = {'build_num': 'devbuild', 'release': '0.0.0'}
+    else:
+        build_info = dict()
+        for line in slurp(BUILD_INFO_FILE):
+            (var, val) = line.strip().split('=')
+            build_info[var] = val
+
+    release_list = build_info['release'].split('.')
+    build_vars = {'product': PRODUCT_NAME,
+                  'build_date': str(datetime.now()),
+                  'build_name': f'{PRODUCT_NAME}_{build_info["release"]}_{build_info["build_num"]}',
+                  'build_num': build_info['build_num'],
+                  'platform': Platform().bart,
+                  'release': build_info['release'],
+                  'major_version': release_list[0],
+                  'minor_version': release_list[1],
+                  'patch_version': release_list[2]}
+    return build_vars
 
 
 def remake_dir(dir_path, info_str):

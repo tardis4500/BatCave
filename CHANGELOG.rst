@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ---------------------
 - Added
     - Added project links to setup.py. (GitLab #3)
+    - Added CI/CD support to build.py. (GitLab #7)
 
 - Changed
     - Made dependencies less restrictive. (GitLab #2)
