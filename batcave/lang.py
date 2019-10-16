@@ -43,9 +43,7 @@ class MsgStr:
         return self._self_to_str(self._str)
 
     def _self_to_str(self, _str):
-        if isinstance(_str, str):
-            _str = _str
-        else:
+        if not isinstance(_str, str):
             _str = _str.substitute(self._vars)
         if self._transform:
             _str = getattr(_str, self._transform)()
@@ -96,11 +94,15 @@ class switch:  # pylint: disable=C0103
     def __init__(self, value):
         self.value = value
         self.fall = False
+        self.first = True
 
     def __iter__(self):
         'Return the match method once, then stop'
-        yield self.match
-        raise StopIteration
+        if self.first:
+            self.first = False
+            yield self.match
+        else:
+            return
 
     def match(self, *args):
         'Indicate whether or not to enter a case suite'
