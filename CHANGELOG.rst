@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ---------------------
 - Changed
     - Downgraded build environment to Python 3.7 since psutil not built for 3.8 yet.
+    - Fixed switch for Python 3.7 StopIteration behavior.
 
 
 Release History
