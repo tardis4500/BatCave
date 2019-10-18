@@ -1,0 +1,48 @@
+image: python:3.7-alpine
+
+stages:
+  - test
+  - cibuild
+  - stage
+  - release
+
+variables:
+  BUILD_DIR: Build
+  BUILDER: ./build.py
+
+before_script:
+  - python -V
+  - pip install pipenv
+  - pipenv sync
+  - cd $BUILD_DIR
+  - $BUILDER $CI_JOB_STAGE $USER
+
+cache:
+  paths:
+    - .local/share/virtualenvs
+
+test:
+  stage: test
+  artifacts:
+    paths:
+      - $BUILD_DIR/unit_test_results
+
+build:
+  stage: cibuild
+  artifacts:
+    paths:
+      - $BUILD_DIR/artifacts
+
+staging_deploy:
+  stage: stage
+  environment: Staging
+  only:
+    - master
+  when: manual
+
+production_deploy:
+  stage: release
+  environment: Production
+  only:
+    - master
+  when: manual
