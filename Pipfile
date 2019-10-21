@@ -7,17 +7,17 @@ verify_ssl = true
 autopep8 = "*"
 doc8 = "*"
 flake8 = "*"
-keyring = "*"
 pipdeptree = "*"
 pylint = "*"
 restview = "*"
 rope = "*"
 rstvalidator = "*"
+
+[packages]
+keyring = "*"
 setuptools = "*"
 twine = "*"
 xmlrunner = "*"
-
-[packages]
 
 [requires]
 python_version = "3.7"
