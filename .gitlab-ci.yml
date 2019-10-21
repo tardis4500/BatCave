@@ -1,10 +1,11 @@
 image: python:3.7-alpine
 
 stages:
-  - test
-  - cibuild
-  - stage
-  - release
+  - unit_tests
+  - ci_build
+  - install_test
+  - publish_test
+  - publish
 
 variables:
   BUILD_DIR: Build
@@ -12,45 +13,57 @@ variables:
 
 before_script:
   - python -V
-  - pip install pipenv
-  - pipenv sync
-  - cd $BUILD_DIR
-  - pipenv run $BUILDER $CI_JOB_STAGE $USER
+
+.use_builder:
+  script:
+    - pip install pipenv
+    - pipenv sync
+    - cd $BUILD_DIR
+    - pipenv run $BUILDER $CI_JOB_STAGE $USER
 
 cache:
   paths:
     - .local/share/virtualenvs
 
-test:
-  stage: test
+unit_tests:
+  stage: unit_tests
+  extends: .use_builder
   script:
-    - echo Done with test stage
+    - echo Done with $CI_JOB_STAGE
   artifacts:
     paths:
       - $BUILD_DIR/unit_test_results
 
-build:
-  stage: cibuild
+ci_build:
+  stage: ci_build
+  extends: .use_builder
   script:
-    - echo Done with build stage
+    - echo Done with $CI_JOB_STAGE
   artifacts:
     paths:
       - $BUILD_DIR/artifacts
 
-staging_deploy:
-  stage: stage
-  environment: Staging
+install_test:
+  stage: install_test
   script:
-    - echo Done with staging deploy test
+    - pip install $BUILD_DIR/artifacts/BatCave-*.tar.gz
+
+publish_test:
+  stage: publish_test
+  environment: Staging
+  extends: .use_builder
+  script:
+    - echo Done with $CI_JOB_STAGE
   only:
     - master
   when: manual
 
-production_deploy:
-  stage: release
+publish:
+  stage: publish
   environment: Production
+  extends: .use_builder
   script:
-    - echo Done with release
+    - echo Done with $CI_JOB_STAGE
   only:
     - master
   when: manual

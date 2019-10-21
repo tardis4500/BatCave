@@ -43,26 +43,26 @@ MESSAGE_LOGGER = Action().log_message
 def main():
     'Main entry point'
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
-                                             SubParser('test', test),
-                                             SubParser('cibuild', cibuild),
-                                             SubParser('stage', stage, [Argument('user')]),
-                                             SubParser('release', release, [Argument('user')])], default=devbuild).execute()
+                                             SubParser('unit_tests', unit_tests),
+                                             SubParser('ci_build', ci_build),
+                                             SubParser('publish_test', publish_test, [Argument('user')]),
+                                             SubParser('publish', publish, [Argument('user')])], default=devbuild).execute()
 
 
 def devbuild(args):
     'Run a developer build'
-    test(args)
+    unit_tests(args)
     builder(args)
 
 
-def test(args):  # pylint: disable=unused-argument
+def unit_tests(args):  # pylint: disable=unused-argument
     'Run unit tests'
     MESSAGE_LOGGER('Running unit tests', True)
     remake_dir(UNIT_TEST_DIR, 'unit test')
     XMLTestRunner(output=str(UNIT_TEST_FILE)).run(defaultTestLoader.discover(PROJECT_ROOT))
 
 
-def cibuild(args):
+def ci_build(args):
     'Run the build on the CI server'
     builder(args, False)
 
@@ -84,17 +84,17 @@ def builder(args, is_devbuild=True):  # pylint: disable=unused-argument
         update_version_file(reset=True)
 
 
-def stage(args):
+def publish_test(args):
     'Publish to the PyPi test server'
-    publish(args, 'https://test.pypi.org/legacy/')
+    publish_to_pypi(args, 'https://test.pypi.org/legacy/')
 
 
-def release(args):
+def publish(args):
     'Publish to the PyPi production server'
-    publish(args)
+    publish_to_pypi(args)
 
 
-def publish(args, repo=None):
+def publish_to_pypi(args, repo=None):
     'Publish to the specified PyPi server'
     build_vars = get_build_info(False)
     repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/'] if repo else list()
