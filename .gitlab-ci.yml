@@ -23,12 +23,16 @@ cache:
 
 test:
   stage: test
+  script:
+    - echo Done with test stage
   artifacts:
     paths:
       - $BUILD_DIR/unit_test_results
 
 build:
   stage: cibuild
+  script:
+    - echo Done with build stage
   artifacts:
     paths:
       - $BUILD_DIR/artifacts
@@ -36,6 +40,8 @@ build:
 staging_deploy:
   stage: stage
   environment: Staging
+  script:
+    - echo Done with staging deploy test
   only:
     - master
   when: manual
@@ -43,6 +49,8 @@ staging_deploy:
 production_deploy:
   stage: release
   environment: Production
+  script:
+    - echo Done with release
   only:
     - master
   when: manual
