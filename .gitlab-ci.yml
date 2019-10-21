@@ -8,7 +8,7 @@ stages:
 
 variables:
   BUILD_DIR: Build
-  BUILDER: ./build.py
+  BUILDER: python build.py
 
 before_script:
   - python -V
