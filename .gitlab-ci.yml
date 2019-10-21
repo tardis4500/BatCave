@@ -15,7 +15,7 @@ before_script:
   - pip install pipenv
   - pipenv sync
   - cd $BUILD_DIR
-  - $BUILDER $CI_JOB_STAGE $USER
+  - pipenv run $BUILDER $CI_JOB_STAGE $USER
 
 cache:
   paths:
