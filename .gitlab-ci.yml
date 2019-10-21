@@ -23,6 +23,7 @@ before_script:
 
 cache:
   paths:
+    - $BUILD_DIR/build_info.txt
     - .local/share/virtualenvs
 
 unit_tests:
@@ -46,7 +47,8 @@ ci_build:
 install_test:
   stage: install_test
   script:
-    - pip install $BUILD_DIR/artifacts/BatCave-*.tar.gz
+    - RELEASE=`cat $BUILD_DIR/build_info.txt | python -c "import sys;release=[l.split('=')[1].strip() for l in sys.stdin if 'release=' in l][0];print(release)"`
+    - pip install $BUILD_DIR/artifacts/BatCave-$RELEASE.tar.gz
 
 publish_test:
   stage: publish_test
