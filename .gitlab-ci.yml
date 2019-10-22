@@ -57,7 +57,9 @@ publish_test:
   environment: Staging
   extends: .publish_args
   script:
-    - mv BUILD_DIR/artifacts/BatCave-$RELEASE.tar.gz BUILD_DIR/artifacts/BatCave-$RANDOM.tar.gz
+    - TMP_RELEASE=$RANDOM
+    - mv $BUILD_DIR/artifacts/BatCave-$RELEASE.tar.gz $BUILD_DIR/artifacts/BatCave-$TMP_RELEASE.tar.gz
+    - mv $BUILD_DIR/artifacts/BatCave-$RELEASE-py3-none-any.whl $BUILD_DIR/artifacts/BatCave-$TMP_RELEASE-py3-none-any.whl
     - $BUILDER
     - apt-get install git
     - git tag v$RELEASE
