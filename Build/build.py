@@ -76,7 +76,7 @@ def builder(args):  # pylint: disable=unused-argument
                   'build_name': f'{PRODUCT_NAME}_{args.release}_{args.build_num}',
                   'build_num': args.build_num,
                   'platform': Platform().bart,
-                  'release': build_info['release'],
+                  'release': args.release,
                   'major_version': release_list[0],
                   'minor_version': release_list[1],
                   'patch_version': release_list[2]}
