@@ -51,6 +51,8 @@ publish_test:
   stage: publish_test
   environment: Staging
   extends: .use_builder
+  variables:
+    USER: $GITLAB_USER_LOGIN
   only:
     - master
   when: manual
@@ -59,6 +61,7 @@ publish:
   stage: publish
   environment: Production
   extends: .use_builder
+    USER: $GITLAB_USER_LOGIN
   only:
     - master
   when: manual
