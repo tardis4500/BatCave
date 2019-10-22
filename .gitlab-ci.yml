@@ -10,6 +10,7 @@ stages:
 variables:
   BUILD_DIR: Build
   BUILDER: python build.py
+  RELEASE: 37.0.1
 
 before_script:
   - python -V
@@ -19,11 +20,10 @@ before_script:
     - pip install pipenv
     - pipenv sync
     - cd $BUILD_DIR
-    - pipenv run $BUILDER $CI_JOB_STAGE $USER $PASSWORD_ARG
+    - pipenv run $BUILDER $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
 
 .publish_args:
   variables:
-    USER: __token__
     PASSWORD_ARG: --password $PASSWORD
 
 cache:
@@ -41,6 +41,8 @@ unit_tests:
 ci_build:
   stage: ci_build
   extends: .use_builder
+  variables:
+    BUILD_ARGS: --build-num $CI_JOB_ID --release $RELEASE
   artifacts:
     paths:
       - $BUILD_DIR/artifacts

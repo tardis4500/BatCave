@@ -41,10 +41,11 @@ MESSAGE_LOGGER = Action().log_message
 
 def main():
     'Main entry point'
-    publish_args = [Argument('user'), Argument('-p', '--password')]
+    publish_args = [Argument('-u', '--user', default='__token__'), Argument('-p', '--password')]
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
-                                             SubParser('ci_build', ci_build),
+                                             SubParser('ci_build', ci_build, [Argument('-b', '--build-num', default='0'),
+                                                                              Argument('-r', '--release', default='0.0.0')]),
                                              SubParser('publish_test', publish_test, publish_args),
                                              SubParser('publish', publish, publish_args)], default=devbuild).execute()
 
@@ -64,12 +65,21 @@ def unit_tests(args):  # pylint: disable=unused-argument
 
 def ci_build(args):
     'Run the build on the CI server'
-    builder(args, False)
+    builder(args)
 
 
-def builder(args, is_devbuild=True):  # pylint: disable=unused-argument
+def builder(args):  # pylint: disable=unused-argument
     'Run setuptools build'
-    build_vars = get_build_info(is_devbuild)
+    release_list = args.release.split('.')
+    build_vars = {'product': PRODUCT_NAME,
+                  'build_date': str(datetime.now()),
+                  'build_name': f'{PRODUCT_NAME}_{args.release}_{args.build_num}',
+                  'build_num': args.build_num,
+                  'platform': Platform().bart,
+                  'release': build_info['release'],
+                  'major_version': release_list[0],
+                  'minor_version': release_list[1],
+                  'patch_version': release_list[2]}
 
     MESSAGE_LOGGER(f'Running setuptools build', True)
     pushd(PROJECT_ROOT)
@@ -96,37 +106,9 @@ def publish(args):
 
 def publish_to_pypi(args, repo=None):
     'Publish to the specified PyPi server'
-    build_vars = get_build_info(False)
     repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/'] if repo else list()
     password_arg = ['--password', args.password] if args.password else list()
     upload(repo_arg + password_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/*'])
-    build_vars['build_num'] = int(build_vars['build_num']) + 1
-    if not repo:
-        build_vars['release'] = f'{build_vars["major_version"]}.{build_vars["minor_version"]}.{int(build_vars["patch_version"])+1}'
-    spew(BUILD_INFO_FILE, [f'release={build_vars["release"]}\n', f'build_num={build_vars["build_num"]}\n'])
-
-
-def get_build_info(is_devbuild):
-    'Get the build information'
-    if is_devbuild:
-        build_info = {'build_num': 'devbuild', 'release': '0.0.0'}
-    else:
-        build_info = dict()
-        for line in slurp(BUILD_INFO_FILE):
-            (var, val) = line.strip().split('=')
-            build_info[var] = val
-
-    release_list = build_info['release'].split('.')
-    build_vars = {'product': PRODUCT_NAME,
-                  'build_date': str(datetime.now()),
-                  'build_name': f'{PRODUCT_NAME}_{build_info["release"]}_{build_info["build_num"]}',
-                  'build_num': build_info['build_num'],
-                  'platform': Platform().bart,
-                  'release': build_info['release'],
-                  'major_version': release_list[0],
-                  'minor_version': release_list[1],
-                  'patch_version': release_list[2]}
-    return build_vars
 
 
 def remake_dir(dir_path, info_str):
