@@ -6,6 +6,7 @@ stages:
   - install_test
   - publish_test
   - publish
+  - release
 
 variables:
   BUILD_DIR: Build
@@ -71,3 +72,11 @@ publish:
   only:
     - master
   when: manual
+
+release:
+    stage: release
+    environment: Production
+    script:
+        git tag v$RELEASE
+        git push origin --tags
+    
