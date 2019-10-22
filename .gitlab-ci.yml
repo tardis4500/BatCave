@@ -33,7 +33,7 @@ unit_tests:
     - echo Done with $CI_JOB_STAGE
   artifacts:
     reports:
-      junit: $BUILD_DIR/unit_test_results/junit/*
+      junit: $BUILD_DIR/unit_test_results/
 
 ci_build:
   stage: ci_build

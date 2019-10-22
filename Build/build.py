@@ -33,7 +33,6 @@ BUILD_DIR = PROJECT_ROOT / 'Build'
 SOURCE_DIR = PROJECT_ROOT / 'batcave'
 ARTIFACTS_DIR = BUILD_DIR / 'artifacts'
 UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
-UNIT_TEST_FILE = UNIT_TEST_DIR / 'junit.xml'
 VERSION_FILE = SOURCE_DIR / '__init__.py'
 BUILD_INFO_FILE = BUILD_DIR / 'build_info.txt'
 
@@ -59,7 +58,7 @@ def unit_tests(args):  # pylint: disable=unused-argument
     'Run unit tests'
     MESSAGE_LOGGER('Running unit tests', True)
     remake_dir(UNIT_TEST_DIR, 'unit test')
-    XMLTestRunner(output=str(UNIT_TEST_FILE)).run(defaultTestLoader.discover(PROJECT_ROOT))
+    XMLTestRunner(output=str(UNIT_TEST_DIR)).run(defaultTestLoader.discover(PROJECT_ROOT))
 
 
 def ci_build(args):
