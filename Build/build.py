@@ -41,11 +41,12 @@ MESSAGE_LOGGER = Action().log_message
 
 def main():
     'Main entry point'
+    publish_args = [Argument('user'), Argument('-p', '--password')]
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build),
-                                             SubParser('publish_test', publish_test, [Argument('user')]),
-                                             SubParser('publish', publish, [Argument('user')])], default=devbuild).execute()
+                                             SubParser('publish_test', publish_test, publish_args),
+                                             SubParser('publish', publish, publish_args)], default=devbuild).execute()
 
 
 def devbuild(args):
@@ -97,7 +98,8 @@ def publish_to_pypi(args, repo=None):
     'Publish to the specified PyPi server'
     build_vars = get_build_info(False)
     repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/'] if repo else list()
-    upload(repo_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/*'])
+    password_arg = ['--password', args.password] if args.password else list()
+    upload(repo_arg + password_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/*'])
     build_vars['build_num'] = int(build_vars['build_num']) + 1
     if not repo:
         build_vars['release'] = f'{build_vars["major_version"]}.{build_vars["minor_version"]}.{int(build_vars["patch_version"])+1}'
