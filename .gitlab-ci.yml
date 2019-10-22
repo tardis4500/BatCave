@@ -32,8 +32,8 @@ unit_tests:
   script:
     - echo Done with $CI_JOB_STAGE
   artifacts:
-    paths:
-      - $BUILD_DIR/unit_test_results
+    reports:
+      junit: $BUILD_DIR/unit_test_results/junit.xml
 
 ci_build:
   stage: ci_build
