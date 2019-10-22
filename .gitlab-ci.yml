@@ -21,6 +21,11 @@ before_script:
     - cd $BUILD_DIR
     - pipenv run $BUILDER $CI_JOB_STAGE $USER $PASSWORD_ARG
 
+.publish_args:
+  variables:
+    USER: __token__
+    PASSWORD_ARG: --password $PASSWORD
+
 cache:
   paths:
     - $BUILD_DIR/build_info.txt
@@ -50,10 +55,9 @@ install_test:
 publish_test:
   stage: publish_test
   environment: Staging
-  extends: .use_builder
-  variables:
-    USER: $GITLAB_USER_LOGIN
-    PASSWORD_ARG: --password $PASSWORD
+  extends: 
+    - .use_builder
+    - .publish_args
   only:
     - master
   when: manual
@@ -61,10 +65,9 @@ publish_test:
 publish:
   stage: publish
   environment: Production
-  extends: .use_builder
-  variables:
-    USER: $GITLAB_USER_LOGIN
-    PASSWORD_ARG: --password $PASSWORD
+  extends: 
+    - .use_builder
+    - .publish_args
   only:
     - master
   when: manual
