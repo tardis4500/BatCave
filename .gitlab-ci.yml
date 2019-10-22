@@ -19,7 +19,7 @@ before_script:
     - pip install pipenv
     - pipenv sync
     - cd $BUILD_DIR
-    - pipenv run $BUILDER $CI_JOB_STAGE $USER
+    - pipenv run $BUILDER $CI_JOB_STAGE $USER $PASSWORD_ARG
 
 cache:
   paths:
@@ -53,6 +53,7 @@ publish_test:
   extends: .use_builder
   variables:
     USER: $GITLAB_USER_LOGIN
+    PASSWORD_ARG: --password $PASSWORD
   only:
     - master
   when: manual
@@ -63,6 +64,7 @@ publish:
   extends: .use_builder
   variables:
     USER: $GITLAB_USER_LOGIN
+    PASSWORD_ARG: --password $PASSWORD
   only:
     - master
   when: manual
