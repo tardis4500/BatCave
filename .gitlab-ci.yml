@@ -8,7 +8,11 @@ stages:
   - publish
 
 variables:
+  PRODUCT: BatCave
   BUILD_DIR: Build
+  ARTIFACTS_DIR: $BUILD_DIR/artifacts
+  PYPI_PKG: $ARTIFACTS_DIR/$PRODUCT-$RELEASE.tar.gz
+  PYPI_WHEEL: $ARTIFACTS_DIR/$PRODUCT-$RELEASE-py3-none-any.whl
   BUILDER: pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
   RELEASE: 37.0.1
 
@@ -42,7 +46,7 @@ ci_build:
     - $BUILDER
   artifacts:
     paths:
-      - $BUILD_DIR/artifacts
+      - $ARTIFACTS_DIR
 
 install_test:
   stage: install_test
@@ -50,7 +54,7 @@ install_test:
   before_script:
     - echo Testing install
   script:
-    - pip install $BUILD_DIR/artifacts/BatCave-$RELEASE.tar.gz
+    - pip install $PYPI_PKG
 
 publish_test:
   stage: publish_test
@@ -58,8 +62,10 @@ publish_test:
   extends: .publish_args
   script:
     - TMP_RELEASE=$RANDOM
-    - mv $BUILD_DIR/artifacts/BatCave-$RELEASE.tar.gz $BUILD_DIR/artifacts/BatCave-$TMP_RELEASE.tar.gz
-    - mv $BUILD_DIR/artifacts/BatCave-$RELEASE-py3-none-any.whl $BUILD_DIR/artifacts/BatCave-$TMP_RELEASE-py3-none-any.whl
+    - cd ..
+    - mv $PYPI_PKG $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE.tar.gz
+    - mv $PYPI_WHEEL $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE-py3-none-any.whl
+    - cd $BUILD_DIR
     - $BUILDER
     - apt-get install git
     - git tag v$RELEASE
