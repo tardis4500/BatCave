@@ -29,8 +29,6 @@ cache:
 unit_tests:
   stage: unit_tests
   extends: .use_builder
-  script:
-    - echo Done with $CI_JOB_STAGE
   artifacts:
     reports:
       junit: $BUILD_DIR/unit_test_results/*
@@ -38,8 +36,6 @@ unit_tests:
 ci_build:
   stage: ci_build
   extends: .use_builder
-  script:
-    - echo Done with $CI_JOB_STAGE
   artifacts:
     paths:
       - $BUILD_DIR/artifacts
@@ -54,8 +50,6 @@ publish_test:
   stage: publish_test
   environment: Staging
   extends: .use_builder
-  script:
-    - echo Done with $CI_JOB_STAGE
   only:
     - master
   when: manual
@@ -64,8 +58,6 @@ publish:
   stage: publish
   environment: Production
   extends: .use_builder
-  script:
-    - echo Done with $CI_JOB_STAGE
   only:
     - master
   when: manual
