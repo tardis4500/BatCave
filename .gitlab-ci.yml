@@ -5,7 +5,6 @@ stages:
   - ci_build
   - install_test
   - publish_test
-  - release
   - publish
 
 variables:
@@ -15,13 +14,10 @@ variables:
 
 before_script:
   - python -V
-
-.use_builder:
-  script:
-    - pip install pipenv
-    - pipenv sync
-    - cd $BUILD_DIR
-    - pipenv run $BUILDER $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
+  - pip install pipenv
+  - pipenv sync
+  - cd $BUILD_DIR
+  - pipenv run $BUILDER $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
 
 .publish_args:
   variables:
@@ -33,16 +29,18 @@ cache:
 
 unit_tests:
   stage: unit_tests
-  extends: .use_builder
+  script:
+    - echo Done
   artifacts:
     reports:
       junit: $BUILD_DIR/unit_test_results/*
 
 ci_build:
   stage: ci_build
-  extends: .use_builder
   variables:
     BUILD_ARGS: --build-num $CI_JOB_ID --release $RELEASE
+  script:
+    - echo Done
   artifacts:
     paths:
       - $BUILD_DIR/artifacts
@@ -50,15 +48,19 @@ ci_build:
 install_test:
   stage: install_test
   image: python:3.7
+  before_script:
+    - echo Testing install
   script:
     - pip install $BUILD_DIR/artifacts/BatCave-$RELEASE.tar.gz
 
 publish_test:
   stage: publish_test
   environment: Staging
-  extends: 
-    - .use_builder
-    - .publish_args
+  extends: .publish_args
+  script:
+    - apt-get install git
+    - git tag v$RELEASE
+    - git push origin --tags
   only:
     - master
   when: manual
@@ -66,17 +68,11 @@ publish_test:
 publish:
   stage: publish
   environment: Production
-  extends: 
-    - .use_builder
-    - .publish_args
+  extends: .publish_args
+  script:
+    - echo Done
   only:
     - master
   when: manual
 
-release:
-    stage: release
-    environment: Staging
-    script:
-        git tag v$RELEASE
-        git push origin --tags
     
