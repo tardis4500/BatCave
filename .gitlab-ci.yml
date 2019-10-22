@@ -61,6 +61,7 @@ publish:
   stage: publish
   environment: Production
   extends: .use_builder
+  variables:
     USER: $GITLAB_USER_LOGIN
   only:
     - master
