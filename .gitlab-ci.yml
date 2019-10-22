@@ -5,8 +5,8 @@ stages:
   - ci_build
   - install_test
   - publish_test
-  - publish
   - release
+  - publish
 
 variables:
   BUILD_DIR: Build
@@ -75,7 +75,7 @@ publish:
 
 release:
     stage: release
-    environment: Production
+    environment: Staging
     script:
         git tag v$RELEASE
         git push origin --tags
