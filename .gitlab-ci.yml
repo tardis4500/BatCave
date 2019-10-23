@@ -54,6 +54,7 @@ install_test:
 
 publish_test:
   stage: publish_test
+  image: python:3.7
   environment: Staging
   variables:
     PASSWORD_ARG: --password $TEST_TOKEN
@@ -65,8 +66,8 @@ publish_test:
     - ls -lF $ARTIFACTS_DIR
     - cd $BUILD_DIR
     - $BUILDER
-    - apt install git
-    - git tag v$RELEASE
+    - apt-get install git
+    - git tag v$TMP_RELEASE
     - git push origin --tags
   only:
     - master
