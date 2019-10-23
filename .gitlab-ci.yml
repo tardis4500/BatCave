@@ -65,7 +65,7 @@ publish_test:
     - ls -lF $ARTIFACTS_DIR
     - cd $BUILD_DIR
     - $BUILDER
-    - apt-get install git
+    - apt install git
     - git tag v$RELEASE
     - git push origin --tags
   only:
