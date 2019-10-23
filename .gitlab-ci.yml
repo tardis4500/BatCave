@@ -58,7 +58,6 @@ publish_test:
   environment: Staging
   variables:
     PASSWORD_ARG: --password $TEST_TOKEN
-    USER_PASSWORD: none
   script:
     - TMP_RELEASE=$RANDOM
     - cd ..
@@ -67,7 +66,7 @@ publish_test:
     - ls -lF $ARTIFACTS_DIR
     - cd $BUILD_DIR
     - $BUILDER
-    - git remote add user_origin https://$GITLAB_USER_LOGIN:$USER_PASSWORD/arisilon/batcave.git
+    - git remote add user_origin https://$GITLAB_USER_LOGIN:$USER_PASSWORD@gitlab.com/arisilon/batcave.git
     - git tag v$TMP_RELEASE
     - git push user_origin --tags
   only:
