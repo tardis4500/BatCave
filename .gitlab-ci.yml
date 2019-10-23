@@ -11,7 +11,7 @@ variables:
   PRODUCT: BatCave
   BUILD_DIR: Build
   ARTIFACTS_DIR: $BUILD_DIR/artifacts
-  PYPI_PKG: $ARTIFACTS_DIR/$PRODUCT-$RELEASE.tar.gz
+  PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
   PYPI_WHEEL: $ARTIFACTS_DIR/$PRODUCT-$RELEASE-py3-none-any.whl
   BUILDER: pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
   RELEASE: 37.0.1
