@@ -66,9 +66,6 @@ publish_test:
     - ls -lF $ARTIFACTS_DIR
     - cd $BUILD_DIR
     - $BUILDER
-    - git remote add user_origin https://$GITLAB_USER_LOGIN:$USER_PASSWORD@gitlab.com/arisilon/batcave.git
-    - git tag v$TMP_RELEASE
-    - git push user_origin --tags
   only:
     - master
   when: manual
@@ -81,6 +78,9 @@ publish:
     PASSWORD_ARG: --password $PRODUCTION_TOKEN
   script:
     - $BUILDER
+    - git remote add user_origin https://$GITLAB_USER_LOGIN:$USER_PASSWORD@gitlab.com/arisilon/batcave.git
+    - git tag v$RELEASE
+    - git push user_origin --tags
   only:
     - master
   when: manual
