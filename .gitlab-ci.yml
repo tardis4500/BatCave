@@ -60,12 +60,14 @@ publish_test:
   stage: publish_test
   environment: Staging
   extends: .publish_args
+  variables:
+    - HALPY_DEBUG: SYSCMD
   script:
     - TMP_RELEASE=$RANDOM
     - cd ..
     - mv $PYPI_PKG $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE.tar.gz
     - mv $PYPI_WHEEL $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE-py3-none-any.whl
-    - $ARTIFACTS_DIR
+    - ls -lF $ARTIFACTS_DIR
     - cd $BUILD_DIR
     - $BUILDER
     - apt-get install git
