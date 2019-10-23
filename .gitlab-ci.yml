@@ -65,6 +65,7 @@ publish_test:
     - cd ..
     - mv $PYPI_PKG $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE.tar.gz
     - mv $PYPI_WHEEL $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE-py3-none-any.whl
+    - $ARTIFACTS_DIR
     - cd $BUILD_DIR
     - $BUILDER
     - apt-get install git
