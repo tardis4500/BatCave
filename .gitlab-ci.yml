@@ -22,10 +22,6 @@ before_script:
   - pipenv sync
   - cd $BUILD_DIR
 
-.publish_args:
-  variables:
-    PASSWORD_ARG: --password $PASSWORD
-
 cache:
   paths:
     - .local/share/virtualenvs
@@ -59,9 +55,8 @@ install_test:
 publish_test:
   stage: publish_test
   environment: Staging
-  extends: .publish_args
   variables:
-    HALPY_DEBUG: SYSCMD
+    PASSWORD_ARG: --password $TEST_TOKEN
   script:
     - TMP_RELEASE=$RANDOM
     - cd ..
@@ -80,7 +75,8 @@ publish_test:
 publish:
   stage: publish
   environment: Production
-  extends: .publish_args
+  variables:
+    PASSWORD_ARG: --password $PRODUCTION_TOKEN
   script:
     - $BUILDER
   only:

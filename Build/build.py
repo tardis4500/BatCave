@@ -96,7 +96,7 @@ def builder(args):  # pylint: disable=unused-argument
 
 def publish_test(args):
     'Publish to the PyPi test server'
-    publish_to_pypi(args, 'https://test.pypi.org/legacy/')
+    publish_to_pypi(args, True)
 
 
 def publish(args):
@@ -104,11 +104,16 @@ def publish(args):
     publish_to_pypi(args)
 
 
-def publish_to_pypi(args, repo=None):
+def publish_to_pypi(args, test_repo=False):
     'Publish to the specified PyPi server'
-    repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/'] if repo else list()
     password_arg = ['--password', args.password] if args.password else list()
-    upload(repo_arg + password_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/*'])
+    if test_repo:
+        artifacts = '*.whl'
+        repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/']
+    else:
+        artifacts = '*'
+        repo_arg =list()
+    upload(password_arg + repo_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/{artifacts}'])
 
 
 def remake_dir(dir_path, info_str):
