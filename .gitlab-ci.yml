@@ -61,7 +61,7 @@ publish_test:
   environment: Staging
   extends: .publish_args
   variables:
-    - HALPY_DEBUG: SYSCMD
+    HALPY_DEBUG: SYSCMD
   script:
     - TMP_RELEASE=$RANDOM
     - cd ..
