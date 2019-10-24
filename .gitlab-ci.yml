@@ -6,13 +6,14 @@ stages:
   - install_test
   - publish_test
   - publish
+  - release_test
 
 variables:
   PRODUCT: BatCave
   BUILD_DIR: Build
   ARTIFACTS_DIR: $BUILD_DIR/artifacts
+  UNIT_TEST_DIR: $BUILD_DIR/unit_test_results
   PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
-  PYPI_WHEEL: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE-py3-none-any.whl
   BUILDER: pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
   RELEASE: 37.0.1
 
@@ -32,7 +33,7 @@ unit_tests:
     - $BUILDER
   artifacts:
     reports:
-      junit: $BUILD_DIR/unit_test_results/*
+      junit: $UNIT_TEST_DIR
 
 ci_build:
   stage: ci_build
@@ -54,18 +55,20 @@ install_test:
 
 publish_test:
   stage: publish_test
-  image: python:3.7
   environment: Staging
   variables:
     PASSWORD_ARG: --password $TEST_TOKEN
   script:
-    - TMP_RELEASE=$RANDOM
-    - cd ..
-    - mv $PYPI_PKG $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE.tar.gz
-    - mv $PYPI_WHEEL $ARTIFACTS_DIR/$PRODUCT-$TMP_RELEASE-py3-none-any.whl
-    - ls -lF $ARTIFACTS_DIR
-    - cd $BUILD_DIR
     - $BUILDER
+  only:
+    - master
+  when: manual
+  allow_failure: false
+
+release_test:
+  stage: release_test
+  image: python:3.7
+  script:
   only:
     - master
   when: manual
@@ -73,6 +76,7 @@ publish_test:
 
 publish:
   stage: publish
+  image: python:3.7
   environment: Production
   variables:
     PASSWORD_ARG: --password $PRODUCTION_TOKEN

@@ -15,6 +15,7 @@ rope = "*"
 rstvalidator = "*"
 
 [packages]
+requests = "*"
 setuptools = "*"
 twine = "*"
 xmlrunner = "*"

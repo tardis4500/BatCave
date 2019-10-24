@@ -8,12 +8,14 @@ from distutils.core import run_setup
 from importlib import import_module, reload
 import os
 from pathlib import Path
+from random import randint
 from shutil import copyfile
 from stat import S_IWUSR
 import sys
 from unittest import defaultTestLoader
 
 # Import third-party-modules
+from requests import delete as rest_delete, post as rest_post
 from twine.commands.upload import main as upload
 from xmlrunner import XMLTestRunner
 
@@ -38,16 +40,21 @@ BUILD_INFO_FILE = BUILD_DIR / 'build_info.txt'
 
 MESSAGE_LOGGER = Action().log_message
 
+PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
+GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
+
 
 def main():
     'Main entry point'
     publish_args = [Argument('-u', '--user', default='__token__'), Argument('-p', '--password')]
+    release_args = [Argument('release')] + publish_args
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
-                                             SubParser('ci_build', ci_build, [Argument('-b', '--build-num', default='0'),
-                                                                              Argument('-r', '--release', default='0.0.0')]),
-                                             SubParser('publish_test', publish_test, publish_args),
-                                             SubParser('publish', publish, publish_args)], default=devbuild).execute()
+                                             SubParser('ci_build', ci_build, [Argument('-b', '--build-num'), Argument('-r', '--release')]),
+                                             SubParser('publish_test', publish_test, publish_args + [Argument('-c', '--create-release-test', action='store_true')]),
+                                             SubParser('publish', publish, publish_args),
+                                             SubParser('create_release', create_release, release_args),
+                                             SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
 
 
 def devbuild(args):
@@ -70,13 +77,14 @@ def ci_build(args):
 
 def builder(args):  # pylint: disable=unused-argument
     'Run setuptools build'
-    release_list = args.release.split('.')
+    (build_num, release) = get_build_info(args)
+    release_list = release.split('.')
     build_vars = {'product': PRODUCT_NAME,
                   'build_date': str(datetime.now()),
-                  'build_name': f'{PRODUCT_NAME}_{args.release}_{args.build_num}',
-                  'build_num': args.build_num,
+                  'build_name': f'{PRODUCT_NAME}_{release}_{build_num}',
+                  'build_num': build_num,
                   'platform': Platform().bart,
-                  'release': args.release,
+                  'release': release,
                   'major_version': release_list[0],
                   'minor_version': release_list[1],
                   'patch_version': release_list[2]}
@@ -104,16 +112,22 @@ def publish(args):
     publish_to_pypi(args)
 
 
-def publish_to_pypi(args, test_repo=False):
+def publish_to_pypi(args, test=False):
     'Publish to the specified PyPi server'
-    password_arg = ['--password', args.password] if args.password else list()
-    if test_repo:
-        artifacts = '*.whl'
-        repo_arg = ['--repository-url', 'https://test.pypi.org/legacy/']
-    else:
-        artifacts = '*'
-        repo_arg =list()
-    upload(password_arg + repo_arg + ['--user', args.user, f'{ARTIFACTS_DIR}/{artifacts}'])
+    upload_args = ['--user', args.user, f'{ARTIFACTS_DIR}/*']
+    if args.password:
+        upload_args += ['--password', args.password]
+    if test:
+        upload_args += ['--repository-url', PYPI_TEST_URL]
+        args.release = randint(100, 999)
+        for artifact in ARTIFACTS_DIR.iterdir():
+            if artifact.suffix == '.gz':
+                artifact.unlink()
+            else:
+                artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{args.release}-py3-none-any.whl')
+    upload(upload_args)
+    if not test:
+        create_release(args)
 
 
 def remake_dir(dir_path, info_str):
@@ -148,6 +162,26 @@ def update_version_file(build_vars=None, reset=False):
                     line = f"__{var}__ = '{val}'\n"
             file_update.append(line)
         spew(VERSION_FILE, file_update)
+
+
+def get_build_info(args):
+    'Return the build number and release'
+    return (args.build_num if hasattr(args, 'build_num') else '0',
+            args.release if hasattr(args, 'release') else '0.0.0')
+
+
+def create_release(args):
+    'Create a release in GitLab'
+    response = rest_post(GITLAB_RELEASES_URL,
+                         headers={'Content-Type': 'application/json', 'Private-Token': args.password},
+                         json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
+    response.raise_for_status()
+
+
+def delete_release(args):
+    'Delete a release from GitLab'
+    response = rest_delete(f'{GITLAB_RELEASES_URL}/v{args.release}', headers={'Private-Token': args.password})
+    response.raise_for_status()
 
 
 if __name__ == '__main__':
