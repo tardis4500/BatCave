@@ -9,20 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 .. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
-[37.0.1] - Unreleased
+[37.0.1] - 2019-10-24
 ---------------------
 - Added
     - Added project links to setup.py. (GitLab #3)
-    - Added CI/CD support to build.py. (GitLab #7)
+    - Added GitLab CI/CD file. (GitLab #7, #14)
+    - Create GitLab release at release time in build.py. (GitLab #9)
 
 - Changed
     - Made dependencies less restrictive. (GitLab #2)
     - Cleaned up setup.py. (GitLab #3)
     - Downgraded build environment to Python 3.7 since psutil not built for 3.8 yet. (GitLab #4)
+    - Added GitLab CI/CD support to build.py. (GitLab #7)
     - Fixed switch for Python 3.7 StopIteration behavior.
 
 - Removed
-    -Removed build related dependencies. (GitLab #3)
+    - Removed build related dependencies. (GitLab #3)
+    - Removed old dependencies. (GitLab #3, #11)
 
 Release History
 ---------------
