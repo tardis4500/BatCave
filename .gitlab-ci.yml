@@ -14,7 +14,6 @@ variables:
   ARTIFACTS_DIR: $BUILD_DIR/artifacts
   UNIT_TEST_DIR: $BUILD_DIR/unit_test_results
   PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
-  BUILDER: pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS $PASSWORD_ARG
   RELEASE: 37.0.1
 
 before_script:
@@ -27,10 +26,14 @@ cache:
   paths:
     - .local/share/virtualenvs
 
+.builder:
+  script:
+    - pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS $PYPI_PASSWD $GITLAB_USER $GITLAB_PASSWD
+
+
 unit_tests:
   stage: unit_tests
-  script:
-    - $BUILDER
+  extends: .builder
   artifacts:
     reports:
       junit: $UNIT_TEST_DIR
@@ -39,8 +42,7 @@ ci_build:
   stage: ci_build
   variables:
     BUILD_ARGS: --build-num $CI_JOB_ID --release $RELEASE
-  script:
-    - $BUILDER
+  extends: .builder
   artifacts:
     paths:
       - $ARTIFACTS_DIR
@@ -53,39 +55,27 @@ install_test:
   script:
     - pip install $PYPI_PKG
 
-publish_test:
-  stage: publish_test
-  environment: Staging
+.publisher:
+  extends: .builder
   variables:
-    PASSWORD_ARG: --password $TEST_TOKEN
-  script:
-    - $BUILDER
+    GITLAB_USER: $GITLAB_USER_LOGIN
+    GITLAB_PASSWD: $GITLAB_USER_TOKEN
   only:
     - master
   when: manual
   allow_failure: false
 
-release_test:
-  stage: release_test
-  image: python:3.7
-  script:
-  only:
-    - master
-  when: manual
-  allow_failure: false
+publish_test:
+  stage: publish_test
+  environment: Staging
+  extends: .publisher
+  variables:
+    PYPI_PASSWD: $PYPI_TEST_TOKEN
 
 publish:
   stage: publish
   image: python:3.7
   environment: Production
+  extends: .publisher
   variables:
-    PASSWORD_ARG: --password $PRODUCTION_TOKEN
-  script:
-    - $BUILDER
-    - git remote add user_origin https://$GITLAB_USER_LOGIN:$USER_PASSWORD@gitlab.com/arisilon/batcave.git
-    - git tag v$RELEASE
-    - git push user_origin --tags
-  only:
-    - master
-  when: manual
-  allow_failure: false
+    PYPI_PASSWD: $PYPI_PRODUCTION_TOKEN

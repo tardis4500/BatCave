@@ -28,7 +28,7 @@ from batcave.commander import Argument, Commander, SubParser  # noqa:E402, pylin
 from batcave.expander import file_expander  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.fileutil import slurp, spew  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.platarch import Platform  # noqa:E402, pylint: disable=wrong-import-position
-from batcave.sysutil import pushd, popd, rmpath  # noqa:E402, pylint: disable=wrong-import-position
+from batcave.sysutil import pushd, popd, rmpath, SysCmdRunner  # noqa:E402, pylint: disable=wrong-import-position
 
 PRODUCT_NAME = 'BatCave'
 BUILD_DIR = PROJECT_ROOT / 'Build'
@@ -46,12 +46,14 @@ GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/rel
 
 def main():
     'Main entry point'
-    publish_args = [Argument('-u', '--user', default='__token__'), Argument('-p', '--password')]
-    release_args = [Argument('release')] + publish_args
+    pypi_args = [Argument('pypi_password'), Argument('-u', '--pypi-user', default='__token__')]
+    gitlab_args = [Argument('gitlab_user'), Argument('gitlab_password')]
+    publish_args = pypi_args + gitlab_args
+    release_args = [Argument('release')] + gitlab_args
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build, [Argument('-b', '--build-num'), Argument('-r', '--release')]),
-                                             SubParser('publish_test', publish_test, publish_args + [Argument('-c', '--create-release-test', action='store_true')]),
+                                             SubParser('publish_test', publish_test, publish_args),
                                              SubParser('publish', publish, publish_args),
                                              SubParser('create_release', create_release, release_args),
                                              SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
@@ -114,9 +116,7 @@ def publish(args):
 
 def publish_to_pypi(args, test=False):
     'Publish to the specified PyPi server'
-    upload_args = ['--user', args.user, f'{ARTIFACTS_DIR}/*']
-    if args.password:
-        upload_args += ['--password', args.password]
+    upload_args = [f'--user={args.pypi_user}', f'--password={args.pypi_password}', f'{ARTIFACTS_DIR}/*']
     if test:
         upload_args += ['--repository-url', PYPI_TEST_URL]
         args.release = randint(100, 999)
@@ -127,6 +127,10 @@ def publish_to_pypi(args, test=False):
                 artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{args.release}-py3-none-any.whl')
     upload(upload_args)
     if not test:
+        git = SysCmdRunner('git', ignore_stderr=True)
+        git.run(None, 'remote', 'add', 'user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git')
+        git.run(None, 'tag', f'v{args.release}')
+        git.run(None, 'push', 'user_origin', '--tags')
         create_release(args)
 
 
@@ -173,14 +177,14 @@ def get_build_info(args):
 def create_release(args):
     'Create a release in GitLab'
     response = rest_post(GITLAB_RELEASES_URL,
-                         headers={'Content-Type': 'application/json', 'Private-Token': args.password},
+                         headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
                          json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
     response.raise_for_status()
 
 
 def delete_release(args):
     'Delete a release from GitLab'
-    response = rest_delete(f'{GITLAB_RELEASES_URL}/v{args.release}', headers={'Private-Token': args.password})
+    response = rest_delete(f'{GITLAB_RELEASES_URL}/v{args.release}', headers={'Private-Token': args.gitlab_password})
     response.raise_for_status()
 
 

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e6b45eed8966ed05364f9a48ca59b4a356d9e5d370f7a28dfc1a871680e9a073"
+            "sha256": "ddbeb86046f8283f5f5be4d1ec9339120b1450d441d5bc1d2701668653325887"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -214,14 +214,6 @@
             ],
             "version": "==4.3.21"
         },
-        "keyring": {
-            "hashes": [
-                "sha256:91037ccaf0c9a112a76f7740e4a416b9457a69b66c2799421581bee710a974b3",
-                "sha256:f5bb20ea6c57c2360daf0c591931c9ea0d7660a8d9e32ca84d63273f131ea605"
-            ],
-            "index": "pypi",
-            "version": "==19.2.0"
-        },
         "lazy-object-proxy": {
             "hashes": [
                 "sha256:02b260c8deb80db09325b99edf62ae344ce9bc64d68b7a634410b8e9a568edbf",
@@ -302,14 +294,6 @@
             ],
             "index": "pypi",
             "version": "==2.4.3"
-        },
-        "pywin32-ctypes": {
-            "hashes": [
-                "sha256:24ffc3b341d457d48e8922352130cf2644024a4ff09762a2261fd34c36ee5942",
-                "sha256:9dc2d991b3479cc2df15930958b674a48a227d5361d413827a4cfd0b5876fc98"
-            ],
-            "markers": "sys_platform == 'win32'",
-            "version": "==0.2.0"
         },
         "readme-renderer": {
             "hashes": [
