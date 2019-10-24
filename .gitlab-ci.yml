@@ -18,7 +18,7 @@ variables:
 
 before_script:
   - python -V
-  - pip install -r requirements.txt
+  - pip install -r requirements-frozen.txt
   - cd $BUILD_DIR
 
 cache:
