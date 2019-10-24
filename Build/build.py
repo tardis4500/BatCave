@@ -8,7 +8,6 @@ from distutils.core import run_setup
 from importlib import import_module, reload
 import os
 from pathlib import Path
-from random import randint
 from shutil import copyfile
 from stat import S_IWUSR
 import sys
@@ -48,13 +47,14 @@ def main():
     'Main entry point'
     pypi_args = [Argument('pypi_password'), Argument('-u', '--pypi-user', default='__token__')]
     gitlab_args = [Argument('gitlab_user'), Argument('gitlab_password')]
-    publish_args = pypi_args + gitlab_args
     release_args = [Argument('release')] + gitlab_args
+    publish_args = release_args + pypi_args
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
-                                             SubParser('ci_build', ci_build, [Argument('-b', '--build-num'), Argument('-r', '--release')]),
+                                             SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
                                              SubParser('publish_test', publish_test, publish_args),
                                              SubParser('publish', publish, publish_args),
+                                             SubParser('tag_source', tag_source, release_args),
                                              SubParser('create_release', create_release, release_args),
                                              SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
 
@@ -106,11 +106,13 @@ def builder(args):  # pylint: disable=unused-argument
 
 def publish_test(args):
     'Publish to the PyPi test server'
+    MESSAGE_LOGGER(f'Publishing to PyPi Test', True)
     publish_to_pypi(args, True)
 
 
 def publish(args):
     'Publish to the PyPi production server'
+    MESSAGE_LOGGER(f'Publishing to PyPi', True)
     publish_to_pypi(args)
 
 
@@ -119,7 +121,6 @@ def publish_to_pypi(args, test=False):
     upload_args = [f'--user={args.pypi_user}', f'--password={args.pypi_password}', f'{ARTIFACTS_DIR}/*']
     if test:
         upload_args += ['--repository-url', PYPI_TEST_URL]
-        args.release = randint(100, 999)
         for artifact in ARTIFACTS_DIR.iterdir():
             if artifact.suffix == '.gz':
                 artifact.unlink()
@@ -127,11 +128,17 @@ def publish_to_pypi(args, test=False):
                 artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{args.release}-py3-none-any.whl')
     upload(upload_args)
     if not test:
-        git = SysCmdRunner('git', ignore_stderr=True)
-        git.run(None, 'remote', 'add', 'user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git')
-        git.run(None, 'tag', f'v{args.release}')
-        git.run(None, 'push', 'user_origin', '--tags')
+        tag_source(args)
         create_release(args)
+
+
+def tag_source(args):
+    'Tag the source in git'
+    MESSAGE_LOGGER(f'Tagging the source with v{args.release}', True)
+    git = SysCmdRunner('git', ignore_stderr=True)
+    git.run(None, 'remote', 'add', 'user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git')
+    git.run(None, 'tag', f'v{args.release}')
+    git.run(None, 'push', 'user_origin', '--tags')
 
 
 def remake_dir(dir_path, info_str):
@@ -176,6 +183,7 @@ def get_build_info(args):
 
 def create_release(args):
     'Create a release in GitLab'
+    MESSAGE_LOGGER(f'Creating the GitLab release v{args.release}', True)
     response = rest_post(GITLAB_RELEASES_URL,
                          headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
                          json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
@@ -184,6 +192,7 @@ def create_release(args):
 
 def delete_release(args):
     'Delete a release from GitLab'
+    MESSAGE_LOGGER(f'Deleting the GitLab release v{args.release}', True)
     response = rest_delete(f'{GITLAB_RELEASES_URL}/v{args.release}', headers={'Private-Token': args.gitlab_password})
     response.raise_for_status()
 

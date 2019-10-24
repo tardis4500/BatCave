@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 .. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
+[37.1.0] - Unreleased
+---------------------
+- Added
+
+- Changed
+    - Need to pass the release number in when publishing. (GitLab #18)
+    - Improved logging in build.py.
+
+- Removed
+
+
+Release History
+---------------
+
 [37.0.1] - 2019-10-24
 ---------------------
 - Added
@@ -26,9 +40,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Removed
     - Removed build related dependencies. (GitLab #3)
     - Removed old dependencies. (GitLab #3, #11)
-
-Release History
----------------
 
 [37.0.0] - 2019-10-15
 ---------------------
