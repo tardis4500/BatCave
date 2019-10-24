@@ -1,0 +1,13 @@
+requests
+setuptools
+twine
+xmlrunner
+
+autopep8
+doc8
+flake8
+pipdeptree
+pylint
+restview
+rope
+rstvalidator
