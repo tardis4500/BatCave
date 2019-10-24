@@ -36,7 +36,7 @@ unit_tests:
   extends: .builder
   artifacts:
     reports:
-      junit: $UNIT_TEST_DIR
+      junit: $UNIT_TEST_DIR/*
 
 ci_build:
   stage: ci_build
