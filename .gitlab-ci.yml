@@ -28,7 +28,7 @@ cache:
 
 .builder:
   script:
-    - pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS $PYPI_PASSWD $GITLAB_USER $GITLAB_PASSWD
+    - pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS
 
 
 unit_tests:
@@ -41,7 +41,7 @@ unit_tests:
 ci_build:
   stage: ci_build
   variables:
-    BUILD_ARGS: --build-num $CI_JOB_ID --release $RELEASE
+    BUILD_ARGS: $RELEASE $CI_JOB_ID
   extends: .builder
   artifacts:
     paths:
@@ -57,9 +57,6 @@ install_test:
 
 .publisher:
   extends: .builder
-  variables:
-    GITLAB_USER: $GITLAB_USER_LOGIN
-    GITLAB_PASSWD: $GITLAB_USER_TOKEN
   only:
     - master
   when: manual
@@ -70,7 +67,7 @@ publish_test:
   environment: Staging
   extends: .publisher
   variables:
-    PYPI_PASSWD: $PYPI_TEST_TOKEN
+    BUILD_ARGS: $RANDOM $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
 
 publish:
   stage: publish
@@ -78,4 +75,4 @@ publish:
   environment: Production
   extends: .publisher
   variables:
-    PYPI_PASSWD: $PYPI_PRODUCTION_TOKEN
+    BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_PRODUCTION_TOKEN
