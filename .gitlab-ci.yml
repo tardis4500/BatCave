@@ -27,7 +27,7 @@ cache:
 
 .builder:
   script:
-    - pipenv run python build.py $CI_JOB_STAGE $BUILD_ARGS
+    - python build.py $CI_JOB_STAGE $BUILD_ARGS
 
 
 unit_tests:
