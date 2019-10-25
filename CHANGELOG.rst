@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 .. cSpell:ignore platarch, cmds, psutil, servermgr, pywin, sqlscript, verfiles, cloudmgr, qbpy, pkgtype, unittest, recopytree, pathlib, pypiwin, pythonval, fileutil
-.. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg
+.. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
 [37.1.0] - Unreleased
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed
     - Need to pass the release number in when publishing. (GitLab #18)
+    - Converted from pipenv to standard pip requirements file. (GitLab #19)
     - Improved logging in build.py.
 
 - Removed
