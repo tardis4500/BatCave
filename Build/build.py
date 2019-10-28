@@ -9,6 +9,7 @@ from importlib import import_module, reload
 from json import loads as json_parse
 import os
 from pathlib import Path
+from random import randint
 from shutil import copyfile
 from stat import S_IWUSR
 import sys
@@ -61,8 +62,8 @@ def main():
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
-                                             SubParser('publish_test', publish_test, publish_args),
-                                             SubParser('publish', publish, publish_args),
+                                             SubParser('publish_test', publish_to_pypi, publish_args),
+                                             SubParser('publish', publish_to_pypi, publish_args),
                                              SubParser('freeze', freeze),
                                              SubParser('tag_source', tag_source, release_args),
                                              SubParser('create_release', create_release, release_args),
@@ -114,30 +115,22 @@ def builder(args):  # pylint: disable=unused-argument
         update_version_file(reset=True)
 
 
-def publish_test(args):
-    'Publish to the PyPi test server'
-    MESSAGE_LOGGER(f'Publishing to PyPi Test', True)
-    publish_to_pypi(args, True)
-
-
-def publish(args):
-    'Publish to the PyPi production server'
-    MESSAGE_LOGGER(f'Publishing to PyPi', True)
-    publish_to_pypi(args)
-
-
-def publish_to_pypi(args, test=False):
+def publish_to_pypi(args):
     'Publish to the specified PyPi server'
+    message = 'Publishing to PyPi'
+    if args.release == 'test':
+        message += ' Test'
+    MESSAGE_LOGGER(message, True)
     upload_args = [f'--user={args.pypi_user}', f'--password={args.pypi_password}', f'{ARTIFACTS_DIR}/*']
-    if test:
+    if args.release == 'test':
         upload_args += ['--repository-url', PYPI_TEST_URL]
         for artifact in ARTIFACTS_DIR.iterdir():
             if artifact.suffix == '.gz':
                 artifact.unlink()
             else:
-                artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{args.release}-py3-none-any.whl')
+                artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{randint(1, 1000)}-py3-none-any.whl')
     upload(upload_args)
-    if not test:
+    if args.release != 'test':
         tag_source(args)
         create_release(args)
 
