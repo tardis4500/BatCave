@@ -212,7 +212,7 @@ class Client:
                 if case(self.CLIENT_TYPES.file):
                     raise CMSError(CMSError.CONNECTINFO_REQUIRED, ctype=self._type.name)
                 if case(self.CLIENT_TYPES.git):
-                    connectinfo = getenv('GIT_DIR')
+                    connectinfo = getenv('GIT_WORK_TREE')
                     break
                 if case(self.CLIENT_TYPES.perforce):
                     connectinfo = self.get_cms_sys_value('P4PORT')
@@ -619,7 +619,7 @@ class Client:
             if case():
                 raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
 
-    def checkin_files(self, description, *files, all_branches=False, fail_on_empty=False, no_execute=False):
+    def checkin_files(self, description, *files, all_branches=False, remote='origin', fail_on_empty=False, no_execute=False, **extra_args):
         'commits files open on the client'
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
@@ -630,8 +630,9 @@ class Client:
                 if not no_execute:
                     self._client.index.commit(description)
                     args = {'set_upstream': True, 'all': True} if all_branches else dict()
+                    args.update(extra_args)
                     progress = git.RemoteProgress()
-                    self._client.remotes.origin.push(progress=progress, **args)
+                    getattr(self._client.remotes, remote).push(progress=progress, **args)
                     if progress.error_lines:
                         raise CMSError(CMSError.GIT_FAILURE, msg=''.join(progress.error_lines).replace('error: ', ''))
                 break
@@ -727,20 +728,24 @@ class Client:
             if case():
                 raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
 
-    def add_remote_ref(self, name, url):
+    def add_remote_ref(self, name, url, exists_ok=False, no_execute=False):
         'Add a remote reference for a DVCS client'
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
-                self._client.create_remote(name, url)
+                if not no_execute:
+                    if exists_ok and name in self._client.remotes:
+                        self._client.delete_remote(name)
+                    self._client.create_remote(name, url)
                 break
             if case():
                 raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
 
-    def rename_remote_ref(self, oldname, newname):
+    def rename_remote_ref(self, oldname, newname, no_execute=False):
         'Rename a remote reference for a DVCS client '
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
-                self._client.remotes[oldname].rename(newname)
+                if not no_execute:
+                    self._client.remotes[oldname].rename(newname)
                 break
             if case():
                 raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
@@ -823,6 +828,18 @@ class Client:
             return ChangeList(self, name, editable=True)
         else:
             return self.get_changelists(name, forfiles=files)[0]
+
+    def add_label(self, tag_name, exists_ok=False, no_execute=False):
+        'returns the labels in the cms system'
+        for case in switch(self._type):
+            if case(self.CLIENT_TYPES.git):
+                if not no_execute:
+                    if exists_ok and tag_name in self._client.tags:
+                        self._client.delete_tag(tag_name)
+                    self._client.create_tag(tag_name)
+                break
+            if case():
+                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
 
     def get_labels(self, *args):
         'returns the labels in the cms system'
