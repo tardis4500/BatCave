@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 'This programs drives the build and release automation'
-# cSpell:ignore bdist, bldverfile, checkin, cibuild, sdist
+# cSpell:ignore bdist, bldverfile, checkin, cibuild, sdist, syscmd
 
 # Import standard modules
 from datetime import datetime
 from distutils.core import run_setup
 from importlib import import_module, reload
+from json import loads as json_parse
 import os
 from pathlib import Path
 from shutil import copyfile
@@ -28,20 +29,27 @@ from batcave.expander import file_expander  # noqa:E402, pylint: disable=wrong-i
 from batcave.fileutil import slurp, spew  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.cms import Client  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.platarch import Platform  # noqa:E402, pylint: disable=wrong-import-position
-from batcave.sysutil import pushd, popd, rmpath  # noqa:E402, pylint: disable=wrong-import-position
+from batcave.sysutil import pushd, popd, rmpath, SysCmdRunner  # noqa:E402, pylint: disable=wrong-import-position
 
 PRODUCT_NAME = 'BatCave'
-BUILD_DIR = PROJECT_ROOT / 'Build'
+
 SOURCE_DIR = PROJECT_ROOT / 'batcave'
+VERSION_FILE = SOURCE_DIR / '__init__.py'
+
+BUILD_DIR = PROJECT_ROOT / 'Build'
 ARTIFACTS_DIR = BUILD_DIR / 'artifacts'
 UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
-VERSION_FILE = SOURCE_DIR / '__init__.py'
 BUILD_INFO_FILE = BUILD_DIR / 'build_info.txt'
 
-MESSAGE_LOGGER = Action().log_message
+REQUIREMENTS_FILE = PROJECT_ROOT / 'requirements.txt'
+FREEZE_FILE = PROJECT_ROOT / 'requirements-frozen.txt'
 
 PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
+
+MESSAGE_LOGGER = Action().log_message
+
+pip = SysCmdRunner('pip').run  # pylint: disable=invalid-name
 
 
 def main():
@@ -55,6 +63,7 @@ def main():
                                              SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
                                              SubParser('publish_test', publish_test, publish_args),
                                              SubParser('publish', publish, publish_args),
+                                             SubParser('freeze', freeze),
                                              SubParser('tag_source', tag_source, release_args),
                                              SubParser('create_release', create_release, release_args),
                                              SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
@@ -175,6 +184,21 @@ def update_version_file(build_vars=None, reset=False):
                     line = f"__{var}__ = '{val}'\n"
             file_update.append(line)
         spew(VERSION_FILE, file_update)
+
+
+def freeze(args):  # pylint: disable=unused-argument
+    'Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers.'
+    requirements = {p.split(';')[0].strip() for p in slurp(REQUIREMENTS_FILE)}.union(['pip', 'setuptools', 'wheel'])
+    dev_requirements = [p['name'] for p in json_parse(pip(None, 'list', '--format=json')[0]) if p['name'] not in requirements]
+    pip('Uninstalling unlisted requirements', 'uninstall', '-y', '-qqq', *dev_requirements)
+    pip('Re-installing requirements', 'install', '-qqq', '-U', '-r', REQUIREMENTS_FILE)
+    spew(FREEZE_FILE, pip('Creating frozen requirements file', 'freeze'))
+    freeze_file = [l.strip() for l in slurp(FREEZE_FILE)]
+    with open(FREEZE_FILE, 'w') as updated_freeze_file:
+        for line in freeze_file:
+            if 'win32' in line:
+                line += "; sys_platform == 'win32'"
+            print(line, file=updated_freeze_file)
 
 
 def get_build_info(args):
