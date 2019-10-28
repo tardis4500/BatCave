@@ -27,6 +27,8 @@ cache:
 
 .builder:
   script:
+    - RANDOM_RELEASE=$RANDOM
+    - echo $RANDOM_RELEASE
     - echo Executing- python build.py $CI_JOB_STAGE $BUILD_ARGS
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
 
@@ -67,8 +69,7 @@ publish_test:
   environment: Staging
   extends: .publisher
   variables:
-    RELEASE: $RANDOM
-    BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
+    BUILD_ARGS: $RANDOM_RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
 
 publish:
   stage: publish
