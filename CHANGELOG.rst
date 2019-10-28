@@ -12,14 +12,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [37.1.0] - Unreleased
 ---------------------
 - Added
+    - Added initial Kubernetes support module. (GitLab #17)
 
 - Changed
     - Use cmd.Client for git interactions in build.py. (GitLab #16)
     - Need to pass the release number in when publishing. (GitLab #18)
     - Converted from pipenv to standard pip requirements file. (GitLab #19)
     - Improved logging in build.py.
-
-- Removed
 
 
 Release History
