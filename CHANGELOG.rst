@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 .. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
+[37.1.1] - 2019-10-28
+---------------------
+- Added
+    - Added missing Kubernetes module requirement. (GitLab #21)
+
+
+Release History
+---------------
+
 [37.1.0] - 2019-10-28
 ---------------------
 - Added
@@ -20,10 +29,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Need to pass the release number in when publishing. (GitLab #18)
     - Converted from pipenv to standard pip requirements file. (GitLab #19)
     - Improved logging in build.py.
-
-
-Release History
----------------
 
 [37.0.1] - 2019-10-24
 ---------------------

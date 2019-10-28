@@ -45,6 +45,7 @@ setup(
     install_requires=['docker >= 4.0',
                       'GitPython >= 3.0',
                       'google-cloud',
+                      'kubernetes >= 10.0',
                       'PyQt5 >= 5.13; platform_machine != "aarch64"',
                       'psutil >= 5.6',
                       'pywin32 >= 225; sys_platform == "win32"',
