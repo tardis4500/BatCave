@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 'This programs drives the build and release automation'
-# cSpell:ignore bdist, bldverfile, cibuild, sdist
+# cSpell:ignore bdist, bldverfile, checkin, cibuild, sdist
 
 # Import standard modules
 from datetime import datetime
@@ -26,8 +26,9 @@ from batcave.automation import Action  # noqa:E402, pylint: disable=wrong-import
 from batcave.commander import Argument, Commander, SubParser  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.expander import file_expander  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.fileutil import slurp, spew  # noqa:E402, pylint: disable=wrong-import-position
+from batcave.cms import Client  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.platarch import Platform  # noqa:E402, pylint: disable=wrong-import-position
-from batcave.sysutil import pushd, popd, rmpath, SysCmdRunner  # noqa:E402, pylint: disable=wrong-import-position
+from batcave.sysutil import pushd, popd, rmpath  # noqa:E402, pylint: disable=wrong-import-position
 
 PRODUCT_NAME = 'BatCave'
 BUILD_DIR = PROJECT_ROOT / 'Build'
@@ -135,10 +136,11 @@ def publish_to_pypi(args, test=False):
 def tag_source(args):
     'Tag the source in git'
     MESSAGE_LOGGER(f'Tagging the source with v{args.release}', True)
-    git = SysCmdRunner('git', ignore_stderr=True)
-    git.run(None, 'remote', 'add', 'user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git')
-    git.run(None, 'tag', f'v{args.release}')
-    git.run(None, 'push', 'user_origin', '--tags')
+    os.environ['GIT_WORK_TREE'] = str(PROJECT_ROOT)
+    git_client = Client(Client.CLIENT_TYPES.git, 'tagger', create=False)
+    git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
+    git_client.add_label(f'v{args.release}', exists_ok=True)
+    git_client.checkin_files('Automated tagging during build', remote='user_origin', tags=True)
 
 
 def remake_dir(dir_path, info_str):
