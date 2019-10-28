@@ -6,21 +6,10 @@ from setuptools import find_packages, setup  # Always prefer setuptools over dis
 
 import batcave
 from batcave.fileutil import slurp
-from batcave.platarch import Platform
 from batcave.sysutil import chmod, S_775
 
 # The files need to be writable
 chmod(Path.cwd(), S_775, True)
-
-# Platform specific dependencies
-# p4python must be installed on Linux with additional arguments: --install-option="-ssl" --install-option="/usr/lib"
-SYS_PLATFORM = Platform().batcave_run
-DEPENDENCIES = ['docker >= 4.0', 'GitPython >= 3.0', 'google-cloud', 'psutil >= 5.6', 'requests >= 2.22', 'WMI >= 1.4']
-if SYS_PLATFORM == 'win32':
-    DEPENDENCIES += ['pywin32 >= 225']
-
-if not SYS_PLATFORM.endswith('aarch64'):
-    DEPENDENCIES += ['PyQt5 >= 5.13']
 
 setup(
     name=batcave.__title__,
@@ -53,7 +42,14 @@ setup(
 
     python_requires='>=3.6',
     packages=find_packages(),
-    install_requires=DEPENDENCIES,
+    install_requires=['docker >= 4.0',
+                      'GitPython >= 3.0',
+                      'google-cloud',
+                      'PyQt5 >= 5.13; platform_machine != "aarch64"',
+                      'psutil >= 5.6',
+                      'pywin32 >= 225; sys_platform == "win32"',
+                      'requests >= 2.22',
+                      'WMI >= 1.4'],
     extras_require={
         'dev': ['setuptools', 'twine', 'wheel', 'xmlrunner'],
         'test': [],
