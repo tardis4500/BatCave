@@ -27,6 +27,7 @@ cache:
 
 .builder:
   script:
+    - echo Executing- python build.py $CI_JOB_STAGE $BUILD_ARGS
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
 
 
