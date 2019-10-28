@@ -67,7 +67,8 @@ publish_test:
   environment: Staging
   extends: .publisher
   variables:
-    BUILD_ARGS: $RANDOM $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
+    RELEASE: $RANDOM
+    BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
 
 publish:
   stage: publish
