@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 .. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
-[37.1.0] - Unreleased
+[37.1.0] - 2019-10-28
 ---------------------
 - Added
     - Added initial Kubernetes support module. (GitLab #17)
