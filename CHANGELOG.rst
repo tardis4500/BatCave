@@ -9,14 +9,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 .. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
-[37.1.2] - 2019-10-29
+[38.0.0] - Unreleased
 ---------------------
-- Changed
-    - Fixed kubectl issue. (GitLab #22)
+- Added
+    - Added auto-increment of the release during production publish. (GitLab #15)
 
 
 Release History
 ---------------
+
+[37.1.2] - 2019-10-29
+---------------------
+- Changed
+    - Fixed kubectl issue. (GitLab #22)
 
 [37.1.1] - 2019-10-28
 ---------------------

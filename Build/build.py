@@ -40,7 +40,7 @@ VERSION_FILE = SOURCE_DIR / '__init__.py'
 BUILD_DIR = PROJECT_ROOT / 'Build'
 ARTIFACTS_DIR = BUILD_DIR / 'artifacts'
 UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
-BUILD_INFO_FILE = BUILD_DIR / 'build_info.txt'
+CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
 
 REQUIREMENTS_FILE = PROJECT_ROOT / 'requirements.txt'
 FREEZE_FILE = PROJECT_ROOT / 'requirements-frozen.txt'
@@ -65,8 +65,11 @@ def main():
                                              SubParser('publish_test', publish_to_pypi, publish_args),
                                              SubParser('publish', publish_to_pypi, publish_args),
                                              SubParser('freeze', freeze),
-                                             SubParser('tag_source', tag_source, release_args),
-                                             SubParser('create_release', create_release, release_args),
+                                             SubParser('post_release_update', post_release_update,
+                                                       [Argument('-i', '--increment-release', action='store_true'),
+                                                        Argument('-t', '--tag-source', action='store_true'),
+                                                        Argument('-r', '--create-release', action='store_true'),
+                                                        Argument('-c', '--checkin', action='store_true')] + release_args),
                                              SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
 
 
@@ -131,18 +134,43 @@ def publish_to_pypi(args):
                 artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{randint(1, 1000)}-py3-none-any.whl')
     upload(upload_args)
     if args.release != 'test':
-        tag_source(args)
-        create_release(args)
+        args.increment_release = args.tag_source = args.create_release = args.checkin = True
+        post_release_update(args)
 
 
-def tag_source(args):
-    'Tag the source in git'
-    MESSAGE_LOGGER(f'Tagging the source with v{args.release}', True)
+def post_release_update(args):
+    'Tag the source, update the release number, and create the release in GitLab'
+    MESSAGE_LOGGER(f'Performing post-release updates', True)
     os.environ['GIT_WORK_TREE'] = str(PROJECT_ROOT)
-    git_client = Client(Client.CLIENT_TYPES.git, 'tagger', create=False)
-    git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
-    git_client.add_label(f'v{args.release}', exists_ok=True)
-    git_client.checkin_files('Automated tagging during build', remote='user_origin', tags=True)
+    git_client = Client(Client.CLIENT_TYPES.git, 'release', create=False)
+
+    if args.increment_release:
+        gitlab_ci_config = slurp(CI_BUILD_FILE)
+        new_config = list()
+        for line in gitlab_ci_config:
+            if 'RELEASE:' in line:
+                release = args.release.split('.')
+                release[2] = str(int(release[-1]) + 1)
+                new_release = '.'.join(release)
+                line = f'  RELEASE: {new_release}\n'
+            new_config.append(line)
+        MESSAGE_LOGGER(f'Incrementing release to v{new_release}')
+        spew(CI_BUILD_FILE, new_config)
+        git_client.add_files(CI_BUILD_FILE)
+
+    if args.tag_source:
+        MESSAGE_LOGGER(f'Tagging the source with v{args.release}')
+        git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
+        git_client.add_label(f'v{args.release}', exists_ok=True)
+    if args.checkin:
+        git_client.checkin_files('Automated pipeline checking', remote='user_origin', tags=True)
+
+    if args.create_release:
+        MESSAGE_LOGGER(f'Creating the GitLab release v{args.release}')
+        response = rest_post(GITLAB_RELEASES_URL,
+                             headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
+                             json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
+        response.raise_for_status()
 
 
 def remake_dir(dir_path, info_str):
@@ -198,15 +226,6 @@ def get_build_info(args):
     'Return the build number and release'
     return (args.build_num if hasattr(args, 'build_num') else '0',
             args.release if hasattr(args, 'release') else '0.0.0')
-
-
-def create_release(args):
-    'Create a release in GitLab'
-    MESSAGE_LOGGER(f'Creating the GitLab release v{args.release}', True)
-    response = rest_post(GITLAB_RELEASES_URL,
-                         headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
-                         json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
-    response.raise_for_status()
 
 
 def delete_release(args):
