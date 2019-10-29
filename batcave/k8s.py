@@ -87,7 +87,7 @@ class Cluster:
 
     def kubectl(self, *args):
         'Provide kubectl for things that are not implemented directly in the API'
-        return kubectl(None, f'--kubeconfig={self.config}', *args).decode()
+        return kubectl(None, f'--kubeconfig={self.config}', *args)
 
 
 class ClusterObject:
