@@ -14,7 +14,7 @@ variables:
   ARTIFACTS_DIR: $BUILD_DIR/artifacts
   UNIT_TEST_DIR: $BUILD_DIR/unit_test_results
   PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
-  RELEASE: 37.1.2
+  RELEASE: 38.0.0
 
 before_script:
   - python -V
