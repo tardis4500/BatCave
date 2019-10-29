@@ -6,7 +6,7 @@ from pathlib import Path
 from string import Template
 
 # Import internal modules
-from .hallog import Logger
+from .logger import Logger
 from .sysutil import LockFile
 from .lang import is_debug, HALError, HALException
 

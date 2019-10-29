@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added
     - Added auto-increment of the release during production publish. (GitLab #15)
 
+- Changed
+    - Renamed hallog to logger. (GitLab #25)
+
 
 Release History
 ---------------
