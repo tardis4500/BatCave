@@ -2,8 +2,10 @@
 # cSpell:ignore kube, kubeconfig
 
 # # Import standard modules
+from datetime import datetime as dt, timedelta
 from pathlib import Path
 from string import Template
+from time import sleep
 
 # # Import third-party modules
 from kubernetes import config as k8s_config
@@ -18,8 +20,14 @@ from .sysutil import SysCmdRunner
 kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
 
 
+class ClusterError(HALException):
+    'Class the handle cluster exceptions'
+    BAD_ARGS = HALError(1, Template('$error'))
+    TIMEOUT = HALError(2, Template('Timeout waiting for $seconds seconds for $what $action'))
+
+
 class PodError(HALException):
-    'Class to handle cloud exceptions'
+    'Class to handle pod exceptions'
     BAD_COPY_FILENAME = HALError(1, Template('File not copied $mode, check filenames'))
     COPY_ERROR = HALError(2, Template('Error copying pod file: $errlines'))
     EXEC_ERROR = HALError(3, Template('Error executing pod command: $errlines'))
@@ -48,7 +56,6 @@ class Cluster:
             item_class = globals()[item_class_name.capitalize()]
             method = getattr(self, f'{verb}_item{plural}')
             return lambda *a, **k: method(item_class, *a, **k)
-        return super.__getattr__(attr)
 
     def find_method(self, item_class, method, suffix=None):
         'Search all the APIs for the specified method'
@@ -84,6 +91,31 @@ class Cluster:
     def delete_item(self, item_class, name, namespace='default'):
         'Return a list of the specified items'
         item_class(self, self.find_method(item_class, 'delete')(name, namespace))
+
+    def create_job(self, job_spec, namespace='default', exists_ok=False, wait_for=False, check_every=2, timeout=False):
+        'Create a job and wait for the specified condition'
+        if wait_for not in (False, 'start', 'finish'):
+            raise ClusterError(ClusterError.BAD_ARGS, error=f"wait_for must be one of (start, finish, False) not '{wait_for}'")
+        job = self.create_item(Job, job_spec, namespace, exists_ok)
+        if not wait_for:
+            return job
+
+        start_time = dt.now()
+        while not (job.status.active or job.status.succeeded or job.status.failed):
+            if timeout and (dt.now() - start_time) > timedelta(seconds=timeout):
+                raise ClusterError(ClusterError.TIMEOUT, seconds=timeout, what='Job', action='start')
+            sleep(check_every)
+            job = self.get_job(job.name, namespace)
+        if wait_for == 'start':
+            return job
+
+        start_time = dt.now()
+        while job.status.active:
+            if timeout and (dt.now() - start_time) > timedelta(seconds=timeout):
+                raise ClusterError(ClusterError.TIMEOUT, seconds=timeout, what='Job', action='finish')
+            sleep(check_every)
+            job = self.get_job(job.name, namespace)
+        return job
 
     def kubectl(self, *args):
         'Provide kubectl for things that are not implemented directly in the API'

@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 .. cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
 .. cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
 
-[38.0.0] - Unreleased
+[38.0.0] - 2019-10-30
 ---------------------
 - Added
     - Added auto-increment of the release during production publish. (GitLab #15)
+    - Added release instructions to README.rst. (GitLab #20)
+    - Added better control on k8s.Cluster.create_job with wait_for and timeout options. (GitLab #24)
 
 - Changed
     - Renamed hallog to logger. (GitLab #25)
