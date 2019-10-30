@@ -4,11 +4,11 @@ A useful collection of tools for writing Python programs.
 
 Developing
 ----------
-Development is best accomplished using virutalenv or virtualenv-wrapper where a virtual environment can be generated::
+Development is best accomplished using virutalenv or virtualenv-wrapper where a virtual environment can be generated:
 
     pip install -r requirements.txt
 
-Useful tools for development can be installed with::
+Useful tools for development can be installed with:
 
     pip install -r requirements-dev.txt
 
@@ -21,6 +21,8 @@ Building is performed by changing to the Build directory and running the build.p
 
 Publishing a Release
 --------------------
+This is the procedure for releasing BatCave
+
 1. Validate all issues are "Ready for Release"
 1. Update CHANGELOG.rst
 1. Run publish job
