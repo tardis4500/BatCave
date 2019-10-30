@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-[comment]: # cSpell:ignore platarch, cmds, psutil, servermgr, pywin, sqlscript, verfiles, cloudmgr, qbpy, pkgtype, unittest, recopytree, pathlib, pypiwin, pythonval, fileutil
-[comment]: # cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
-[comment]: # cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd
+<!--- cSpell:ignore platarch, cmds, psutil, servermgr, pywin, sqlscript, verfiles, cloudmgr, qbpy, pkgtype, unittest, recopytree, pathlib, pypiwin, pythonval, fileutil
+      cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
+      cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd -->
 
 [38.0.0] - 2019-10-30
 ---------------------
