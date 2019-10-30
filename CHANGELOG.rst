@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ---------------------
 - Added
     - Added auto-increment of the release during production publish. (GitLab #15)
+    - Added release instructions to README.rst. (GitLab #20)
     - Added better control on k8s.Cluster.create_job with wait_for and timeout options. (GitLab #24)
 
 - Changed
