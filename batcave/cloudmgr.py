@@ -16,6 +16,8 @@ from .sysutil import SysCmdRunner
 
 _CLOUD_TYPES = Enum('cloud_types', ('local', 'gcloud', 'dockerhub'))
 
+gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
+
 
 class CloudError(HALException):
     'Class to handle cloud exceptions'
@@ -195,9 +197,6 @@ class Container:
                 return self.ref.stop()
             if case():
                 raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
-
-
-gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=C0103
 
 
 def validatetype(ctype):

@@ -14,7 +14,7 @@ variables:
   ARTIFACTS_DIR: $BUILD_DIR/artifacts
   UNIT_TEST_DIR: $BUILD_DIR/unit_test_results
   PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
-  RELEASE: 37.1.0
+  RELEASE: 38.0.0
 
 before_script:
   - python -V
@@ -66,7 +66,7 @@ publish_test:
   environment: Staging
   extends: .publisher
   variables:
-    BUILD_ARGS: $RANDOM $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
+    BUILD_ARGS: test $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
 
 publish:
   stage: publish

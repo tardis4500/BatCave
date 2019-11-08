@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 'This programs drives the build and release automation'
-# cSpell:ignore bdist, bldverfile, checkin, cibuild, sdist
+# cSpell:ignore bdist, bldverfile, checkin, cibuild, sdist, syscmd
 
 # Import standard modules
 from datetime import datetime
 from distutils.core import run_setup
 from importlib import import_module, reload
+from json import loads as json_parse
 import os
 from pathlib import Path
+from random import randint
 from shutil import copyfile
 from stat import S_IWUSR
 import sys
@@ -28,20 +30,27 @@ from batcave.expander import file_expander  # noqa:E402, pylint: disable=wrong-i
 from batcave.fileutil import slurp, spew  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.cms import Client  # noqa:E402, pylint: disable=wrong-import-position
 from batcave.platarch import Platform  # noqa:E402, pylint: disable=wrong-import-position
-from batcave.sysutil import pushd, popd, rmpath  # noqa:E402, pylint: disable=wrong-import-position
+from batcave.sysutil import pushd, popd, rmpath, SysCmdRunner  # noqa:E402, pylint: disable=wrong-import-position
 
 PRODUCT_NAME = 'BatCave'
-BUILD_DIR = PROJECT_ROOT / 'Build'
+
 SOURCE_DIR = PROJECT_ROOT / 'batcave'
+VERSION_FILE = SOURCE_DIR / '__init__.py'
+
+BUILD_DIR = PROJECT_ROOT / 'Build'
 ARTIFACTS_DIR = BUILD_DIR / 'artifacts'
 UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
-VERSION_FILE = SOURCE_DIR / '__init__.py'
-BUILD_INFO_FILE = BUILD_DIR / 'build_info.txt'
+CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
 
-MESSAGE_LOGGER = Action().log_message
+REQUIREMENTS_FILE = PROJECT_ROOT / 'requirements.txt'
+FREEZE_FILE = PROJECT_ROOT / 'requirements-frozen.txt'
 
 PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
+
+MESSAGE_LOGGER = Action().log_message
+
+pip = SysCmdRunner('pip').run  # pylint: disable=invalid-name
 
 
 def main():
@@ -53,10 +62,14 @@ def main():
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
-                                             SubParser('publish_test', publish_test, publish_args),
-                                             SubParser('publish', publish, publish_args),
-                                             SubParser('tag_source', tag_source, release_args),
-                                             SubParser('create_release', create_release, release_args),
+                                             SubParser('publish_test', publish_to_pypi, publish_args),
+                                             SubParser('publish', publish_to_pypi, publish_args),
+                                             SubParser('freeze', freeze),
+                                             SubParser('post_release_update', post_release_update,
+                                                       [Argument('-i', '--increment-release', action='store_true'),
+                                                        Argument('-t', '--tag-source', action='store_true'),
+                                                        Argument('-r', '--create-release', action='store_true'),
+                                                        Argument('-c', '--checkin', action='store_true')] + release_args),
                                              SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
 
 
@@ -105,42 +118,59 @@ def builder(args):  # pylint: disable=unused-argument
         update_version_file(reset=True)
 
 
-def publish_test(args):
-    'Publish to the PyPi test server'
-    MESSAGE_LOGGER(f'Publishing to PyPi Test', True)
-    publish_to_pypi(args, True)
-
-
-def publish(args):
-    'Publish to the PyPi production server'
-    MESSAGE_LOGGER(f'Publishing to PyPi', True)
-    publish_to_pypi(args)
-
-
-def publish_to_pypi(args, test=False):
+def publish_to_pypi(args):
     'Publish to the specified PyPi server'
+    message = 'Publishing to PyPi'
+    if args.release == 'test':
+        message += ' Test'
+    MESSAGE_LOGGER(message, True)
     upload_args = [f'--user={args.pypi_user}', f'--password={args.pypi_password}', f'{ARTIFACTS_DIR}/*']
-    if test:
+    if args.release == 'test':
         upload_args += ['--repository-url', PYPI_TEST_URL]
         for artifact in ARTIFACTS_DIR.iterdir():
             if artifact.suffix == '.gz':
                 artifact.unlink()
             else:
-                artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{args.release}-py3-none-any.whl')
+                artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{randint(1, 1000)}-py3-none-any.whl')
     upload(upload_args)
-    if not test:
-        tag_source(args)
-        create_release(args)
+    if args.release != 'test':
+        args.increment_release = args.tag_source = args.create_release = args.checkin = True
+        post_release_update(args)
 
 
-def tag_source(args):
-    'Tag the source in git'
-    MESSAGE_LOGGER(f'Tagging the source with v{args.release}', True)
+def post_release_update(args):
+    'Tag the source, update the release number, and create the release in GitLab'
+    MESSAGE_LOGGER(f'Performing post-release updates', True)
     os.environ['GIT_WORK_TREE'] = str(PROJECT_ROOT)
-    git_client = Client(Client.CLIENT_TYPES.git, 'tagger', create=False)
-    git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
-    git_client.add_label(f'v{args.release}', exists_ok=True)
-    git_client.checkin_files('Automated tagging during build', remote='user_origin', tags=True)
+    git_client = Client(Client.CLIENT_TYPES.git, 'release', create=False)
+
+    if args.increment_release:
+        gitlab_ci_config = slurp(CI_BUILD_FILE)
+        new_config = list()
+        for line in gitlab_ci_config:
+            if 'RELEASE:' in line:
+                release = args.release.split('.')
+                release[2] = str(int(release[-1]) + 1)
+                new_release = '.'.join(release)
+                line = f'  RELEASE: {new_release}\n'
+            new_config.append(line)
+        MESSAGE_LOGGER(f'Incrementing release to v{new_release}')
+        spew(CI_BUILD_FILE, new_config)
+        git_client.add_files(CI_BUILD_FILE)
+
+    if args.tag_source:
+        MESSAGE_LOGGER(f'Tagging the source with v{args.release}')
+        git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
+        git_client.add_label(f'v{args.release}', exists_ok=True)
+    if args.checkin:
+        git_client.checkin_files('Automated pipeline checking', remote='user_origin', tags=True)
+
+    if args.create_release:
+        MESSAGE_LOGGER(f'Creating the GitLab release v{args.release}')
+        response = rest_post(GITLAB_RELEASES_URL,
+                             headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
+                             json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
+        response.raise_for_status()
 
 
 def remake_dir(dir_path, info_str):
@@ -177,19 +207,25 @@ def update_version_file(build_vars=None, reset=False):
         spew(VERSION_FILE, file_update)
 
 
+def freeze(args):  # pylint: disable=unused-argument
+    'Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers.'
+    requirements = {p.split(';')[0].strip() for p in slurp(REQUIREMENTS_FILE)}.union(['pip', 'setuptools', 'wheel'])
+    dev_requirements = [p['name'] for p in json_parse(pip(None, 'list', '--format=json')[0]) if p['name'] not in requirements]
+    pip('Uninstalling unlisted requirements', 'uninstall', '-y', '-qqq', *dev_requirements)
+    pip('Re-installing requirements', 'install', '-qqq', '-U', '-r', REQUIREMENTS_FILE)
+    spew(FREEZE_FILE, pip('Creating frozen requirements file', 'freeze'))
+    freeze_file = [l.strip() for l in slurp(FREEZE_FILE)]
+    with open(FREEZE_FILE, 'w') as updated_freeze_file:
+        for line in freeze_file:
+            if 'win32' in line:
+                line += "; sys_platform == 'win32'"
+            print(line, file=updated_freeze_file)
+
+
 def get_build_info(args):
     'Return the build number and release'
     return (args.build_num if hasattr(args, 'build_num') else '0',
             args.release if hasattr(args, 'release') else '0.0.0')
-
-
-def create_release(args):
-    'Create a release in GitLab'
-    MESSAGE_LOGGER(f'Creating the GitLab release v{args.release}', True)
-    response = rest_post(GITLAB_RELEASES_URL,
-                         headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
-                         json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
-    response.raise_for_status()
 
 
 def delete_release(args):
