@@ -4,7 +4,7 @@ A useful collection of tools for writing Python programs.
 
 ## Developing
 
-Development is best accomplished using virutalenv or virtualenv-wrapper where a virtual environment can be generated:
+Development is best accomplished using virtualenv or virtualenv-wrapper where a virtual environment can be generated:
 
     pip install -r requirements.txt
 

@@ -79,7 +79,7 @@ def devbuild(args):
     builder(args)
 
 
-def unit_tests(args):  # pylint: disable=unused-argument
+def unit_tests(_unused_args):
     'Run unit tests'
     MESSAGE_LOGGER('Running unit tests', True)
     remake_dir(UNIT_TEST_DIR, 'unit test')
@@ -91,7 +91,7 @@ def ci_build(args):
     builder(args)
 
 
-def builder(args):  # pylint: disable=unused-argument
+def builder(args):
     'Run setuptools build'
     (build_num, release) = get_build_info(args)
     release_list = release.split('.')
@@ -207,7 +207,7 @@ def update_version_file(build_vars=None, reset=False):
         spew(VERSION_FILE, file_update)
 
 
-def freeze(args):  # pylint: disable=unused-argument
+def freeze(_unused_args):
     'Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers.'
     requirements = {p.split(';')[0].strip() for p in slurp(REQUIREMENTS_FILE)}.union(['pip', 'setuptools', 'wheel'])
     dev_requirements = [p['name'] for p in json_parse(pip(None, 'list', '--format=json')[0]) if p['name'] not in requirements]

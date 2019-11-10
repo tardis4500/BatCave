@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [39.0.0] - Unreleased
+
+- Changed
+  - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
+
+## Release History
+
 ### [38.0.0] - 2019-10-30
 
 - Added
@@ -17,8 +24,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Renamed hallog to logger. (GitLab #25)
   - Converted README and CHANGELOG from restructuredText to Markdown.
-
-## Release History
 
 ### [37.1.2] - 2019-10-29
 

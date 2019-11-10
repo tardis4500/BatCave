@@ -8,9 +8,9 @@ from pathlib import Path
 from string import Template
 
 # Import GUI framework and widgets
-from PyQt5.QtCore import QEvent  # pylint: disable=E0611
-from PyQt5.QtGui import QIcon  # pylint: disable=E0611
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox  # pylint: disable=E0611
+from PyQt5.QtCore import QEvent  # pylint: disable=import-error
+from PyQt5.QtGui import QIcon  # pylint: disable=import-error
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox  # pylint: disable=import-error
 
 # Import internal modules
 from . import version
@@ -71,7 +71,7 @@ class HALBaseGUI:
     ''' The base class for the simplified GUI support
         This class cannot be used by itself but must be paired with another PyQt class '''
 
-    def __init__(self, parent=None, title=None, icon=None):  # pylint: disable=W0613
+    def __init__(self, _unused_parent=None, title=None, icon=None):
         self.setupUi(self)  # pylint: disable=E1101
         self.validators = list()
         self._saved_output_streams = None

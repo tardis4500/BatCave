@@ -33,7 +33,7 @@ class Action:
 
     MESSAGE_GUARD = f"{'*'*70}"
 
-    def __init__(self, **args):  # pylint: disable=W0613
+    def __init__(self, **_unused_args):
         self.project_root = Path.cwd().parent
 
     def __enter__(self):

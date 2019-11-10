@@ -26,7 +26,7 @@ if WIN32:
     import win32con
 
 try:  # Load the Perforce API if available
-    import P4
+    import P4  # pylint: disable=import-error
 except Exception:  # pylint: disable=W0703
     P4_LOADED = False
 else:
@@ -174,7 +174,7 @@ class Label:
             if case():
                 raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
 
-    def remove(self, *files):  # pylint: disable=W0613
+    def remove(self, *files):
         'Remove the label from a list of files'
         for case in switch(self._client.type):
             if case():
