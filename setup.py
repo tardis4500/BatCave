@@ -16,7 +16,8 @@ setup(
     version=batcave.__version__,
 
     description=batcave.__summary__,
-    long_description=''.join(slurp(Path(__file__).parent / 'README.md')),
+    long_description=''.join(slurp(Path(__file__).parent / 'README-USER.md')),
+    long_description_content_type='text/markdown',
     keywords='python programming utilities',
 
     author=batcave.__author__,

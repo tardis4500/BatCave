@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [39.0.0] - Unreleased
 
 - Changed
+  - Create PyPi facing README-USER. (GitLab #26)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
 
 ## Release History
