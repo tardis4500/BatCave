@@ -1,4 +1,4 @@
-﻿'Simplified interface to argparse'
+'Simplified interface to argparse'
 
 # Import standard modules
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, REMAINDER
