@@ -1,4 +1,4 @@
-﻿'Module initializer and generic utilities'
+'Module initializer and generic utilities'
 __all__ = ('__title__', '__summary__', '__uri__',
            '__version__', '__buildname__', '__builddate__',
            '__author__', '__email__',
