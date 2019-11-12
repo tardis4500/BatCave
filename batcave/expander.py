@@ -48,32 +48,32 @@ from xml.etree.ElementTree import fromstringlist as xmlparse
 
 # Import BatCave packages
 from .fileutil import slurp
-from .lang import is_debug, str_to_pythonval, switch, HALError, HALException, WIN32
+from .lang import is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, WIN32
 
 
-class FormatterError(HALException):
+class FormatterError(BatCaveException):
     'Formatter Exceptions'
-    BAD_FORMAT = HALError(1, Template('Unknown output format requested: $format'))
+    BAD_FORMAT = BatCaveError(1, Template('Unknown output format requested: $format'))
 
 
-class ItemError(HALException):
+class ItemError(BatCaveException):
     'Item Exceptions'
-    MISSING_ATTRIBUTE = HALError(1, Template('$attr'))
+    MISSING_ATTRIBUTE = BatCaveError(1, Template('$attr'))
 
 
-class ExpanderError(HALException):
+class ExpanderError(BatCaveException):
     'Expander Exceptions'
-    NO_POST_DELIMITER = HALError(1, Template('No closing delimiter found in $substr'))
-    NO_VARIABLE = HALError(2, Template('No replacement found for variable ($var) in: $thing'))
+    NO_POST_DELIMITER = BatCaveError(1, Template('No closing delimiter found in $substr'))
+    NO_VARIABLE = BatCaveError(2, Template('No replacement found for variable ($var) in: $thing'))
 
 
-class ProcedureError(HALException):
+class ProcedureError(BatCaveException):
     'Procedure Exceptions'
-    WRONG_SCHEMA = HALError(1, Template('Procedure specified in wrong schema ($schema). Please use schema $expected.'))
-    UNKNOWN_ENVIRONMENT = HALError(2, Template('Unknown environment requested: $env.'))
-    UNKNOWN_LIBRARY = HALError(3, Template('Unable to locate import: $lib.'))
-    BAD_FLAG = HALError(4, Template('Invalid value for flag: $value'))
-    EXPANSION_ERROR = HALError(5, Template('$err\n  On line: $text'))
+    WRONG_SCHEMA = BatCaveError(1, Template('Procedure specified in wrong schema ($schema). Please use schema $expected.'))
+    UNKNOWN_ENVIRONMENT = BatCaveError(2, Template('Unknown environment requested: $env.'))
+    UNKNOWN_LIBRARY = BatCaveError(3, Template('Unable to locate import: $lib.'))
+    BAD_FLAG = BatCaveError(4, Template('Invalid value for flag: $value'))
+    EXPANSION_ERROR = BatCaveError(5, Template('$err\n  On line: $text'))
 
 
 class Formatter:

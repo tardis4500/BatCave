@@ -14,25 +14,25 @@ from kubernetes.stream import stream as k8s_process
 from yaml import safe_load as yaml_load
 
 # Import internal modules
-from .lang import HALError, HALException
+from .lang import BatCaveError, BatCaveException
 from .sysutil import SysCmdRunner
 
 kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
 
 
-class ClusterError(HALException):
+class ClusterError(BatCaveException):
     'Class the handle cluster exceptions'
-    BAD_ARGS = HALError(1, Template('$error'))
-    TIMEOUT = HALError(2, Template('Timeout waiting for $seconds seconds for $what $action'))
+    BAD_ARGS = BatCaveError(1, Template('$error'))
+    TIMEOUT = BatCaveError(2, Template('Timeout waiting for $seconds seconds for $what $action'))
 
 
-class PodError(HALException):
+class PodError(BatCaveException):
     'Class to handle pod exceptions'
-    BAD_COPY_FILENAME = HALError(1, Template('File not copied $mode, check filenames'))
-    COPY_ERROR = HALError(2, Template('Error copying pod file: $errlines'))
-    EXEC_ERROR = HALError(3, Template('Error executing pod command: $errlines'))
-    FILE_NOT_FOUND = HALError(4, Template('File not found in pod: $filename'))
-    INVALID_COPY_MODE = HALError(5, Template('Invalid pod file copy mode ($mode). Must be one of: (in, out)'))
+    BAD_COPY_FILENAME = BatCaveError(1, Template('File not copied $mode, check filenames'))
+    COPY_ERROR = BatCaveError(2, Template('Error copying pod file: $errlines'))
+    EXEC_ERROR = BatCaveError(3, Template('Error executing pod command: $errlines'))
+    FILE_NOT_FOUND = BatCaveError(4, Template('File not found in pod: $filename'))
+    INVALID_COPY_MODE = BatCaveError(5, Template('Invalid pod file copy mode ($mode). Must be one of: (in, out)'))
 
 
 class Cluster:

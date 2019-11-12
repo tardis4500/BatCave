@@ -11,7 +11,7 @@ from string import Template
 from docker import DockerClient
 
 # Import internal modules
-from .lang import switch, HALError, HALException, WIN32
+from .lang import switch, BatCaveError, BatCaveException, WIN32
 from .sysutil import SysCmdRunner
 
 _CLOUD_TYPES = Enum('cloud_types', ('local', 'gcloud', 'dockerhub'))
@@ -19,11 +19,11 @@ _CLOUD_TYPES = Enum('cloud_types', ('local', 'gcloud', 'dockerhub'))
 gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
 
 
-class CloudError(HALException):
+class CloudError(BatCaveException):
     'Class to handle cloud exceptions'
-    INVALIDTYPE = HALError(1, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in _CLOUD_TYPES])))
-    INVALIDTYPE_FOR_OPERATION = HALError(2, Template('Invalid Cloud type ($ctype) for this operation'))
-    IMAGE_ERROR = HALError(3, Template('Error ${action}ing image: $err'))
+    INVALIDTYPE = BatCaveError(1, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in _CLOUD_TYPES])))
+    INVALIDTYPE_FOR_OPERATION = BatCaveError(2, Template('Invalid Cloud type ($ctype) for this operation'))
+    IMAGE_ERROR = BatCaveError(3, Template('Error ${action}ing image: $err'))
 
 
 class Cloud:

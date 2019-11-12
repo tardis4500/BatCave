@@ -1,4 +1,4 @@
-﻿'Interface to generalize Code Management System interactions'
+'Interface to generalize Code Management System interactions'
 # pylint: disable=C0302,I1101
 # cSpell:ignore checkin, unedit
 
@@ -19,7 +19,7 @@ from tempfile import mkdtemp
 
 # Import internal modules
 from .sysutil import popd, pushd, rmtree_hard
-from .lang import is_debug, switch, HALError, HALException, WIN32
+from .lang import is_debug, switch, BatCaveError, BatCaveException, WIN32
 
 if WIN32:
     import win32api
@@ -42,21 +42,21 @@ else:
 _CLIENT_TYPES = Enum('client_types', ('file', 'git', 'perforce'))
 
 
-class CMSError(HALException):
+class CMSError(BatCaveException):
     'Class for CMS errors'
-    INVALIDTYPE = HALError(1, Template('Invalid CMS type ($ctype). Must be one of: ' + str([t.name for t in _CLIENT_TYPES])))
-    CONNECT_FAILED = HALError(2, Template('Unable to connect to CMS server on $connectinfo'))
-    CLIENT_NAME_REQUIRED = HALError(3, 'Name required if client is not being created')
-    CLIENT_DATA_INVALID = HALError(4, Template('$data not valid if client exists'))
-    CHANGELIST_NOT_EDITABLE = HALError(5, Template('changelist $changelist not opened for edit'))
-    NO_CMS_FILE = HALError(6, Template('Unable to get CMS file: $filename'))
-    INVALIDTYPE_FOR_OPERATION = HALError(7, Template('Invalid CMS type ($ctype) for this operation'))
-    PROJECT_MAPPING_REQUIRED = HALError(8, 'A project is required')
-    INVALIDTYPE_FOR_FIND = HALError(9, Template('Invalid find type: $file_type'))
-    ATTRIBUTE_NOT_FOUND = HALError(10, Template('No such attribute: $attr'))
-    GIT_FAILURE = HALError(11, Template('Git Error:\n$msg'))
-    CLIENT_NOT_FOUND = HALError(12, Template('Client $name not found'))
-    CONNECTINFO_REQUIRED = HALError(13, Template('Connectinfo required for CMS type ($ctype)'))
+    INVALIDTYPE = BatCaveError(1, Template('Invalid CMS type ($ctype). Must be one of: ' + str([t.name for t in _CLIENT_TYPES])))
+    CONNECT_FAILED = BatCaveError(2, Template('Unable to connect to CMS server on $connectinfo'))
+    CLIENT_NAME_REQUIRED = BatCaveError(3, 'Name required if client is not being created')
+    CLIENT_DATA_INVALID = BatCaveError(4, Template('$data not valid if client exists'))
+    CHANGELIST_NOT_EDITABLE = BatCaveError(5, Template('changelist $changelist not opened for edit'))
+    NO_CMS_FILE = BatCaveError(6, Template('Unable to get CMS file: $filename'))
+    INVALIDTYPE_FOR_OPERATION = BatCaveError(7, Template('Invalid CMS type ($ctype) for this operation'))
+    PROJECT_MAPPING_REQUIRED = BatCaveError(8, 'A project is required')
+    INVALIDTYPE_FOR_FIND = BatCaveError(9, Template('Invalid find type: $file_type'))
+    ATTRIBUTE_NOT_FOUND = BatCaveError(10, Template('No such attribute: $attr'))
+    GIT_FAILURE = BatCaveError(11, Template('Git Error:\n$msg'))
+    CLIENT_NOT_FOUND = BatCaveError(12, Template('Client $name not found'))
+    CONNECTINFO_REQUIRED = BatCaveError(13, Template('Connectinfo required for CMS type ($ctype)'))
 
 
 class Label:

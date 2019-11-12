@@ -4,4 +4,4 @@ requests
 setuptools
 twine
 xmlrunner
-pywin32; sys_platform == 'win32'
+pywin32==225; sys_platform == 'win32'

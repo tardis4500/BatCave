@@ -5,14 +5,14 @@ from string import Template
 from xml.etree.ElementTree import ParseError
 
 from .data import DataError, DataSource
-from .lang import switch, HALError, HALException
+from .lang import switch, BatCaveError, BatCaveException
 
 
-class ConfigurationError(HALException):
+class ConfigurationError(BatCaveException):
     'Class for EnvironmentConfiguration related errors'
-    CONFIG_NOT_FOUND = HALError(1, Template('Unable to find the configuration file: $file'))
-    BAD_FORMAT = HALError(2, Template('Bad format for configuration file: $file'))
-    BAD_SCHEMA = HALError(3, Template('Invalid schema in configuration file: $file'))
+    CONFIG_NOT_FOUND = BatCaveError(1, Template('Unable to find the configuration file: $file'))
+    BAD_FORMAT = BatCaveError(2, Template('Bad format for configuration file: $file'))
+    BAD_SCHEMA = BatCaveError(3, Template('Invalid schema in configuration file: $file'))
 
 
 class ConfigCollection:

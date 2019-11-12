@@ -6,14 +6,14 @@ from string import Template
 
 # Import internal modules
 from .version import get_version_info, VERSION_STYLES
-from .lang import str_to_pythonval, HALError, HALException
+from .lang import str_to_pythonval, BatCaveError, BatCaveException
 
 
-class CommandParseError(HALException):
+class CommandParseError(BatCaveException):
     'Class for LoadBalancer realted errors'
-    NO_COMMAND = HALError(1, 'No command specified')
-    BAD_COMMAND = HALError(2, Template('Invalid command: $cmd'))
-    BAD_ARGUMENTS = HALError(3, Template('incorrect number of arguments for command $cmd'))
+    NO_COMMAND = BatCaveError(1, 'No command specified')
+    BAD_COMMAND = BatCaveError(2, Template('Invalid command: $cmd'))
+    BAD_ARGUMENTS = BatCaveError(3, Template('incorrect number of arguments for command $cmd'))
 
 
 class Argument:

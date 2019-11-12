@@ -1,4 +1,4 @@
-﻿'''Module for creating generic reports
+'''Module for creating generic reports
     The simplest usage would be:
         report = reporter.Report('REPORT HEADER', 'REPORT FOOTER')
 

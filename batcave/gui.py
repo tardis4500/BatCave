@@ -1,4 +1,4 @@
-﻿'Module to provide PyQt helper functions'
+'Module to provide PyQt helper functions'
 # pylint: disable=C0103
 
 # Import standard modules
@@ -48,7 +48,7 @@ class Message(MsgStr):
                  'MISSING_INFO': Template('You must $how a $what')}
 
 
-class HALValidator:
+class BatCaveValidator:
     'Class to support control validation'
     def __init__(self, callback, falseval, how, what):
         self.callback = callback
@@ -57,7 +57,7 @@ class HALValidator:
         self.what = what
 
 
-class HALGUIOutput:
+class BatCaveGUIOutput:
     'Class to manage output to a widget.'
     def __init__(self, widget):
         self.widget = widget
@@ -67,7 +67,7 @@ class HALGUIOutput:
         self.widget.append(output)
 
 
-class HALBaseGUI:
+class BatCaveBaseGUI:
     ''' The base class for the simplified GUI support
         This class cannot be used by itself but must be paired with another PyQt class '''
 
@@ -91,7 +91,7 @@ class HALBaseGUI:
     def redirect_output(self, widget):
         'Redirects stdout and stderr to the specified widget'
         self._saved_output_streams = (sys.stdout, sys.stderr)
-        sys.stdout = sys.stderr = HALGUIOutput(widget)
+        sys.stdout = sys.stderr = BatCaveGUIOutput(widget)
 
     def closeEvent(self, event):
         'Standard method'
@@ -100,7 +100,7 @@ class HALBaseGUI:
                 (sys.stdout, sys.stderr) = self._saved_output_streams
 
 
-class HALMainWindow(QMainWindow, HALBaseGUI):
+class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
     'Provides functionality for a main window'
     def __init__(self, parent=None, title=None, icon=None):
         super().__init__(parent, title=(title if title else version.get_version_info(version.VERSION_STYLES.brief)), icon=icon)
@@ -111,7 +111,7 @@ class HALMainWindow(QMainWindow, HALBaseGUI):
         MessageBox(self, version.get_version_info(version.VERSION_STYLES.aboutbox), MessageBox.MESSAGE_TYPES.about).exec()
 
 
-class HALDialog(QDialog, HALBaseGUI):
+class BatCaveDialog(QDialog, BatCaveBaseGUI):
     'Provides functionality for a dialog box window'
     def __init__(self, **args):
         super().__init__(**args)

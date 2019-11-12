@@ -1,4 +1,4 @@
-﻿'Version interface'
+'Version interface'
 # cSpell:ignore pyqt
 
 # Import standard modules

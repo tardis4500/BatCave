@@ -8,19 +8,19 @@ from string import Template
 # Import internal modules
 from .logger import Logger
 from .sysutil import LockFile
-from .lang import is_debug, HALError, HALException
+from .lang import is_debug, BatCaveError, BatCaveException
 
 
-class StateMachineError(HALException):
+class StateMachineError(BatCaveException):
     'State machine exception class.'
-    CRASHED = HALError(1, Template('State machine crashed in state: $state'))
-    BAD_STATUS = HALError(2, Template('Unknown status: $status'))
-    BAD_ENTRY = HALError(3, 'Attempt to enter next state before exiting current one')
-    BAD_EXIT = HALError(4, 'Attempt to exit state before entering')
-    BAD_ROLLBACK = HALError(5, 'Attempt to rollback state before entering')
-    DONE = HALError(6, 'Attempt to enter state after final state')
-    ALREADY_STARTED = HALError(7, 'State machine already started')
-    NOT_STARTED = HALError(8, 'State machine not started')
+    CRASHED = BatCaveError(1, Template('State machine crashed in state: $state'))
+    BAD_STATUS = BatCaveError(2, Template('Unknown status: $status'))
+    BAD_ENTRY = BatCaveError(3, 'Attempt to enter next state before exiting current one')
+    BAD_EXIT = BatCaveError(4, 'Attempt to exit state before entering')
+    BAD_ROLLBACK = BatCaveError(5, 'Attempt to rollback state before entering')
+    DONE = BatCaveError(6, 'Attempt to enter state after final state')
+    ALREADY_STARTED = BatCaveError(7, 'State machine already started')
+    NOT_STARTED = BatCaveError(8, 'State machine not started')
 
 
 class StateMachine:

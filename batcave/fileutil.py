@@ -13,18 +13,18 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 # Import internal modules
 from .sysutil import popd, pushd
-from .lang import switch, HALError, HALException
+from .lang import switch, BatCaveError, BatCaveException
 
 
-class ConvertError(HALException):
+class ConvertError(BatCaveException):
     'Error class for conversion errors'
-    BACKUP_EXISTS = HALError(1, Template('$file already exists'))
+    BACKUP_EXISTS = BatCaveError(1, Template('$file already exists'))
 
 
-class PackError(HALException):
+class PackError(BatCaveException):
     'Error class for packing errors'
-    NO_FILES = HALError(1, 'No files to add')
-    UNKNOWN_ARCHIVE = HALError(2, Template('Unknown archive type: $arctype'))
+    NO_FILES = BatCaveError(1, 'No files to add')
+    UNKNOWN_ARCHIVE = BatCaveError(2, Template('Unknown archive type: $arctype'))
 
 
 CONVERSION_MODES = Enum('conversion_modes', ('to_unix', 'to_dos'))

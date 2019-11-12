@@ -1,4 +1,4 @@
-﻿'Basic language support'
+'Basic language support'
 
 # Import standard modules
 from os import getenv
@@ -50,8 +50,8 @@ class MsgStr:
         return _str
 
 
-class HALException(Exception, MsgStr):
-    'Generic Class for HAL exceptions'
+class BatCaveException(Exception, MsgStr):
+    'Generic Class for BatCave exceptions'
     _messages = dict()
 
     def __init__(self, errobj, **variables):
@@ -65,16 +65,16 @@ class HALException(Exception, MsgStr):
         return MsgStr.__str__(self)
 
 
-class HALError:
+class BatCaveError:
     'Provides interface for inspecting exceptions'
     def __init__(self, code, msg):
         self.code = code
         self.msg = msg
 
 
-class PythonVersionError(HALException):
+class PythonVersionError(BatCaveException):
     'Used to indicate the wrong version of Python'
-    WRONG_VERSION = HALError(1, Template('Python $needed required but $used used'))
+    WRONG_VERSION = BatCaveError(1, Template('Python $needed required but $used used'))
 
 
 class switch:  # pylint: disable=C0103

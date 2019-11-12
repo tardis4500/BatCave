@@ -1,4 +1,4 @@
-''' HAL Data handling module
+''' BatCave Data handling module
     Data source definitions:
         TEXT
             source - a text file with '>NAME' delimiting tables
@@ -59,24 +59,24 @@ from xml.parsers import expat
 import xml.etree.ElementTree as xml_etree
 
 # Import internal modules
-from .lang import switch, HALError, HALException
+from .lang import switch, BatCaveError, BatCaveException
 
 _SOURCE_TYPES = Enum('source_types', ('text', 'ini', 'pickle', 'xml_single', 'xml_flat', 'xml'))
 
 
-class DataError(HALException):
+class DataError(BatCaveException):
     'Class for Data errors'
-    INVALIDTYPE = HALError(1, 'Invalid data source type. Must be one of: ' + str([t.name for t in _SOURCE_TYPES]))
-    NOTABLE = HALError(2, Template('No table named "$table_name" in data source "$source_name"'))
-    NOTSUPPORTED = HALError(3, Template('Function "$function" not supported for source type "$source_type"'))
-    FILEOPEN = HALError(4, Template('Unable to open file: $errmsg'))
-    WRONGSCHEMA = HALError(5, Template('Wrong schema ($schema) specified for data source ($found)'))
-    BADURL = HALError(6, Template('No valid DataSource found at URL: $url'))
+    INVALIDTYPE = BatCaveError(1, 'Invalid data source type. Must be one of: ' + str([t.name for t in _SOURCE_TYPES]))
+    NOTABLE = BatCaveError(2, Template('No table named "$table_name" in data source "$source_name"'))
+    NOTSUPPORTED = BatCaveError(3, Template('Function "$function" not supported for source type "$source_type"'))
+    FILEOPEN = BatCaveError(4, Template('Unable to open file: $errmsg'))
+    WRONGSCHEMA = BatCaveError(5, Template('Wrong schema ($schema) specified for data source ($found)'))
+    BADURL = BatCaveError(6, Template('No valid DataSource found at URL: $url'))
 
 
 class TextError(DataError):
     'Class for text source type data errors'
-    BADCOLUMN = HALError(1, Template('invalid column: $col\nonline $line'))
+    BADCOLUMN = BatCaveError(1, Template('invalid column: $col\nonline $line'))
 
 
 class PickleError(DataError):
@@ -85,7 +85,7 @@ class PickleError(DataError):
 
 class XMLError(DataError):
     'Class for XML source type data errors'
-    BADROOT = HALError(1, Template('the root element "$root_name" is not the one requested ($expected) in $source_name'))
+    BADROOT = BatCaveError(1, Template('the root element "$root_name" is not the one requested ($expected) in $source_name'))
 
 
 class DataSource:

@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed
   - Create PyPi facing DOCUMENTATION.md. (GitLab #26)
+  - More variable renames due to rename to BatCave. (GitLab #27)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
+  - More variable renames due to rename to BatCave. (GitLab #27)
 
 ## Release History
 
@@ -23,7 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Added better control on k8s.Cluster.create_job with wait_for and timeout options. (GitLab #24)
 
 - Changed
-  - Renamed hallog to logger. (GitLab #25)
+  - Renamed logger module. (GitLab #25)
   - Converted README and CHANGELOG from restructuredText to Markdown.
 
 ### [37.1.2] - 2019-10-29
@@ -576,7 +578,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Added support for adding and removing servermgr.ScheduledTask.
 
 - Changed
-  - Added ability to use hallog.Logger without writing to a file.
+  - Added ability to use Logger without writing to a file.
   - Make sure npm calls fail when returning a non-zero error code.
   - Fixed issue with setting a null list of version files on MSBuildBuilder.
   - Update docker to 3.1.4.
@@ -817,7 +819,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Added MSTestUnitTester.
   - Added support for running remote commands on a different OS.
   - Add cross-platform support to servermgr module.
-  - Moved Procedure classes from HAL to new expander module.
+  - Moved Procedure classes to new expander module.
 
 - Changed
   - Moved Expander from fileutil to new expander module.
@@ -983,7 +985,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Catch any PyQt load failure in version module to protect against missing GNUC libs.
   - Determine users home directory in a cross-platform way.
-  - Rename some variables from 'hal.'
+  - Rename some variables.
 
 ### [10.0.1] - 2017-06-09
 
@@ -1093,7 +1095,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [4.3.1] - 2017-04-03
 
 - Added
-  - Provide log_filename property for hallog.Logger.
+  - Provide log_filename property for Logger.
   - Fix system command call in sqlscript.
 
 - Changed
@@ -1120,7 +1122,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Provide iispy.IISInstance.exists property.
   - Default cmds.Commander option of --quiet.
   - cmds.Commander --raise-on-error parameter to throw errors when parser problem.
-  - Ability to get current hallog.Logger.level.
+  - Ability to get current Logger.level.
 
 - Changed
   - Use closing and suppress from contextlib.
@@ -1217,7 +1219,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Cleanup fileutil.spew().
 
 - Removed
-  - Move procedure module to HAL.
+  - Move procedure module to BatCave.
 
 ### [0.10] - 2017-02-07
 
@@ -1249,7 +1251,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Upgraded requests module.
   - Moved is_debug from module initialization to lang submodule.
-  - Rename debug environment variable from HAL_DEBUG.
+  - Rename debug environment variable.
   - Use new Python 3 super().
   - Update syscmd to use new Python 3 subprocess module features.
   - Cleanup imports.
@@ -1299,5 +1301,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Initial release.
 
 <!--- cSpell:ignore platarch, cmds, psutil, servermgr, pywin, sqlscript, verfiles, cloudmgr, qbpy, pkgtype, unittest, recopytree, pathlib, pypiwin, pythonval, fileutil
-      cSpell:ignore hallog, cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
+      cSpell:ignore cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
       cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd -->

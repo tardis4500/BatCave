@@ -29,7 +29,7 @@ from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
 
 # Import internal modules
 from .sysutil import rmpath, syscmd, CMDError
-from .lang import is_debug, switch, HALError, HALException, WIN32
+from .lang import is_debug, switch, BatCaveError, BatCaveException, WIN32
 
 if WIN32:
     from pywintypes import com_error  # pylint: disable=E0611
@@ -44,32 +44,32 @@ else:
 _STATUS_CHECK_INTERVAL = 2
 
 
-class LoadBalancerError(HALException):
+class LoadBalancerError(BatCaveException):
     'Class for LoadBalancer related error'
-    INVALID_OBJECT = HALError(1, Template('Requested $type not in load balancer: $name'))
-    UNKNOWN_SERVER_SIGNAL = HALError(2, Template('Unknown server signal: $signal'))
+    INVALID_OBJECT = BatCaveError(1, Template('Requested $type not in load balancer: $name'))
+    UNKNOWN_SERVER_SIGNAL = BatCaveError(2, Template('Unknown server signal: $signal'))
 
 
-class ServerObjectManagementError(HALException):
+class ServerObjectManagementError(BatCaveException):
     'Class for Service related errors'
-    UNKNOWN_OBJECT_STATE = HALError(1, Template('Unknown object state: $state'))
-    UNKNOWN_OBJECT_SIGNAL = HALError(2, Template('Unknown object signal: $signal'))
-    BAD_TRANSITION = HALError(3, Template('Invalid state transition from $from_state to $to_state'))
-    SERVER_NOT_FOUND = HALError(4, Template('No server found: $server'))
-    REMOTE_CONNECTION_ERROR = HALError(5, Template('Unable to connect to remote server $server: $msg'))
-    NOT_UNIQUE = HALError(6, Template('Unable to locate unique $type according to $filters'))
-    SERVICE_CONTROL_ERROR = HALError(7, Template('Error sending $signal signal to service: $ret'))
-    OBJECT_NOT_FOUND = HALError(8, Template('No $type object found'))
-    BAD_FILTER = HALError(9, 'One and only one filter must be provided for this object')
-    REMOTE_NOT_SUPPORTED = HALError(10, 'Remote objects are not supported for Linux servers')
-    STATUS_CHECK_TIMEOUT = HALError(11, Template('Timeout waiting for expected $type state: $state'))
-    WMI_ERROR = HALError(12, Template('WMI error on server $server: $msg'))
+    UNKNOWN_OBJECT_STATE = BatCaveError(1, Template('Unknown object state: $state'))
+    UNKNOWN_OBJECT_SIGNAL = BatCaveError(2, Template('Unknown object signal: $signal'))
+    BAD_TRANSITION = BatCaveError(3, Template('Invalid state transition from $from_state to $to_state'))
+    SERVER_NOT_FOUND = BatCaveError(4, Template('No server found: $server'))
+    REMOTE_CONNECTION_ERROR = BatCaveError(5, Template('Unable to connect to remote server $server: $msg'))
+    NOT_UNIQUE = BatCaveError(6, Template('Unable to locate unique $type according to $filters'))
+    SERVICE_CONTROL_ERROR = BatCaveError(7, Template('Error sending $signal signal to service: $ret'))
+    OBJECT_NOT_FOUND = BatCaveError(8, Template('No $type object found'))
+    BAD_FILTER = BatCaveError(9, 'One and only one filter must be provided for this object')
+    REMOTE_NOT_SUPPORTED = BatCaveError(10, 'Remote objects are not supported for Linux servers')
+    STATUS_CHECK_TIMEOUT = BatCaveError(11, Template('Timeout waiting for expected $type state: $state'))
+    WMI_ERROR = BatCaveError(12, Template('WMI error on server $server: $msg'))
 
 
-class ServerPathError(HALException):
+class ServerPathError(BatCaveException):
     'Class for ServerPath related errors'
-    REMOTE_COPY_SPACE_ERROR = HALError(1, Template('Error during robocopy, possible lack of disk space on $dest'))
-    UNSUPPORTED = HALError(2, 'This function is only supported for remote Windows servers from Windows servers')
+    REMOTE_COPY_SPACE_ERROR = BatCaveError(1, Template('Error during robocopy, possible lack of disk space on $dest'))
+    UNSUPPORTED = BatCaveError(2, 'This function is only supported for remote Windows servers from Windows servers')
 
 
 class LoadBalancer:

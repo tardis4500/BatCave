@@ -9,28 +9,28 @@ from xml.etree.ElementTree import fromstring as xmlparse_str, fromstringlist as 
 
 # Import internal modules
 from .sysutil import syscmd, CMDError
-from .lang import bool_to_str, str_to_pythonval, HALError, HALException
+from .lang import bool_to_str, str_to_pythonval, BatCaveError, BatCaveException
 
 
-class AppCmdError(HALException):
+class AppCmdError(BatCaveException):
     'Class for IISConfiguration errors'
-    SYS_CMD_ERROR = HALError(1, Template('error running appcmd: $message'))
+    SYS_CMD_ERROR = BatCaveError(1, Template('error running appcmd: $message'))
 
 
-class IISConfigurationError(HALException):
+class IISConfigurationError(BatCaveException):
     'Class for IISConfiguration errors'
-    PARSE_ERROR = HALError(1, Template("unable to locate '$expected' in configuration"))
+    PARSE_ERROR = BatCaveError(1, Template("unable to locate '$expected' in configuration"))
 
 
-class IISAdvancedLogError(HALException):
+class IISAdvancedLogError(BatCaveException):
     'Class for IISAdvancedLog errors'
-    INVALID_FIELD = HALError(1, Template('attempt to add non-existent field: $field'))
-    NOT_INSTALLED = HALError(2, 'IIS Advanced Logging is not installed on the target system')
+    INVALID_FIELD = BatCaveError(1, Template('attempt to add non-existent field: $field'))
+    NOT_INSTALLED = BatCaveError(2, 'IIS Advanced Logging is not installed on the target system')
 
 
-class IISObjectError(HALException):
+class IISObjectError(BatCaveException):
     'Class for IISObject errors'
-    UNKNOWN_TYPE_ERROR = HALError(1, Template('Unknown IISObject type: $type'))
+    UNKNOWN_TYPE_ERROR = BatCaveError(1, Template('Unknown IISObject type: $type'))
 
 
 class IISObject:

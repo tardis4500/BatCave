@@ -14,7 +14,7 @@ from string import Template
 from subprocess import Popen, PIPE
 
 # Import internal modules
-from .lang import flatten_string_list, is_debug, HALError, HALException, WIN32
+from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, WIN32
 
 if WIN32:
     import msvcrt
@@ -33,28 +33,28 @@ S_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 S_770 = S_IRWXU | S_IRWXG
 
 
-class CMDError(HALException):
+class CMDError(BatCaveException):
     'Exceptions which can be raised when running system commands'
-    CMDTYPE_NOT_FOUND = HALError(1, Template('Invalid Command type: $cmdtype'))
-    CMD_NOT_FOUND = HALError(2, Template('Command not found when running: $cmd'))
-    CMD_ERROR = HALError(3, '')
-    UNSUPPORTED = HALError(4, Template('$func is not supported for $context'))
+    CMDTYPE_NOT_FOUND = BatCaveError(1, Template('Invalid Command type: $cmdtype'))
+    CMD_NOT_FOUND = BatCaveError(2, Template('Command not found when running: $cmd'))
+    CMD_ERROR = BatCaveError(3, '')
+    UNSUPPORTED = BatCaveError(4, Template('$func is not supported for $context'))
 
     def __str__(self):
         if self._errobj.code == CMDError.CMD_ERROR.code:
             errlines = self.vars['errlines'] if self.vars['errlines'] else self.vars['outlines']
             return f"Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n" + ''.join(errlines)
-        return HALException.__str__(self)
+        return BatCaveException.__str__(self)
 
 
-class LockError(HALException):
+class LockError(BatCaveException):
     'Used to indicate an unsupported platform'
-    NO_LOCK = HALError(1, Template('unable to get lock'))
+    NO_LOCK = BatCaveError(1, Template('unable to get lock'))
 
 
-class PlatformError(HALException):
+class PlatformError(BatCaveException):
     'Used to indicate an unsupported platform'
-    UNSUPPORTED = HALError(1, Template('platform unsupported: $platform'))
+    UNSUPPORTED = BatCaveError(1, Template('platform unsupported: $platform'))
 
 
 LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))

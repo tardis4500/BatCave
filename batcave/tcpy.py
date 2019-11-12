@@ -11,12 +11,12 @@ from requests import certs, codes, exceptions
 from requests.auth import HTTPBasicAuth
 
 # Import internal modules
-from .lang import HALError, HALException, FROZEN, BATCAVE_HOME
+from .lang import BatCaveError, BatCaveException, FROZEN, BATCAVE_HOME
 
 
-class TeamCityError(HALException):
+class TeamCityError(BatCaveException):
     'Container for TeamCity exceptions'
-    INVALID_CONFIG = HALError(1, Template('Invalid configuration ID: $id'))
+    INVALID_CONFIG = BatCaveError(1, Template('Invalid configuration ID: $id'))
 
 
 class TCBuildConfig:
