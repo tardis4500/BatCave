@@ -1,4 +1,4 @@
-'This provides a Pythonic cloud management interface'
+"""This module provides utilities for managing cloud resources."""
 
 # Import standard modules
 from ast import literal_eval

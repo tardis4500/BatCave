@@ -1,4 +1,5 @@
-'Unit tests for the package state machine module'
+"""Unit tests for the statemachine module."""
+
 # pylint: disable=C0103,C0111,W0212
 
 from unittest import main, TestCase

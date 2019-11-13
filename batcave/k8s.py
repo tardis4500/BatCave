@@ -1,4 +1,5 @@
-'This provides a more Pythonic interface to the kubernetes module'
+"""This module provides a simplified interface to the kubernetes module."""
+
 # cSpell:ignore kube, kubeconfig
 
 # # Import standard modules

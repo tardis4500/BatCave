@@ -1,4 +1,5 @@
-'This provides a Pythonic IIS management interface'
+"""This module provides a Pythonic interface to work with Internet Information Server."""
+
 # cSpell:ignore iisreset, inetsrv, syscmd, vdir
 
 # Import standard modules

@@ -1,4 +1,5 @@
-'Interface to generalize Code Management System interactions'
+"""This module provides utilities for managing source code systems."""
+
 # pylint: disable=C0302,I1101
 # cSpell:ignore checkin, unedit
 

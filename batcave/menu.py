@@ -1,4 +1,4 @@
-'Creates a simple command line menu'
+"""This module provides utilities for creating command line menus."""
 
 
 class MenuItem:

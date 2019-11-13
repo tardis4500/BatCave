@@ -1,4 +1,5 @@
-'This provides an interface to manage configurations'
+"""This module provides utilities for managing configurations."""
+
 # Import standard modules
 from pathlib import Path
 from string import Template

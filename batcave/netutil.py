@@ -1,4 +1,5 @@
-'Module with some basic network support'
+"""This module provides utilities for working with network services."""
+
 # Import standard modules
 from smtplib import SMTP
 

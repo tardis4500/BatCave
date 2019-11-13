@@ -1,4 +1,5 @@
-'''Module for creating generic reports
+"""This module provides utilities for creating reports.
+
     The simplest usage would be:
         report = reporter.Report('REPORT HEADER', 'REPORT FOOTER')
 
@@ -35,7 +36,7 @@
 
     A simple report can be output with
         print(report)
-'''
+"""
 
 # Import standard modules
 from copy import deepcopy

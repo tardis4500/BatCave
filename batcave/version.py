@@ -1,4 +1,5 @@
-'Version interface'
+"""This module provides utilities for working with versions."""
+
 # cSpell:ignore pyqt
 
 # Import standard modules
@@ -37,7 +38,7 @@ def get_version_info(style=VERSION_STYLES.full, plattype='batcave_run', extra_in
             'Python Version: ' + sys_version]
     if PYQT_LOADED:
         info.append('PyQt Version: ' + PYQT_LOADED)
-    from . import cms
+    from . import cms  # pylint: disable=import-outside-toplevel
     if cms.P4_LOADED or cms.GIT_LOADED:
         info.append('CMS Support:')
         if cms.P4_LOADED:

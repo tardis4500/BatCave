@@ -1,4 +1,5 @@
-'Setuptools setup script for BatCave'
+"""Setuptools setup script for BatCave."""
+
 # cSpell:ignore aarch, psutil pywin
 
 from pathlib import Path

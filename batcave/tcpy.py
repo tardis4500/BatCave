@@ -1,4 +1,5 @@
-'TeamCity API interface'
+"""This module provides a Pythonic interface to the TeamCity RESTful API."""
+
 # cSpell:ignore cacert
 
 # Import standard modules

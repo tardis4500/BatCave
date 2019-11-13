@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-'This programs drives the build and release automation'
+"""This programs drives the BatCave build and release automation."""
+
 # cSpell:ignore bdist, bldverfile, checkin, cibuild, sdist, syscmd
 
 # Import standard modules

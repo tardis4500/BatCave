@@ -1,4 +1,4 @@
-'module to return information about platforms and architectures'
+"""This module provides a simplified interface to the standard platform module."""
 
 # Import standard modules
 from pathlib import Path

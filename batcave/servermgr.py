@@ -1,4 +1,5 @@
-'This provides a Pythonic server management interface'
+"""This module provides utilities for working with servers."""
+
 # pylint: disable=C0103
 # cSpell:ignore cmdline, ipaddress, lbvserver, nssrc, sbin, sslvserver, sslcertkey, vservername, wsahost
 

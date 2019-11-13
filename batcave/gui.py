@@ -1,4 +1,5 @@
-'Module to provide PyQt helper functions'
+"""This module provides a simplified interface to the PyQt5 module."""
+
 # pylint: disable=C0103
 
 # Import standard modules

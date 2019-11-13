@@ -1,4 +1,4 @@
-'Interface for building automation'
+"""This module provides utilities for building automation."""
 
 # Import standard modules
 import sys
@@ -9,7 +9,8 @@ from .sysutil import popd, SysCmdRunner
 
 
 class ActionCommandRunner(SysCmdRunner):
-    'Class to wrap SysCmdRunner for simple usage with auto-logging.'
+    """Class to wrap SysCmdRunner for simple usage with auto-logging."""
+
     def __init__(self, command, guard='', default_args=tuple(), **keys):
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **keys)
         self.guard = guard
@@ -21,15 +22,16 @@ class ActionCommandRunner(SysCmdRunner):
 
 
 class Action:
-    ''' The common base class for all actions
-        This is a virtual class and the inheriting class must at least include a _execute() method
-        The action is invoked by calling the execute() method this will run the following methods:
+    """The common base class for all actions.
+       This is a virtual class and the inheriting class must at least include a _execute() method
+       The action is invoked by calling the execute() method this will run the following methods:
             pre()
             _execute()
             post()
-        These are run in a try to catch any exceptions after which
+       These are run in a try to catch any exceptions after which
             always_post()
-        is run '''
+       is run
+    """
 
     MESSAGE_GUARD = f"{'*'*70}"
 

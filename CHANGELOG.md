@@ -12,8 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Create PyPi facing DOCUMENTATION.md. (GitLab #26)
   - More variable renames due to rename to BatCave. (GitLab #27)
+  - Improved docstrings. (GitLab #29)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
-  - More variable renames due to rename to BatCave. (GitLab #27)
 
 ## Release History
 
@@ -1300,6 +1300,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Initial release.
 
-<!--- cSpell:ignore platarch, cmds, psutil, servermgr, pywin, sqlscript, verfiles, cloudmgr, qbpy, pkgtype, unittest, recopytree, pathlib, pypiwin, pythonval, fileutil
-      cSpell:ignore cmsclient, civars, chmodtree, sysutl, cmdspec, webapp, virtualwrapper, configmgr, buildname, vsver, hasapp, useshell, GNUC, envcfg, pipenv
-      cSpell:ignore statemachine, psexec, getattr, contextlib, logname, xmltodict, ignorestderr, USERPROFILE, netutil, assemblyinfo, setattr, iispy, virtualenv, prdb, syscmd -->
+<!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
+      cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
+      cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
+      cSpell:ignore setattr iispy virtualenv prdb syscmd -->

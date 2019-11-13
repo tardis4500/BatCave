@@ -1,4 +1,5 @@
-'Module with file utilities.'
+"""This module provides utilities for working with files."""
+
 # Import standard modules
 from bz2 import BZ2File
 from enum import Enum

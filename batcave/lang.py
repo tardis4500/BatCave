@@ -1,4 +1,4 @@
-'Basic language support'
+"""This module provides Python language utilities."""
 
 # Import standard modules
 from os import getenv

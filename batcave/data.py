@@ -1,4 +1,5 @@
-''' BatCave Data handling module
+"""This module provides utilities for managing data sources.
+
     Data source definitions:
         TEXT
             source - a text file with '>NAME' delimiting tables
@@ -46,7 +47,8 @@
                         COLUMNS
                     </ROW>
             column - an XML element of the form
-                    <COL-NAME>COL-VALUE</COL-NAME> '''
+                    <COL-NAME>COL-VALUE</COL-NAME>
+"""
 
 # Import standard modules
 from configparser import RawConfigParser

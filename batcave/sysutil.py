@@ -1,4 +1,5 @@
-'OS-independent interface to system utilities'
+"""This module provides a Pythonic interface to work with system utilities."""
+
 # cSpell:ignore IRGRP, IROTH, IRWXG, IXOTH, lockf, NBLCK, nobanner, UNLCK
 
 # Import standard modules

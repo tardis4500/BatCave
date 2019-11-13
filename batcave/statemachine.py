@@ -1,4 +1,4 @@
-'Module to implements a simple state machine.'
+"""This module implements a simple state machine."""
 
 # Import standard modules
 from enum import Enum

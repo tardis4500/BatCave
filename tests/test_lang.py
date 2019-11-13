@@ -1,4 +1,5 @@
-'Unit tests for the package language extensions module'
+"""Unit tests for the lang module."""
+
 # pylint: disable=C0103,C0111
 
 import os

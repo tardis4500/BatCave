@@ -1,4 +1,5 @@
-'This provides a Pythonic interface to the QuickBuild RESTful API'
+"""This module provides a Pythonic interface to the QuickBuild RESTful API."""
+
 # cSpell:ignore tful
 
 # Import standard modules

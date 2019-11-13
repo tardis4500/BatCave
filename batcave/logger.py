@@ -1,8 +1,11 @@
-''' The logger is initialized by instantiating the Logger class with the following arguments:
+"""This module provides a simplified interface to the standard logging module.
+
+The logger is initialized by instantiating the Logger class with the following arguments:
         logname: the name of the logfile to be used (optional, default=None)
         stream: also write the message to a stream (optional, default=None)
         pipe: also write the message to a pipe (optional, default=None)
-        queue: also place the message in a queue (optional, default=None) '''
+        queue: also place the message in a queue (optional, default=None)
+"""
 
 # Import standard modules
 from logging import Formatter, getLogger, FileHandler, StreamHandler, shutdown

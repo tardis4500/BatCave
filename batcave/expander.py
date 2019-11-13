@@ -1,4 +1,6 @@
-''' An instantiation of this class will convert an XML into the procedure object
+"""This module provides utilities for managing file expansions.
+
+An instantiation of this class will convert an XML into the procedure object
 
     <procedure schema = "{schema-version}" >
         <header>HEADER</header>
@@ -32,7 +34,8 @@
             <step name="Import Name" />
         </step-library>
     </procedure>
-'''
+"""
+
 # cSpell:ignore odict
 
 # Import standard modules

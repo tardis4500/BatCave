@@ -1,4 +1,5 @@
-'Unit tests for the package system utility module'
+"""Unit tests for the sysutil module."""
+
 # pylint: disable=C0103,C0111
 
 from enum import Enum
