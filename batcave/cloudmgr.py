@@ -1,4 +1,9 @@
-"""This module provides utilities for managing cloud resources."""
+"""This module provides utilities for managing cloud resources.
+
+Attributes:
+    _CLOUD_TYPES (Enum): The cloud providers supported by the Cloud class.
+    gcloud (SysCmdRunner.run): A simple interface to the gcloud command line tool.
+"""
 
 # Import standard modules
 from ast import literal_eval
@@ -6,6 +11,7 @@ from enum import Enum
 from json import loads as json_read
 from pathlib import Path
 from string import Template
+from typing import Any
 
 # Import third-party modules
 from docker import DockerClient
@@ -27,10 +33,21 @@ class CloudError(BatCaveException):
 
 
 class Cloud:
-    'Class to manage a cloud instance'
-    CLOUD_TYPES = _CLOUD_TYPES
+    """Class to create a universal abstract interface for a cloud instance.
 
-    def __init__(self, ctype, auth=None, login=True):
+    Attributes:
+        CLOUD_TYPES: The cloud providers currently supported by this class.
+    """
+    CLOUD_TYPES: Enum = _CLOUD_TYPES
+
+    def __init__(self, ctype: CLOUD_TYPES, auth: Any = None, login: bool = True):
+        """
+        Args:
+            ctype: The cloud provider for this instance. Must be a member of _CLOUD_TYPES
+            auth: For local or Docker Hub this is a (username, password) tuple.
+                For Google Cloud it is a service account keyfile found at ~/.ssh/{value}.json
+            login: Whether or not to login to the cloud provider at instance initialization.
+        """
         self.type = ctype
         self.auth = auth
         self.client = None
@@ -45,7 +62,14 @@ class Cloud:
         return False
 
     def login(self):
-        'Login to the cloud provider'
+        """Perform a login to the cloud provider.
+
+        Returns:
+            Nothing
+
+        Raises:
+            CloudError.INVALIDTYPE_FOR_OPERATION: if the value of self.ctype is not in CLOUD_TYPES
+        """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
                 self.client = DockerClient()
@@ -60,16 +84,37 @@ class Cloud:
             if case():
                 raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.type.name)
 
-    def get_image(self, tag):
-        'Get an image from the cloud container registry'
+    def get_image(self, tag: str) -> Image:  # noqa:F821, pylint: disable=used-before-assignment
+        """Get an image from the cloud container registry.
+
+        Args:
+            tag: the container image tag to retrive
+
+        Returns:
+            The image object
+        """
         return Image(self, tag)
 
-    def get_container(self, name):
-        'Get a container from the cloud'
+    def get_container(self, name: str) -> Container:  # noqa:F821, pylint: disable=used-before-assignment
+        """Get a container from the cloud.
+
+        Args:
+            name: the container name to retrive
+
+        Returns:
+            The container object
+        """
         return Container(self, name)
 
     def get_containers(self, filters=None):
-        'Get a possibly filtered list of containers'
+        """Get a possibly filtered list of containers.
+
+        Args:
+            filter (optional): the container name to retrive
+
+        Returns:
+            The container object
+        """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
                 return [Container(self, c.name) for c in self.client.containers.list(filters=filters)]
@@ -87,8 +132,12 @@ class Cloud:
 
 
 class Image:
-    'Class to interface with a container image object'
+    """Class to create a universal abstract interface to a container image."""
     def __init__(self, cloud, name):
+        """
+        Args:
+
+        """
         self.cloud = cloud
         self.name = name
         self.docker_client = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()

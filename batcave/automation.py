@@ -15,16 +15,17 @@ class ActionCommandRunner(SysCmdRunner):
         """
         Args:
             command: The command passed to SysCmdRunner.
-            guard: A line to be printed before the command is run.
-                If an empty string (the default), nothing is printed.
-            default_args: The list of default args passed to SysCmdRunner.
-            **kwargs: The list of default named args passed to SysCmdRunner.
+            guard (optional, default=''): A line to be printed before the command is run.
+                If an empty string, nothing is printed.
+            default_args (optional, default=()): The list of default args passed to SysCmdRunner.
+            **kwargs (optional, default={}): The list of default named args passed to SysCmdRunner.
         """
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
         self.guard = guard
 
     def run(self, message: str, *args, **kwargs):
-        """
+        """Runs the action.
+
         Args:
             message: The message passed to SysCmdRunner.
             *args: The list of args passed to SysCmdRunner.
@@ -88,12 +89,12 @@ class Action:
             self.always_post()
 
     def log_message(self, message: str, guard: bool = False, leader: str = 'INFO'):
-        """Logs a message to stdout and flushes the stream
+        """Logs a message to stdout and flushes the stream.
 
         Args:
             message: The message to be printed.
-            guard: If True, MESSAGE_GUARD will be printed on a line before the message.
-            leader: If it does not evaluate to False, it will be prepended to every printed
+            guard (optional, default=False): If True, MESSAGE_GUARD will be printed on a line before the message.
+            leader (optional, default='INFO'): If it does not evaluate to False, it will be prepended to every printed
                 line, including the guard.
 
         Returns:
