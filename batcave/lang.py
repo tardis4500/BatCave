@@ -1,4 +1,11 @@
-"""This module provides Python language utilities."""
+"""This module provides Python language utilities.
+
+Attributes:
+    BATCAVE_HOME: The home directory of the module.
+    FROZEN (bool): Is this module running in a frozen application. Quick version of sys.frozen
+    VALIDATE_PYTHON (bool, default=True): Whether this module should validate the minimum version of Python when loaded.
+    WIN32 (bool): Is this module running on a Windows system. Quick version of (sys.platform == 'win32')
+"""
 
 # Import standard modules
 from os import getenv
@@ -8,13 +15,10 @@ import sys
 from sys import executable, platform, version_info, path as sys_path
 
 # Useful contants
-VALIDATE_PYTHON = True
-WIN32 = (platform == 'win32')
 FROZEN = getattr(sys, 'frozen', False)
 BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
-
-# Application information
-COPYRIGHT = 'Copyright 2019 Jeff Smith'
+VALIDATE_PYTHON = True
+WIN32 = (platform == 'win32')
 
 
 class MsgStr:

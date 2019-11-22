@@ -1,5 +1,6 @@
 """This module provides utilities for creating reports.
 
+Examples:
     The simplest usage would be:
         report = reporter.Report('REPORT HEADER', 'REPORT FOOTER')
 

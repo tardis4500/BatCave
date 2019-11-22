@@ -1,4 +1,9 @@
-"""This module provides a simplified interface to the PyQt5 module."""
+"""This module provides a simplified interface to the PyQt5 module.
+
+
+Attributes:
+    _MESSAGE_TYPES (Enum): The message types supported by the MessageBox class.
+"""
 
 # pylint: disable=C0103
 

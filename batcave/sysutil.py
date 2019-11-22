@@ -1,4 +1,15 @@
-"""This module provides a Pythonic interface to work with system utilities."""
+"""This module provides a Pythonic interface to work with system utilities.
+
+Attributes:
+    PROG_FILES (dict): The default software installation location
+        For 32-bit Windows systems this is the value of the ProgramFiles(x86) environment variable.
+        For 64-bit Windows systems this is the value of the ProgramFiles environment variable.
+        For all other systems it is /usr/local.
+    S_660: A quick version of the UNIX 0660 mode.
+    S_664: A quick version of the UNIX 0664 mode.
+    S_770: A quick version of the UNIX 0770 mode.
+    S_775: A quick version of the UNIX 0775 mode.
+"""
 
 # cSpell:ignore IRGRP, IROTH, IRWXG, IXOTH, lockf, NBLCK, nobanner, UNLCK
 
@@ -28,10 +39,10 @@ else:
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
 
-S_664 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
-S_775 = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
 S_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+S_664 = S_660 | S_IROTH
 S_770 = S_IRWXU | S_IRWXG
+S_775 = S_770 | S_IROTH | S_IXOTH
 
 
 class CMDError(BatCaveException):

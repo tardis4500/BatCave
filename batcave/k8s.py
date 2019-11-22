@@ -1,4 +1,8 @@
-"""This module provides a simplified interface to the kubernetes module."""
+"""This module provides a simplified interface to the kubernetes module.
+
+Attributes:
+    kubectl (SysCmdRunner.run): A simple interface to the kubectl command line tool.
+"""
 
 # cSpell:ignore kube, kubeconfig
 

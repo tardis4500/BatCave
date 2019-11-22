@@ -1,4 +1,8 @@
-"""This module provides utilities for working with servers."""
+"""This module provides utilities for working with servers.
+
+Attributes:
+    _STATUS_CHECK_INTERVAL (int, default=2): This is the default wait in seconds when performing any checks.
+"""
 
 # pylint: disable=C0103
 # cSpell:ignore cmdline, ipaddress, lbvserver, nssrc, sbin, sslvserver, sslcertkey, vservername, wsahost

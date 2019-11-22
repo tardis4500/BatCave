@@ -1,4 +1,10 @@
-"""This module provides utilities for managing source code systems."""
+"""This module provides utilities for managing source code systems.
+
+Attributes:
+    P4_LOADED (bool/str): If not False then it is the string version of the Perforce API.
+    GIT_LOADED (bool/str): If not False then it is the string version of the GitPython API.
+    _CLIENT_TYPES (Enum): The CMS providers supported by the Client class.
+"""
 
 # pylint: disable=C0302,I1101
 # cSpell:ignore checkin, unedit

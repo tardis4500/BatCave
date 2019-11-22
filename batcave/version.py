@@ -1,4 +1,9 @@
-"""This module provides utilities for working with versions."""
+"""This module provides utilities for working with versions.
+
+Attributes:
+    PYQT_LOADED (bool/str): If not False then it is the string version of the PyQt API.
+    VERSION_STYLES (Enum): The version output styles.
+"""
 
 # cSpell:ignore pyqt
 
@@ -7,8 +12,7 @@ from enum import Enum
 from sys import version as sys_version
 
 # Import internal modules
-from . import __title__, __version__, __builddate__, __buildname__
-from .lang import COPYRIGHT
+from . import __copyright__, __title__, __version__, __builddate__, __buildname__
 from .platarch import Platform
 
 VERSION_STYLES = Enum('version_styles', ('full', 'brief', 'oneline', 'aboutbox'))
@@ -47,5 +51,5 @@ def get_version_info(style=VERSION_STYLES.full, plattype='batcave_run', extra_in
             info.append('    GitPython API: ' + cms.GIT_LOADED)
     if extra_info:
         info += [extra_info]
-    info.append(COPYRIGHT)
+    info.append(__copyright__)
     return '\n'.join(info)
