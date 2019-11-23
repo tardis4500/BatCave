@@ -7,7 +7,6 @@ Attributes:
 """
 
 # pylint: disable=C0302,I1101
-# cSpell:ignore checkin, unedit
 
 # Import standard modules
 from datetime import datetime
@@ -1169,3 +1168,5 @@ def initialize():
 
 def terminate():
     'Shutdown the CMS system'
+
+# cSpell:ignore checkin unedit

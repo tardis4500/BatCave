@@ -1,7 +1,5 @@
 """This module provides a Pythonic interface to work with Internet Information Server."""
 
-# cSpell:ignore iisreset, inetsrv, syscmd, vdir
-
 # Import standard modules
 from os import getenv
 from pathlib import Path
@@ -362,3 +360,5 @@ def appcmd(*cmd_args, hostname, **sys_cmd_args):
     err_object = AppCmdError(AppCmdError.SYS_CMD_ERROR, message=errmsg.attrib['message'])
     err_object.vars['returncode'] = return_code
     raise err_object
+
+# cSpell:ignore iisreset inetsrv syscmd vdir

@@ -36,8 +36,6 @@ An instantiation of this class will convert an XML into the procedure object
     </procedure>
 """
 
-# cSpell:ignore odict
-
 # Import standard modules
 from collections import OrderedDict as odict
 from copy import deepcopy
@@ -522,3 +520,5 @@ class Step:
     def dump(self):
         'Dump out the step content'
         return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [s.dump() for s in self.substeps]
+
+# cSpell:ignore odict

@@ -11,8 +11,6 @@ Attributes:
     S_775: A quick version of the UNIX 0775 mode.
 """
 
-# cSpell:ignore IRGRP, IROTH, IRWXG, IXOTH, lockf, NBLCK, nobanner, UNLCK
-
 # Import standard modules
 import sys
 from copy import copy as copy_object
@@ -337,3 +335,5 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
     if errlines and append_stderr:
         outlines += errlines
     return flatten_string_list(outlines) if flatten_output else outlines
+
+# cSpell:ignore geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd UNLCK

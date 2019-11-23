@@ -5,7 +5,6 @@ Attributes:
 """
 
 # pylint: disable=C0103
-# cSpell:ignore cmdline, ipaddress, lbvserver, nssrc, sbin, sslvserver, sslcertkey, vservername, wsahost
 
 # Import standard modules
 from csv import DictReader
@@ -1087,3 +1086,5 @@ def _get_server_object(server):
 
 def _run_task_scheduler(*cmd_args, **sys_cmd_args):
     return syscmd('schtasks.exe', *cmd_args, **sys_cmd_args)
+
+# cSpell:ignore cmdline ipaddress lbvserver nssrc sbin sslvserver sslcertkey vservername wsahost psutil syscmd iispy

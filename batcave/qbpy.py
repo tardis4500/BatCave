@@ -1,7 +1,5 @@
 """This module provides a Pythonic interface to the QuickBuild RESTful API."""
 
-# cSpell:ignore tful
-
 # Import standard modules
 from xml.etree.ElementTree import fromstring, tostring
 
@@ -210,3 +208,5 @@ class QuickBuildConsole:
         if result.status_code != codes.ok:  # pylint: disable=E1101
             result.raise_for_status()
         return result
+
+# cSpell:ignore tful

@@ -4,8 +4,6 @@ Attributes:
     kubectl (SysCmdRunner.run): A simple interface to the kubectl command line tool.
 """
 
-# cSpell:ignore kube, kubeconfig
-
 # # Import standard modules
 from datetime import datetime as dt, timedelta
 from pathlib import Path
@@ -190,3 +188,5 @@ class Pod(ClusterObject):
 
 class Job(ClusterObject):
     'Class to represent a kubernetes job'
+
+# cSpell:ignore kube kubeconfig

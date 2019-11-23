@@ -5,8 +5,6 @@ Attributes:
     VERSION_STYLES (Enum): The version output styles.
 """
 
-# cSpell:ignore pyqt
-
 # Import standard modules
 from enum import Enum
 from sys import version as sys_version
@@ -53,3 +51,5 @@ def get_version_info(style=VERSION_STYLES.full, plattype='batcave_run', extra_in
         info += [extra_info]
     info.append(__copyright__)
     return '\n'.join(info)
+
+# cSpell:ignore pyqt

@@ -1,7 +1,5 @@
 """This module provides a Pythonic interface to the TeamCity RESTful API."""
 
-# cSpell:ignore cacert
-
 # Import standard modules
 from pathlib import Path
 from string import Template
@@ -81,3 +79,5 @@ class TeamCityServer:
     def get_build_config(self, config):
         'Gets a build configuration'
         return TCBuildConfig(self, config)
+
+# cSpell:ignore cacert
