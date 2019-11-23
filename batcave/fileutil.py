@@ -1,4 +1,10 @@
-"""This module provides utilities for working with files."""
+"""This module provides utilities for working with files.
+
+Attributes:
+    CONVERSION_MODES (Enum): The conversion modes for the eol_convert function.
+    PACKER_CLASSES (dict): A mapping of file compression extensions to the classes that create them.
+    COMPRESSION_TYPE (dict): A mapping of file compression extensions to compression types.
+"""
 
 # Import standard modules
 from bz2 import BZ2File
@@ -32,7 +38,19 @@ CONVERSION_MODES = Enum('conversion_modes', ('to_unix', 'to_dos'))
 
 
 def eol_convert(filename, mode, backup=True):
-    'Performs end-of-line conversion.'
+    """Performs end-of-line conversions from Windows to UNIX or vice versa.
+
+    Attributes:
+        filename: The file to convert.
+        mode: The direction of the conversion. Must be a member of CONVERSION_MODES.
+        backup (optional, default=True): If True, creates a backup of filename as filename.bak.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        ConvertError.BACKUP_EXISTS: If backup is True and the backup file already exists.
+    """
     if backup:
         backupfile = Path(filename + '.bak')
         if backupfile.exists():
@@ -74,7 +92,22 @@ COMPRESSION_TYPE = {'gz': 'gz', 'tgz': 'gz',
 
 
 def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
-    'Creates a compressed archive.'
+    """Creates a compressed archive.
+
+    Attributes:
+        arcfile: The name of the archive file to create.
+        items: The items to put in the archive.
+        itemloc (optional, default=None): The root location of the items. If None, the current directory
+        arctype (optional, default=None): the type of archive to create.
+            If None, the type is dervied from the arcfile extension.
+        ignore_empty (optional, default=True): If True, allows creating an empty archive.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        PackError.NO_FILES: If ignore_empty is False and there are no files to place in the archive.
+    """
     archive = Path(arcfile)
     arctype = archive.suffix.lstrip('.') if not arctype else arctype
 
@@ -122,7 +155,20 @@ def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
 
 
 def unpack(arcfile, dest=None, arctype=None):
-    'Extracts the contents of a compressed file.'
+    """Extracts the contents of a compressed file.
+
+    Attributes:
+        arcfile: The name of the archive file
+        dest (optional, default=None): The root location to which to extract. If None, the current directory
+        arctype (optional, default=None): the type of archive being extracted.
+            If None, the type is dervied from the arcfile extension.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        PackError.UNKNOWN_ARCHIVE: If the arctype is unknown.
+    """
     archive = Path(arcfile).resolve() if isinstance(arcfile, str) else arcfile
     if dest:
         dest = Path(dest)
@@ -163,10 +209,25 @@ def unpack(arcfile, dest=None, arctype=None):
 
 
 def slurp(filename):
-    'Return all the lines of a file as a list.'
+    """Returns all the lines of a file as a list.
+
+    Arguments:
+        filename: The filename to return the lines from.
+
+    Returns:
+        The list of lines from the file.
+    """
     return [l for l in open(filename)]
 
 
 def spew(filename, outlines):
-    'Write the list of lines to a file.'
+    """Writes the list of lines to a file.
+
+    Arguments:
+        filename: The filename to which to write the lines.
+        outlines: The lines to write.
+
+    Returns:
+        Nothing.
+    """
     open(filename, 'w').writelines(outlines)

@@ -971,7 +971,16 @@ class Client:
 
 
 def walk_git_tree(tree, parent=None):
-    'Walk the git tree similar to os.walk()'
+    """Walks the git tree similar to os.walk().
+
+    Attributes:
+        tree: The git tree to walk.
+        parent (optional, default=None): Use a different parent than the root of the tree.
+
+    Yields:
+        Runs like an iterator which yields tuples of
+            (the new parent, the tree names, the git blobs)
+    """
     (tree_names, trees, blobs) = (list(), list(), list())
     for entry in tree:
         if isinstance(entry, git.Tree):
@@ -1140,7 +1149,18 @@ class ChangeList:
 
 
 def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
-    'Automatically create a client name'
+    """Automatically creates a client name from the user and hostname.
+
+    Attributes:
+        prefix (optional, default=None): If not None, the prefix for the client.
+        suffix (optional, default=None): If not None, the suffix for the client.
+        sep (optional, default='_'): The separator for the different pieces of the name.
+        licenseplate (optional, default=False): If not False, adds a random number to the end of the name.
+            Will be appended after the suffix.
+
+    Returns:
+        Returns the client name.
+    """
     parts = [getuser(), node()]
     if prefix:
         parts.insert(0, prefix)
@@ -1152,21 +1172,19 @@ def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
 
 
 def validatetype(ctype):
-    'determines if the specified CMS type is valid'
+    """Determines if the specified CMS type is valid.
+
+    Arguments:
+        ctype: The CMS type.
+
+    Returns:
+        Nothing.
+
+    Raises
+        CMSError.INVALIDTYPE: If the CMS type is not valid.
+    """
     if ctype not in Client.CLIENT_TYPES:
         raise CMSError(CMSError.INVALIDTYPE, ctype=ctype)
 
-
-def get_labels(ctype):
-    'returns the labels in the cms system'
-    return Client(ctype, info=True).get_labels()
-
-
-def initialize():
-    'Initialize the CMS system'
-
-
-def terminate():
-    'Shutdown the CMS system'
 
 # cSpell:ignore checkin unedit

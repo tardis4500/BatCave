@@ -336,12 +336,31 @@ class IISAdvancedLogger(IISConfigurationSection):
 
 
 def dict2expat(py_dict):
-    'Converts Python dictionaries to the syntax understood by appcmd'
+    """Converts Python dictionaries to the syntax understood by the IIS appcmd command-line tool.
+
+    Arguments:
+        py_dict: The Python dictionary to convert.
+
+    Returns:
+        The appcmd format for the dictionary.
+    """
     return '[' + ','.join([f"{k}='{v}'" for k, v in py_dict.items()]) + "]"
 
 
 def appcmd(*cmd_args, hostname, **sys_cmd_args):
-    'Runs the standard IIS appcmd'
+    """Interface to run the standard IIS appcmd command-line tool.
+
+    Arguments:
+        *cmd_args: The arguments to pass to appcmd.
+        hostname: The hostname to pass to appcmd.
+        **sys_cmd_args: The arguments to pass to syscmd when running appcmd.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        AppCmdError.SYS_CMD_ERROR: If there are errors reported by appcmd.
+    """
     _appcmd = Path(getenv('SystemRoot', ''), 'system32/inetsrv/appcmd.exe')
 
     if hostname and ('remote_powershell' not in sys_cmd_args):

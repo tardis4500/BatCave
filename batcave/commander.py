@@ -84,6 +84,15 @@ class Commander:
 
 
 def _add_arguments_to_parser(parser, arglist):
+    """Adds arguments to the specified parser.
+
+    Arguments:
+        parser: The parser to which to add the arguments.
+        arglist: The arguments to add to the parser.
+
+    Returns:
+        Nothing
+    """
     for arg in arglist:
         if isinstance(arg, dict):
             group_parser = parser.add_mutually_exclusive_group(**arg['options'])

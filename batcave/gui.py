@@ -165,6 +165,13 @@ class MessageBox(QMessageBox):
 
 
 def find_image(name):
-    'Locates the image based on whether the application has been frozen'
+    """Locates the image based on whether the application has been frozen.
+
+    Arguments:
+        name: The name of the image to locate.
+
+    Returns:
+        The image object.
+    """
     image_dir = BATCAVE_HOME if FROZEN else (BATCAVE_HOME / 'img')
     return [f for f in image_dir.glob(name+'.*')][0]

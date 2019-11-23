@@ -306,8 +306,18 @@ class Expander:
 
 
 def file_expander(in_file, out_file, vardict=None, varprops=None):
-    'Quick function for one-time file expansion'
-    return Expander(vardict, varprops).expand_file(in_file, out_file)
+    """Quick function for one-time file expansion.
+
+    Arguments:
+        in_file: The input file.
+        out_file: The output file.
+        vardict (optional, default=None): If not None, provides a dictionary of expansion values.
+        varprops (optional, default=None): If not None, provides an object with properties to be used as expansion values.
+
+    Returns:
+        Nothing
+    """
+    Expander(vardict, varprops).expand_file(in_file, out_file)
 
 
 class Procedure:

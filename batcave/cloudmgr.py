@@ -249,6 +249,16 @@ class Container:
 
 
 def validatetype(ctype):
-    'determines if the specified Cloud type is valid'
+    """Determines if the specified Cloud type is valid.
+
+    Arguments:
+        ctype: The Cloud type.
+
+    Returns:
+        Nothing.
+
+    Raises
+        CloudError.INVALIDTYPE: If the cloud type is not valid.
+    """
     if ctype not in Cloud.CLOUD_TYPES:
         raise CloudError(CloudError.INVALIDTYPE, ctype=ctype)
