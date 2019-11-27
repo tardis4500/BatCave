@@ -10,18 +10,43 @@ from requests import get as url_get
 from .lang import is_debug
 
 
-def download(url, target=None, username=None, password=None):
-    'Download a file form a URL target'
+def download(url, target=None, auth=None):
+    """Download a file from a URL target.
+
+    Arguments:
+        url: The URL to download from.
+        target (optional, default=None): The file to which to download.
+            If None, the last part of the URL will be used.
+        auth (optional, default=None): If not None, it must be a (username, password) tuple.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        Uses the requests module raise_for_status() function to raise on download errors.
+    """
     target = target if target is not None else url.split('/')[-1]
-    response = url_get(url, auth=((username, password) if username else None))
+    response = url_get(url, auth=auth)
     response.raise_for_status()
     open(target, 'wb').write(response.content)
 
 
-def send_email(smtpserver, receiver, sender, subj, msg, content_type='text/plain'):
-    'Send an SMTP email message'
-    fullmsg = f'From: {sender}\nTo: {receiver}\nSubject: {subj}\nContent-Type: {content_type}\n\n' + '\n'.join(msg)
-    server = SMTP(smtpserver)
+def send_email(smtp_server, receiver, sender, subject, body, content_type='text/plain'):
+    """Send an SMTP email message.
+
+    Arguments:
+        smtp_server: The SMTP server to send the email through.
+        receiver: The email address to which to send.
+        sender: The return address for the email.
+        subject: The email message subject.
+        body: The email message body.
+        content_type (optional, default='text/plain'): The content type for the email.
+
+    Returns:
+        The result of the sendmail call.
+    """
+    fullmsg = f'From: {sender}\nTo: {receiver}\nSubject: {subject}\nContent-Type: {content_type}\n\n' + '\n'.join(body)
+    server = SMTP(smtp_server)
     if is_debug('SMTP'):
         server.set_debuglevel(True)
     if isinstance(receiver, str):

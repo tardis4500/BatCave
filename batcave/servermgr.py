@@ -1077,6 +1077,14 @@ class ServerPath:
 
 
 def _get_server_object(server):
+    """Get a server object for the specific fqdn.
+
+    Arguments:
+        server: The fqdn string for the server
+
+    Return:
+        Returns the Server object.
+    """
     if isinstance(server, Server):
         return server
     if not isinstance(server, str):
@@ -1085,6 +1093,15 @@ def _get_server_object(server):
 
 
 def _run_task_scheduler(*cmd_args, **sys_cmd_args):
+    """Interface to run the standard Windows schtasks command-line tool.
+
+    Arguments:
+        *cmd_args: The arguments to pass to schtasks.
+        **sys_cmd_args: The arguments to pass to syscmd when running schtasks.
+
+    Returns:
+        The result of the syscmd call to schtasks.
+    """
     return syscmd('schtasks.exe', *cmd_args, **sys_cmd_args)
 
 # cSpell:ignore cmdline ipaddress lbvserver nssrc sbin sslvserver sslcertkey vservername wsahost psutil syscmd iispy
