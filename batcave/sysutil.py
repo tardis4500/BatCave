@@ -62,6 +62,12 @@ class LockError(BatCaveException):
     NO_LOCK = BatCaveError(1, Template('unable to get lock'))
 
 
+class OSUtilError(BatCaveException):
+    """Exceptions when performing OS level tasks."""
+    GROUP_EXISTS = BatCaveError(1, Template('The group already exists: $group'))
+    USER_EXISTS = BatCaveError(2, Template('The user already exists: $user'))
+
+
 class PlatformError(BatCaveException):
     'Used to indicate an unsupported platform'
     UNSUPPORTED = BatCaveError(1, Template('platform unsupported: $platform'))
@@ -133,26 +139,71 @@ class SysCmdRunner:
         return syscmd(self.command, *use_args, **use_keys)
 
 
-def create_group(groupname):
-    'Create a user group at the OS level'
+def create_group(group_name, exists_ok=True):
+    """Create the system group at the OS level.
+
+    Arguments:
+        group_name: The group to create.
+        exists_ok (optional, default=True): Do not raise an error if the group exists.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        OSUtilError.GROUP_EXISTS: If the group exists and exists_ok is False.
+        PlatformError.UNSUPPORTED: If this is a Windows platform.
+
+    Todo:
+        Implement for the Windows platform.
+    """
+    if WIN32:
+        raise PlatformError(PlatformError.UNSUPPORTED, platform='Windows')
     try:
-        getgrnam(groupname)
+        getgrnam(group_name)
+        if not exists_ok:
+            raise OSUtilError(OSUtilError.GROUP_EXISTS, group=group_name)
     except KeyError:
-        syscmd('groupadd', groupname)
+        syscmd('groupadd', group_name)
 
 
-def create_user(username, groups=tuple()):
-    'Create a user at the OS level'
-    create_group(username)
+def create_user(username, groups=tuple(), exists_ok=True):
+    """Create the user account at the OS level.
+
+    Arguments:
+        username: The user account to create.
+        exists_ok (optional, default=True): Do not raise an error if the user exists.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        OSUtilError.USER_EXISTS: If the user exists and exists_ok is False.
+        PlatformError.UNSUPPORTED: If this is a Windows platform.
+
+    Todo:
+        Implement for the Windows platform.
+    """
+    if WIN32:
+        raise PlatformError(PlatformError.UNSUPPORTED, platform='Windows')
+    create_group(username, exists_ok)
     try:
         getpwnam(username)
+        if not exists_ok:
+            raise OSUtilError(OSUtilError.USER_EXISTS, group=username)
     except KeyError:
         groups_args = (('-G',) + groups) if groups else tuple()
         syscmd('useradd', username, '-g', username, *groups_args)
 
 
 def is_user_administrator():
-    'Determines if the current user is an OS administrator'
+    """Determines if the current user is an OS administrator.
+
+    Arguments:
+        None
+
+    Returns:
+        True if the user is an administrator, False otherwise.
+    """
     if WIN32:
         try:
             syscmd('net', 'file')
@@ -166,7 +217,16 @@ def is_user_administrator():
 
 
 def chown(pathname, user=None, group=None, recursive=False):
-    'Recursive version of chown'
+    """Perform chown and chgrp together, recursively if requested.
+
+    Arguments:
+        user (optional, default=None): The user to set as the owner, if specified.
+        group (optional, default=None): The group to set as the owner, if specified.
+        recursive (optional, default=False): Also perform the user/owner settings recursively on all children.
+
+    Returns:
+        Nothing.
+    """
     pathname = Path(pathname)
     os_chown(pathname, user, group)
     if recursive:
@@ -176,58 +236,110 @@ def chown(pathname, user=None, group=None, recursive=False):
 
 
 def chmod(dirname, mode, recursive=False, files_only=False):
-    'Recursive version of chmod'
+    """Perform chmod recursively if requested.
+
+    Arguments:
+        dirname: The directory for which to set the mode.
+        mode: The mode to set as would be specified for os.chmod().
+        recursive (optional, default=False): Also perform setting recursively on all children.
+        files_only (optional, default=False): Only affect files.
+
+    Returns:
+        Nothing.
+    """
     dirname = Path(dirname)
     if not files_only:
         dirname.chmod(mode)
     if recursive:
         for (root, dirs, files) in walk(dirname):
-            for pathname in (files if files_only else (dirs + files)):  # pylint: disable=C0325
+            for pathname in (files if files_only else (dirs + files)):  # pylint: disable=superfluous-parens
                 Path(root, pathname).chmod(mode)
 
 
-# Remove a directory tree without failing on a write error
-def rmpath(pathstr):
-    'Recursively remove a directory'
-    pathstr = Path(pathstr)
-    if pathstr.is_dir():
-        return rmtree_hard(pathstr)
+def rmpath(path_name):
+    """Remove the specified path object. If a directory, remove recursively.
+
+    Arguments:
+        path_name: The name of the path object to remove.
+
+    Returns:
+        The value returned by unlink() for a file object or rmtree_hard() for a path object.
+    """
+    path_name = Path(path_name)
+    if path_name.is_dir():
+        return rmtree_hard(path_name)
     else:
-        return pathstr.unlink()
+        return path_name.unlink()
 
 
 def rmtree_hard(tree):
-    'Handle errors when recursively removing a directory'
+    """Recursively, remove a directory and try to avoid non-fatal errors.
+
+    Arguments:
+        tree: The directory tree to remove.
+
+    Returns:
+        The value returned by shutil.rmtree().
+    """
     return rmtree(tree, onerror=_rmtree_onerror)
 
 
 def _rmtree_onerror(caller, pathstr, excinfo):
+    """The exception handler used by rmtree_hard to try to remove read-only attributes.
+
+    Arguments:
+        caller: The calling function.
+        pathstr: The path to change.
+        excinfo: The run stack to use if the caller is not remove or unlink.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        The exception in excinfo if the caller is not remove or unlink.
+    """
     pathstr = Path(pathstr)
     if caller not in (remove, unlink):
-        print('Caller:', caller, file=sys.stderr)
         raise excinfo[0](excinfo[1])
     pathstr.chmod(S_IRWXU)
     pathstr.unlink()
 
 
 # Implement standard directory stack on chdir
-dirstack = list()  # pylint: disable=C0103
+_DIRECTORY_STACK = list()
 
 
 def pushd(dirname):
-    'Add a directory to the global stack and cd to that directory'
-    global dirstack  # pylint: disable=W0603,C0103
+    """Implements the push function for a directory stack.
+
+    Arguments:
+        dirname: The directory to which to change.
+
+    Returns:
+        The value of the directory pushed to the stack.
+    """
+    global _DIRECTORY_STACK  # pylint: disable=global-statement
     cwd = Path.cwd()
     chdir(dirname)
-    dirstack.append(cwd)
+    _DIRECTORY_STACK.append(cwd)
     return cwd
 
 
 def popd():
-    'Return to the top directory on the stack and remove it'
-    global dirstack  # pylint: disable=W0603,C0103
+    """Implements the pop function for a directory stack.
+
+    Arguments:
+        None.
+
+    Returns:
+        The value of the directory removed from the stack.
+
+    Raises:
+        IndexError: If the stack is empty.
+    """
+    global _DIRECTORY_STACK  # pylint: disable=global-statement
     try:
-        dirname = dirstack.pop()
+        dirname = _DIRECTORY_STACK.pop()
     except IndexError:
         return 0
     chdir(dirname)
@@ -236,7 +348,36 @@ def popd():
 
 def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stderr=False, append_stderr=False, fail_on_error=True, show_cmd=False, use_shell=False,
            flatten_output=False, remote=False, remote_is_windows=None, copy_for_remote=False, remote_auth=None, remote_powershell=False):
-    'Run a system command'
+    """Wrapper to provide a better interface to subprocess.Popen().
+
+    Arguments:
+        command
+        *cmd_args
+        input_lines=None
+        show_stdout=False
+        ignore_stderr=False
+        append_stderr=False
+        fail_on_error=True
+        show_cmd=False
+        use_shell=False
+        flatten_output=False
+        remote=False
+        remote_is_windows=None
+        copy_for_remote=False
+        remote_auth=Noneremote_powershell=False
+
+    Returns:
+        The string (or string-list) output of the command.
+
+    Raises:
+        CMDError.UNSUPPORTED:
+            If PowerShell remoting is requested while trying to pass remote credentials,
+            If remote execution requires the executable to be copied before execution and the local or remote system is Linux.
+            If remote execution requires the executable to be copied before execution and PowerShell remoting is requested.
+            If any remote options are provided but remote is False.
+        CMDError.CMD_NOT_FOUND: If the requested command is not found.
+        CMDError.CMD_ERROR: If fail_on_error is True, and the return code is non-zero, or there is output on stderr if ignore_stderr is True.
+    """
     cmd_spec = [str(command)] + [str(c) for c in cmd_args]
     if remote:
         remote_is_windows = WIN32 if (remote_is_windows is None) else remote_is_windows
@@ -336,4 +477,4 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
         outlines += errlines
     return flatten_string_list(outlines) if flatten_output else outlines
 
-# cSpell:ignore geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd UNLCK
+# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd UNLCK

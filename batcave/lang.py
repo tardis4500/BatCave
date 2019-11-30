@@ -119,50 +119,96 @@ class switch:  # pylint: disable=C0103
             return False
 
 
-def bool_to_str(val):
-    'Convert a boolean value to a string'
-    return 'true' if val else 'false'
+def bool_to_str(expr):
+    """Converts an expression to a lowercase boolean string value.
+
+    Arguments:
+        expr: The expression to convert.
+
+    Returns:
+        'true' if the expression evaluates to True, 'false' otherwise.
+    """
+    return str(bool(expr)).lower()
 
 
-def flatten(thing):
-    'Flatten a list of lists'
+def flatten(thing, recursive=True):
+    """Flatten an iterable of iterables.
+
+    Arguments:
+        thing: The thing to be flattened.
+        recursive (optional, default=True): Whether or not to recursively flatten the item.
+
+    Returns:
+        The final single depth item as the same type as thing.
+    """
     flattened = False
     result = list()
     for item in thing:
-        if isinstance(item, list):
-            result += [i for i in item]
+        try:
+            result += [i for i in iter(item)]
             flattened = True
-        else:
+        except TypeError:
             result.append(item)
 
-    if flattened:
+    if recursive and flattened:
         return flatten(result)
 
-    return result
+    return type(thing)(result)
 
 
-def flatten_string_list(thing, remove_newlines=True):
-    'Flatten a list of lists of strings to a single string'
-    result = ''.join(flatten(thing))
+def flatten_string_list(iter_of_string, remove_newlines=True):
+    """Flatten an iterable of strings to a single string.
+
+    Arguments:
+        iter_of_string: The list of strings to be flattened to be flattened.
+        remove_newlines (optional, default=True): Whether or not to remove newlines from the final list.
+
+    Returns:
+        The final string.
+    """
+    result = ''.join(flatten(iter_of_string))
     if remove_newlines:
         return result.replace('\n', '')
     return result
 
 
-def is_debug(testvalue=None):
-    'boolean is_debug(string testvalue)'
-    debugvalue = getenv('BATCAVE_DEBUG')
-    if not debugvalue:
+def is_debug(test_value=None):
+    """Determine if the BATCAVE_DEBUG environment variable is set.
+
+    Arguments:
+        test_value (optional, default=None): If set, only return true if the value of test_value is in BATCAVE_DEBUG.
+
+    Return:
+        True if the OS environment variable BATCAVE_DEBUG is set, False otherwise.
+    """
+    debug_value = getenv('BATCAVE_DEBUG')
+    if not debug_value:
         return False
-    if not testvalue:
+    if not test_value:
         return True
-    if testvalue in debugvalue:
+    if test_value in debug_value:
         return True
     return False
 
 
 def str_to_pythonval(the_string, parse_python=False):
-    'Converts a string to the closest interpretable Python type'
+    """Converts a string to the closest Python object.
+
+    Arguments:
+        the_string: The string to evaluate.
+        parse_python (optional, default=False): If the string contains a '~' character, try to convert it to a more complex python object.
+
+    Returns:
+        1. If the string represents an integer, return the value as an int.
+        2. If the string represents an non-integer number, return the value as a float.
+        3. If the string evaluates to 'None' (case-insensitive), return None.
+        4. If the string evaluates to 'True' or 'False' (case-insensitive), return True/False.
+        3. If parse_python is True and the_string contains '~':
+            Split the_string on the first '~' and return the second part as the value of a type specified by the first part.
+
+    Raises:
+        ValueError: If the_string is not a string.
+    """
     if not isinstance(the_string, str):
         raise ValueError
 
@@ -172,24 +218,26 @@ def str_to_pythonval(the_string, parse_python=False):
     if the_string.isdigit():
         return float(the_string)
 
-    if the_string.lower() == 'none':
-        return None
-
-    if the_string.lower() == 'true':
-        return True
-
-    if the_string.lower() == 'false':
-        return False
+    for (test, value) in (('none', None), ('true', True), ('false', False)):
+        if the_string.lower() == test:
+            return value
 
     if parse_python and '~' in the_string:
-        (data_type, val) = the_string.split('~')
-        the_string = eval(f'{data_type}({val})')  # pylint: disable=W0123
+        (data_type, val) = the_string.split('~', 1)
+        the_string = eval(f'{data_type}({val})')  # pylint: disable=eval-used
 
     return the_string
 
 
-def validate_python(test_against=None):
-    'Checks to make sure that the minimum version of Python is used'
+def validate_python(test_against=(3, 6)):
+    """Checks to make sure that a minimum version of Python is used.
+
+    Arguments:
+        test_against (optional, default=(3,7)): The value of Python to check.
+
+    Raises:
+        PythonVersionError.WRONG_VERSION: If the version is too low.
+    """
     used = version_info[:2]
     needed = test_against if test_against else (3, 6)
     if used != needed:
@@ -197,5 +245,12 @@ def validate_python(test_against=None):
 
 
 def xor(value1, value2):
-    'exclusive-or evaluation'
+    """Perform a logical exclusive-or evaluation.
+
+    Arguments:
+        value1, value2: The values on which to perform the operation.
+
+    Returns:
+        The logical exclusive-or of the values.
+    """
     return bool(value1) ^ bool(value2)
