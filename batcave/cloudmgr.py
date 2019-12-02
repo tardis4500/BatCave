@@ -133,6 +133,7 @@ class Cloud:
 
 class Image:
     """Class to create a universal abstract interface to a container image."""
+
     def __init__(self, cloud, name):
         """
         Args:
@@ -222,7 +223,8 @@ class Image:
 
 
 class Container:
-    'Interface to handle a container'
+    """Class to create a universal abstract interface to a container."""
+
     def __init__(self, cloud, name):
         self.cloud = cloud
         self.name = name

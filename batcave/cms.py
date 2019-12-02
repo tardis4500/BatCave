@@ -66,7 +66,11 @@ class CMSError(BatCaveException):
 
 
 class Label:
-    'Generalizes a SCM system label'
+    """Class to create a universal abstract interface for a CMS system label.
+
+    Attributes:
+        LABEL_TYPES: The label providers currently supported by this class.
+    """
     LABEL_TYPES = Enum('label_types', ('file', 'project'))
 
     def __init__(self, name, label_type, client, description=None, selector=None, lock=False):
@@ -188,7 +192,15 @@ class Label:
 
 
 class Client:
-    'wrapper class for the CMS toolkit'
+    """Class to create a universal abstract interface for a CMS system client.
+
+    Attributes:
+        CLIENT_TYPES: The CMS providers currently supported by this class.
+        LINESTYLE_TYPES = The line ending styles.
+        CLEAN_TYPES = The types cleanup that can be performed on a client when disposing of an instance.
+        INFO_TYPES = The types of information clients.
+        OBJECT_TYPES = The types of objects that can be reported on by a client.
+    """
     CLIENT_TYPES = _CLIENT_TYPES
     LINESTYLE_TYPES = Enum('linestyle_types', ('local', 'unix', 'mac', 'win', 'share', 'native', 'lf', 'crlf'))
     CLEAN_TYPES = Enum('clean_types', ('none', 'members', 'all'))
@@ -997,14 +1009,16 @@ def walk_git_tree(tree, parent=None):
 
 
 class FileRevision:
-    ''' This class describes information about a file revision
-            name - the name of the file
-            revision - the revision number for this revision
-            description - the description for this revision
-            author - the user that made this revision
-            labels - a list of labels on this revision '''
+    """This class describes information about a file revision."""
 
     def __init__(self, filename, revision, author, date, labels, desc):
+        ''' This class describes information about a file revision
+                name - the name of the file
+                revision - the revision number for this revision
+                description - the description for this revision
+                author - the user that made this revision
+                labels - a list of labels on this revision '''
+
         self.file = filename
         self.revision = revision
         self.author = author
@@ -1017,12 +1031,14 @@ class FileRevision:
 
 
 class FileChangeRecord:
-    ''' This class describes information about a file change
-            name - the name of the file
-            version - the version identifier for the file
-            mod_type - the type of modification for the file '''
+    """This class describes information about a file change."""
 
     def __init__(self, client, filename, revision, mod_type, changelist):
+        ''' This class describes information about a file change
+                name - the name of the file
+                version - the version identifier for the file
+                mod_type - the type of modification for the file '''
+
         self._client = client
         self.file = filename
         self.revision = revision
@@ -1038,7 +1054,8 @@ class FileChangeRecord:
 
 
 class ChangeList:
-    'ChangeList container class'
+    """Class to create a universal abstract interface for a CMS changelist."""
+
     def __init__(self, client, chg_list_id=None, editable=None):
         self._client = client
         self._id = chg_list_id

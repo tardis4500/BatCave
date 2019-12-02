@@ -17,7 +17,15 @@ class ConfigurationError(BatCaveException):
 
 
 class ConfigCollection:
-    'Represents a configuration collection'
+    """This is a container class to hold a collection of configurations read from a file.
+
+    Attributes:
+        INCLUDE_CONFIG_TAG: The configuration tag which indicates an include file.
+        _CURRENT_CONFIG_SCHEMA: The default DataSource schema to use.
+        _MASK_MISSING: The parameter to indicate that child configurations should be ignored.
+        _PARAMS_CONFIGURATION: The configuration section which is used as configuration parameters for the collection.
+        _PARENT_CONFIGURATION: The parameter to indicate the parent configuration name.
+    """
     INCLUDE_CONFIG_TAG = 'include'
     _CURRENT_CONFIG_SCHEMA = 1
     _MASK_MISSING = 'mask_missing'
@@ -91,7 +99,8 @@ class ConfigCollection:
 
 
 class Configuration:
-    'Represents a single configuration in the collection.'
+    """This is a container class to hold an individual configuration in a collection."""
+
     def __init__(self, config_source, name, parent=None, include=None):
         self._name = name
         self._data_source = config_source

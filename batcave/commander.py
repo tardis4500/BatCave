@@ -17,14 +17,16 @@ class CommandParseError(BatCaveException):
 
 
 class Argument:
-    'This is a simple container class to encapsulate and argument definition passed to ArgumentParser.add_argument()'
+    """This is a simple container class to encapsulate an argument definition passed to ArgumentParser.add_argument()."""
+
     def __init__(self, *names, **options):
         self.names = names
         self.options = options
 
 
 class SubParser:
-    'This is a simple container class to encapsulate a subparser definition'
+    """This is a simple container class to encapsulate a subparser definition."""
+
     def __init__(self, subcommand, command_runner, arguments=tuple()):
         self.subcommand = subcommand
         self.command_runner = command_runner
@@ -32,7 +34,8 @@ class SubParser:
 
 
 class Commander:
-    'This provides a simplified interface to argparse.ArgumentParser'
+    """This class provides a simplified interface to the argparse.ArgumentParser class."""
+
     def __init__(self, description, arguments=tuple(), subparsers=tuple(), subparser_common_args=tuple(), default=None, parents=tuple(),
                  parse_extra=False, extra_var_sep=':', convert_extra=True,
                  add_version=True, version_style=VERSION_STYLES.oneline, formatter_class=ArgumentDefaultsHelpFormatter):
