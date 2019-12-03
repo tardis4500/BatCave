@@ -94,7 +94,23 @@ class XMLError(DataError):
 
 
 class DataSource:
-    'wrapper class for the data source toolkit'
+    """Class to create a universal abstract interface for a data source.
+
+    Attributes:
+        SOURCE_TYPES: The data source types currently supported by this class.
+        INFO_TABLE: The table in the data source which has info about the source.
+        _SCHEMA_DATA: The row which contains the schema version.
+
+        INI_ROWLIST_OPT: The INI file section which contains the rows.
+        INI_ROW_TAG: The INI file tag to mark a row.
+
+        _TEXT_TABLE_DELIMITER: The table delimeter for a text file.
+        _TEXT_VAL_DELIMITER: The value delimeter for a text file.
+
+        _XML_TABLE_TAG: The XML file tag to denote a table.
+        _XML_TABLE_NAME_ATTRIBUTE: The XML file attribute to denote a table name.
+        _XML_SINGLE_COL_NAME: The XML file attribute to denote a column name.
+    """
     SOURCE_TYPES = _SOURCE_TYPES
     INFO_TABLE = 'DataSourceInfo'
     _SCHEMA_DATA = 'schema'
@@ -103,7 +119,6 @@ class DataSource:
     INI_ROW_TAG = ' ROW '
 
     _TEXT_TABLE_DELIMITER = '>'
-    _TEXT_TABLE_DELIMITER = '|'
     _TEXT_VAL_DELIMITER = ':'
 
     _XML_TABLE_TAG = 'TABLE'
@@ -394,7 +409,8 @@ class DataSource:
 
 
 class DataRow:
-    'Represents a single row of data.'
+    """Class to create a universal abstract interface for a data row."""
+
     def __init__(self, data_type, raw, parent):
         'container for an individual row in a table'
         self.type = data_type
@@ -535,11 +551,18 @@ class DataRow:
 
 
 class DataTable:
-    ''' Container for an individual table in a datasource
-        The _parent meaning changes based on the source type
-            TEXT = absolute path to the data directory
-            PICKLE = top level dictionary
-            XML_* = the parent element '''
+    """Class to create a universal abstract interface for a data table.
+
+    The _parent meaning changes based on the source type:
+        TEXT = absolute path to the data directory
+        PICKLE = top level dictionary
+        XML_* = the parent element
+
+    Attributes:
+        _INI_ROW_FORMAT: The format for an INI file row.
+        _XML_ROW_TAG: The XML file tag to denote a row.
+        _XML_SINGLE_ROW_TAG: The XML file tag to denote a row (xml_single data source).
+    """
     _INI_ROW_FORMAT = f'%s{DataSource.INI_ROW_TAG}%d'
     _XML_ROW_TAG = 'ROW'
     _XML_SINGLE_ROW_TAG = 'environment'
