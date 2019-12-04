@@ -67,7 +67,8 @@ def eol_convert(filename, mode, backup=True):
 
 
 class CompressedFile:
-    'Class to wrap the different compression file types'
+    """Class to add support for compressed file types which are missing some methods."""
+
     def __init__(self, filename, **attr):
         super().__init__(filename, **attr)
         self._filename = Path(filename)
@@ -78,11 +79,11 @@ class CompressedFile:
 
 
 class BatCaveGzipFile(GzipFile, CompressedFile):
-    'Class to support gzip file'
+    """Add CompressedFile class methods to the GzipFile class."""
 
 
 class BatCaveBZ2File(BZ2File, CompressedFile):
-    'Class to support bzip2 file'
+    """Add CompressedFile class methods to the BZ2File class."""
 
 
 PACKER_CLASSES = {'zip': ZipFile, 'gz': BatCaveGzipFile, 'bz2': BatCaveBZ2File, 'xz': LZMAFile}

@@ -14,24 +14,25 @@ from pathlib import Path
 from string import Template
 
 # Import GUI framework and widgets
-from PyQt5.QtCore import QEvent  # pylint: disable=import-error
-from PyQt5.QtGui import QIcon  # pylint: disable=import-error
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox  # pylint: disable=import-error
+from PyQt5.QtCore import QEvent  # pylint: disable=import-error,no-name-in-module
+from PyQt5.QtGui import QIcon  # pylint: disable=import-error,no-name-in-module
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox  # pylint: disable=import-error,no-name-in-module
 
 # Import internal modules
-from . import version
+from . import __title__
 from .lang import MsgStr, FROZEN, BATCAVE_HOME
+from .version import get_version_info, VERSION_STYLES
 
 _MESSAGE_TYPES = Enum('message_types', ('about', 'info', 'question', 'warning', 'error', 'results'))
 
 
 class Title(MsgStr):
     'Simplified interface for handling MessageBox titles'
-    _messages = {'about': 'About ' + version.__product__,
-                 'info':  version.__product__ + ' Information',
-                 'question': version.__product__ + ' Question',
-                 'warning': version.__product__ + ' Warning',
-                 'error': version.__product__ + ' ERROR',
+    _messages = {'about': 'About ' + __title__,
+                 'info':  __title__ + ' Information',
+                 'question': __title__ + ' Question',
+                 'warning': __title__ + ' Warning',
+                 'error': __title__ + ' ERROR',
                  'results': 'Search Results'}
 
     def __init__(self, **args):
@@ -40,10 +41,10 @@ class Title(MsgStr):
 
 class Brief(MsgStr):
     'Simplified interface for handling brief messages'
-    _messages = {'about': version.get_version_info(version.VERSION_STYLES.oneline),
-                 'info':  version.__product__ + ' Information',
-                 'question': version.__product__ + ' Question',
-                 'warning': version.__product__ + ' Warning',
+    _messages = {'about': get_version_info(VERSION_STYLES.oneline),
+                 'info':  __title__ + ' Information',
+                 'question': __title__ + ' Question',
+                 'warning': __title__ + ' Warning',
                  'error': "I'm Sorry Dave, I Can't Do That",
                  'results': 'Search Results'}
 
@@ -109,12 +110,12 @@ class BatCaveBaseGUI:
 class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
     'Provides functionality for a main window'
     def __init__(self, parent=None, title=None, icon=None):
-        super().__init__(parent, title=(title if title else version.get_version_info(version.VERSION_STYLES.brief)), icon=icon)
+        super().__init__(parent, title=(title if title else get_version_info(VERSION_STYLES.brief)), icon=icon)
         self.actionAbout.triggered.connect(self.OnAbout)
 
     def OnAbout(self):
         'Shows the about box'
-        MessageBox(self, version.get_version_info(version.VERSION_STYLES.aboutbox), MessageBox.MESSAGE_TYPES.about).exec()
+        MessageBox(self, get_version_info(VERSION_STYLES.aboutbox), MessageBox.MESSAGE_TYPES.about).exec()
 
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
