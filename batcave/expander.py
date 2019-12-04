@@ -78,7 +78,12 @@ class ProcedureError(BatCaveException):
 
 
 class Formatter:
-    'Render formatting based on requested output format'
+    """Class to hold formatting information.
+
+    Attributes:
+        OUTPUT_FORMATS: The valid output formats.
+        _LINK_PRELIM: The prefix to indicate a hyperlink during formatting.
+    """
     OUTPUT_FORMATS = Enum('output_formats', ('text', 'html', 'csv'))
     _LINK_PRELIM = '{link:'
 
@@ -180,7 +185,12 @@ class Formatter:
 
 
 class Expander:
-    'Class to handle expansion items'
+    """Class to handle interpolation of strings and files.
+
+    Attributes:
+        _PRELIM_DEFAULT: The prefix for a variable to be expanded.
+        _POSTLIM_DEFAULT: The suffix for a variable to be expanded.
+    """
     _PRELIM_DEFAULT = '{var:'
     _POSTLIM_DEFAULT = '}'
 
@@ -321,7 +331,22 @@ def file_expander(in_file, out_file, vardict=None, varprops=None):
 
 
 class Procedure:
-    'Class to represent a procedure'
+    """Class to create a universal abstract interface for a procedure.
+
+    Attributes:
+        _SCHEMA_ATTR: The XML tag which contains the schema version.
+        _REQUIRED_PROCEDURE_SCHEMA: The schema supported by this class.
+
+        _HEADER_TAG: The XML tag which indicates the procedure header.
+        _FLAGS_TAG: The XML tag which indicates the procedure flags.
+        _DIRECTORIES_TAG: The XML tag which indicates the procedure directories.
+        _ENVIRONMENTS_TAG: The XML tag which indicates the procedure environments.
+        _STEPS_TAG: The XML tag which indicates the procedure steps.
+        _LIBRARY_TAG: The XML tag which indicates the procedure step library.
+
+        _COMMON_ENVIRONMENT: The XML tag which indicates the procedure common environment.
+        _ENVIRONMENT_VARIABLE: The XML tag which indicates an environment variable.
+    """
     _SCHEMA_ATTR = 'schema'
     _REQUIRED_PROCEDURE_SCHEMA = 1
 
@@ -509,7 +534,15 @@ class Procedure:
 
 
 class Step:
-    'Represents an individual step in a Procedure'
+    """Class to create a universal abstract interface for a procedure step.
+
+    Attributes:
+        NAME_ATTR: The XML attribute to indicate the step name.
+        _CONDITION_ATTR: The XML attribute to indicate the step condition.
+        _IMPORT_ATTR: The XML attribute to indicate the step import.
+        _REPEAT_ATTR: The XML attribute to indicate the step repeat condition.
+        _VARS_ATTR: The XML attribute to indicate the step variables.
+    """
     NAME_ATTR = 'name'
 
     _CONDITION_ATTR = 'condition'
