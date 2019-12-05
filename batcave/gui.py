@@ -27,7 +27,11 @@ _MESSAGE_TYPES = Enum('message_types', ('about', 'info', 'question', 'warning', 
 
 
 class Title(MsgStr):
-    'Simplified interface for handling MessageBox titles'
+    """Class to extend the MsgStr class for handling MessageBox titles.
+
+    Attributes:
+        _messages: The different message types.
+    """
     _messages = {'about': 'About ' + __title__,
                  'info':  __title__ + ' Information',
                  'question': __title__ + ' Question',
@@ -40,7 +44,11 @@ class Title(MsgStr):
 
 
 class Brief(MsgStr):
-    'Simplified interface for handling brief messages'
+    """Class to extend the MsgStr class for handling short window messages.
+
+    Attributes:
+        _messages: The different message types.
+    """
     _messages = {'about': get_version_info(VERSION_STYLES.oneline),
                  'info':  __title__ + ' Information',
                  'question': __title__ + ' Question',
@@ -50,13 +58,18 @@ class Brief(MsgStr):
 
 
 class Message(MsgStr):
-    'Simplified interface for handling messages'
+    """Class to extend the MsgStr class for handling messages.
+
+    Attributes:
+        _messages: The different message types.
+    """
     _messages = {'INTERNAL_ERROR': Template('INTERNAL ERROR: Unknown $what Action'),
                  'MISSING_INFO': Template('You must $how a $what')}
 
 
 class BatCaveValidator:
-    'Class to support control validation'
+    """Class to support control validation."""
+
     def __init__(self, callback, falseval, how, what):
         self.callback = callback
         self.falseval = falseval
@@ -65,7 +78,8 @@ class BatCaveValidator:
 
 
 class BatCaveGUIOutput:
-    'Class to manage output to a widget.'
+    """Class to manage output to a widget."""
+
     def __init__(self, widget):
         self.widget = widget
 
@@ -75,8 +89,10 @@ class BatCaveGUIOutput:
 
 
 class BatCaveBaseGUI:
-    ''' The base class for the simplified GUI support
-        This class cannot be used by itself but must be paired with another PyQt class '''
+    """The base class for the simplified GUI support.
+
+    This class cannot be used by itself but must be paired with another PyQt class.
+    """
 
     def __init__(self, _unused_parent=None, title=None, icon=None):
         self.setupUi(self)  # pylint: disable=E1101
@@ -108,7 +124,8 @@ class BatCaveBaseGUI:
 
 
 class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
-    'Provides functionality for a main window'
+    """This class provides functionality for a main window."""
+
     def __init__(self, parent=None, title=None, icon=None):
         super().__init__(parent, title=(title if title else get_version_info(VERSION_STYLES.brief)), icon=icon)
         self.actionAbout.triggered.connect(self.OnAbout)
@@ -119,7 +136,8 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
 
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
-    'Provides functionality for a dialog box window'
+    """This class provides functionality for a dialog box window."""
+
     def __init__(self, **args):
         super().__init__(**args)
 
@@ -143,7 +161,12 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
 
 
 class MessageBox(QMessageBox):
-    'Provides functionality for a simplified message box'
+    """This class provides functionality for a simplified message box.
+
+    Attributes:
+        MESSAGE_TYPES: The supported message types.
+        _MESSAGE_ICONS: The supported message box icons.
+    """
     MESSAGE_TYPES = _MESSAGE_TYPES
     _MESSAGE_ICONS = {_MESSAGE_TYPES.about: QMessageBox.Information,
                       _MESSAGE_TYPES.info: QMessageBox.Information,
