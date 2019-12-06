@@ -2,14 +2,21 @@
 
 
 class MenuItem:
-    'A item in the menu'
+    """Class to represent a single menu item."""
+
     def __init__(self, key, desc):
         self.key = key
         self.desc = desc
 
 
 class Menu:
-    'A simple menu processor'
+    """Class to create a universal abstract interface for a command-line menu.
+
+    Attributes:
+        _DEFAULT_INVALID_MESSAGE: The default message to use for an invalid choice.
+        _DEFAULT_TITLE: The default menu title
+        _DEFAULT_PROMPT: The default choice prompt.
+    """
     _DEFAULT_INVALID_MESSAGE = '\nInvalid choice\n'
     _DEFAULT_TITLE = '\nSelect one of the following\n'
     _DEFAULT_PROMPT = '-> '
@@ -53,7 +60,8 @@ class Menu:
 
 
 class SimpleMenu(Menu):
-    'A simplified menu'
+    """A simplified version of the Menu class."""
+
     def __init__(self, itemlist, return_text=False, **args):
         self.itemlist = list(itemlist) + ['Exit']
         self.return_text = return_text

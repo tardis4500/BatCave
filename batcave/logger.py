@@ -7,14 +7,16 @@ from pathlib import Path
 
 
 class Logger:
-    """The logger is initialized by instantiating the Logger class with the following arguments:
+    """Class to provide a simplified interface to the standard loggin module."""
+
+    def __init__(self, logname=None, stream=None, pipe=None, queue=None, msg_fmt='%(asctime)s %(levelname)s %(message)s', date_fmt='%Y/%m/%d %H:%M:%S',
+                 logref='batcave', logref_suffix=None):
+        """The logger is initialized by instantiating the Logger class with the following arguments:
             logname: the name of the logfile to be used (optional, default=None)
             stream: also write the message to a stream (optional, default=None)
             pipe: also write the message to a pipe (optional, default=None)
             queue: also place the message in a queue (optional, default=None)
-    """
-    def __init__(self, logname=None, stream=None, pipe=None, queue=None, msg_fmt='%(asctime)s %(levelname)s %(message)s', date_fmt='%Y/%m/%d %H:%M:%S',
-                 logref='batcave', logref_suffix=None):
+        """
         formatter = Formatter(msg_fmt, date_fmt)
         logref += f'.{logref_suffix}' if logref_suffix else ''
 

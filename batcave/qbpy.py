@@ -12,7 +12,8 @@ from .lang import bool_to_str
 
 
 class QuickBuildObject:
-    'Base class for all QuickBuild objects'
+    """Class to create a universal abstract interface for a QuickBuild object."""
+
     def __init__(self, console, object_id):
         self._console = console
         self._object_id = int(object_id)
@@ -51,15 +52,16 @@ class QuickBuildObject:
 
 
 class QuickBuildBuild(QuickBuildObject):
-    'Holds a single QuickBuild build run'
+    """Class to create a universal abstract interface for a QuickBuild configuration run."""
 
 
 class QuickBuildDashboard(QuickBuildObject):
-    'Holds a single QuickBuild dashboard'
+    """Class to create a universal abstract interface for a QuickBuild dashboard."""
 
 
 class QuickBuildCfg(QuickBuildObject):
-    'Holds a single QuickBuild configuration'
+    """Class to create a universal abstract interface for a QuickBuild configuration."""
+
     def _get_id(self, thing):
         if isinstance(thing, int):
             return thing
@@ -133,7 +135,8 @@ class QuickBuildCfg(QuickBuildObject):
 
 
 class QuickBuildConsole:
-    'Container for a QuickBuild console'
+    """Class to create a universal abstract interface for a QuickBuild console."""
+
     def __init__(self, host, user, password):
         self._host = host
         self._user = user

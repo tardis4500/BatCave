@@ -33,7 +33,8 @@ class IISObjectError(BatCaveException):
 
 
 class IISObject:
-    'Generic IIS object virtual class'
+    """Class to create a universal abstract interface for an IIS object."""
+
     def __init__(self, name, iis_ref):
         self.name = name
         self.iis_ref = iis_ref
@@ -62,23 +63,27 @@ class IISObject:
 
 
 class VirtualDirectory(IISObject):
-    'Simple container class for a virtual directory'
+    """Class to create a universal abstract interface for an IIS virtual directory."""
 
 
 class WebApplication(IISObject):
-    'Simple container class for a web application'
+    """Class to create a universal abstract interface for an IIS web application."""
 
 
 class WebApplicationPool(IISObject):
-    'Simple container class for a web application pool'
+    """Class to create a universal abstract interface for an IIS web application pool."""
 
 
 class WebSite(IISObject):
-    'Simple container class for a website'
+    """Class to create a universal abstract interface for an IIS website."""
 
 
 class IISInstance:
-    'Container class for an IIS instance'
+    """Class to create a universal abstract interface for an IIS instance.
+
+    Attributes:
+        _IIS_TYPE_MAP: Maps IIS object types to appcmd subcommands.
+    """
     _IIS_TYPE_MAP = {VirtualDirectory: 'VDIR',
                      WebApplication: 'APP',
                      WebApplicationPool: 'APPPOOL',
@@ -197,7 +202,8 @@ class IISInstance:
 
 
 class IISConfigurationSection:
-    'Object to represent an IIS configuration section'
+    """Class to create a universal abstract interface for an IIS configuration section."""
+
     def __init__(self, name, path, set_location=None, hostname=None, remote_powershell=None):
         self._name = name
         self._path = path if path else ''
@@ -266,7 +272,8 @@ class IISConfigurationSection:
 
 
 class IISAdvancedLogger(IISConfigurationSection):
-    'Represents the IIS advanced logger'
+    """Class to create a universal abstract interface for the IIS advanced logger."""
+
     def __init__(self, path, logtype, set_location, hostname=None):
         super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname)
 

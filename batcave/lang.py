@@ -22,17 +22,19 @@ WIN32 = (platform == 'win32')
 
 
 class MsgStr:
-    ''' Generic Class for message strings
-        This class is only useful when subclassed where the subclass simply defines the _messages.
-        For example:
-            class MyMsg(MsgStr):
-                _messages = {'Message1': 'This is just a string',
-                             'Message2': Template('This is a $what template)}
+    """Class to create a universal abstract interface for message strings.
 
-        Then the messages are retrieved as
+    This class is only useful when subclassed where the subclass simply defines the _messages.
+
+    Example:
+        class MyMsg(MsgStr):
+            _messages = {'Message1': 'This is just a string',
+                            'Message2': Template('This is a $what template)}
+
+        where messages are retrieved with
             MyMsg().Message1
-            MyMsg(what='this').Message2 '''
-
+            MyMsg(what='this').Message2
+    """
     def __init__(self, instr='', transform=None, **variables):
         self._str = instr
         self._transform = transform
@@ -82,18 +84,21 @@ class PythonVersionError(BatCaveException):
 
 
 class switch:  # pylint: disable=C0103
-    ''' Taken verbatim from: http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/410692
+    """Class to implement a Pythonic switch statement.
 
-        Title: Readable switch construction without lambdas or dictionaries
-        Submitter: Brian Beck (other recipes)
-        Last Updated: 2005/04/26
-        Version no: 1.7
+    Taken verbatim from: http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/410692
 
-        Description:
+    Title: Readable switch construction without lambdas or dictionaries
+    Submitter: Brian Beck (other recipes)
+    Last Updated: 2005/04/26
+    Version no: 1.7
+
+    Description:
         Python's lack of a 'switch' statement has garnered much discussion and even a PEP.
         The most popular substitute uses dictionaries to map cases to functions, which requires lots of defs or lambdas.
         While the approach shown here may be O(n) for cases, it aims to duplicate C's original 'switch' functionality and
-        structure with reasonable accuracy. '''
+        structure with reasonable accuracy.
+    """
 
     def __init__(self, value):
         self.value = value

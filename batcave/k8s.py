@@ -39,7 +39,8 @@ class PodError(BatCaveException):
 
 
 class Cluster:
-    'Class to represent a kubernetes cluster'
+    """Class to create a universal abstract interface for a Kubernetes cluster."""
+
     def __init__(self, cluster_config=None):
         self.config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
         k8s_config.load_kube_config(self.config)
@@ -126,7 +127,8 @@ class Cluster:
 
 
 class ClusterObject:
-    'Class to represent a generic kubernetes cluster object'
+    """Class to create a universal abstract interface for a Kubernetes cluster object."""
+
     def __init__(self, cluster, object_ref):
         self._cluster_obj = cluster
         self._object_ref = object_ref
@@ -138,7 +140,8 @@ class ClusterObject:
 
 
 class Pod(ClusterObject):
-    'Class to represent a kubernetes pod'
+    """Class to create a universal abstract interface for a Kubernetes pod."""
+
     logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name))
 
     def exec(self, *command):
@@ -187,6 +190,6 @@ class Pod(ClusterObject):
 
 
 class Job(ClusterObject):
-    'Class to represent a kubernetes job'
+    """Class to create a universal abstract interface for a Kubernetes job."""
 
 # cSpell:ignore kube kubeconfig

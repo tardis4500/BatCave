@@ -4,7 +4,7 @@
 
 # Step1: Add module level docstrings, including attributes.
 # Step2: Add module level function docstrings.
-# Step3: Add class docstrings. Continue with: iispy.
+# Step3: Add class docstrings. Continue with: servermgr.
 
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings.

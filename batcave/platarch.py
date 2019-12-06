@@ -10,7 +10,8 @@ from .lang import switch
 
 
 class Platform:
-    'A class from which information about the platform can be queried'
+    """A class to provide a simplified interface to the platform and sys.version_info standard modules."""
+
     def __getattr__(self, attr):
         'Get the platform type formatted for the requested subtype'
         sys_info = uname()

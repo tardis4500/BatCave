@@ -37,6 +37,50 @@ Examples:
 
     A simple report can be output with
         print(report)
+
+Attributes:
+    Each attribute is made up of what it affects and where that effect takes place.
+        i.e. PART_PIECE_WHERE
+
+    Part abbreviations:
+        rpt = report
+        sec = section
+        tbl = table
+        lin = line
+        lnk = link
+        lst = list
+    Piece abbreviations:
+        hdr = header
+        bdy = body
+        row = DUH!
+        cel = cell
+        ftr = footer
+    Where abbreviations:
+        ldr = leader
+        int = interstitial
+        trm = terminator
+
+    The report/section structure is
+    sec_ldr - header - body - footer - sec_trm
+    where
+    header = sec_hdr_ldr - HEADER - sec_hdr_trm
+    body = sec_bdy_ldr - BODY - sec_bdy_trm
+    footer = sec_ftr_ldr - FOOTER - sec_ftr_trm
+
+    The table structure is
+    tbl_ldr - header - body - footer - tbl_trm
+    where the body is
+    tbl_bdy_ldr - rows - tbl_bdr_trm
+    and rows are
+    tbl_row_ldr - cell - tbl_row_trm
+    and cells are
+    tbl_cel_ldr - data - tbl_cel_trm
+
+    The general line structure is:
+    lin_ldr - LINE - lin_trm
+
+    The general list structure is:
+    lst_ldr - ITEM - lst_int ITEM - lst_trm
 """
 
 # Import standard modules
@@ -45,7 +89,8 @@ from enum import Enum
 
 
 class SimpleAttribute:
-    'This class defines an attribute type which has a default value and a list of valid values'
+    """Class to create a universal abstract interface for a report attribute which has a default value and a list of valid values."""
+
     def __init__(self, default, *other):
         self._value = default
         self._valid = list(other)
@@ -70,7 +115,8 @@ class SimpleAttribute:
 
 
 class MetaAttribute:
-    'This class defines an attribute type which returns a value based on the value of a SimpleAttribute'
+    """Class to create a universal abstract interface for a report attribute which returns a value based on the value of a SimpleAttribute."""
+
     def __init__(self, attr, **valmap):
         self._attr = attr
         self._valuemap = valmap
@@ -83,51 +129,6 @@ class MetaAttribute:
         self._valuemap = valmap
     values = property(fset=_set_values)
     simple_attr_name = property(lambda s: s._attr)
-
-# Attribute naming convention
-#   Each attribute is made up of what it affects and where that effect takes place.
-#       i.e. PART_PIECE_WHERE
-#
-#   Part abbreviations:
-#       rpt = report
-#       sec = section
-#       tbl = table
-#       lin = line
-#       lnk = link
-#       lst = list
-#   Piece abbreviations:
-#       hdr = header
-#       bdy = body
-#       row = DUH!
-#       cel = cell
-#       ftr = footer
-#   Where abbreviations:
-#       ldr = leader
-#       int = interstitial
-#       trm = terminator
-#
-# The report/section structure is
-#   sec_ldr - header - body - footer - sec_trm
-# where
-#   header = sec_hdr_ldr - HEADER - sec_hdr_trm
-#   body = sec_bdy_ldr - BODY - sec_bdy_trm
-#   footer = sec_ftr_ldr - FOOTER - sec_ftr_trm
-#
-# The table structure is
-#   tbl_ldr - header - body - footer - tbl_trm
-# where the body is
-#   tbl_bdy_ldr - rows - tbl_bdr_trm
-# and rows are
-#   tbl_row_ldr - cell - tbl_row_trm
-# and cells are
-#   tbl_cel_ldr - data - tbl_cel_trm
-#
-# The general line structure is:
-#   lin_ldr - LINE - lin_trm
-#
-# The general list structure is:
-#   lst_ldr - ITEM - lst_int ITEM - lst_trm
-#
 
 
 OUTPUT_ATTR = 'output'
@@ -205,7 +206,8 @@ _ATTRIBUTES = {OUTPUT_ATTR: SimpleAttribute('html', 'text'),
 
 
 class ReportObject:
-    'A base class for report objects'
+    """Class to create a universal abstract interface for a report object."""
+
     def __init__(self, cont=None, **attrs):
         self._attributes = dict()
         for (attr, val) in attrs.items():
@@ -284,7 +286,8 @@ class ReportObject:
 
 
 class Section(ReportObject):
-    'A report section'
+    """Class to create a universal abstract interface for a report section."""
+
     def __init__(self, header='', footer='', cont=None, **attr):
         super().__init__(cont, **attr)
         self.header = header
@@ -323,7 +326,8 @@ class Section(ReportObject):
 
 
 class Report(Section):
-    'Top-level report container'
+    """Class to create a universal abstract interface for a report."""
+
     def __str__(self):
         the_str = self.rpt_ldr
         if self.header:
@@ -335,7 +339,8 @@ class Report(Section):
 
 
 class Cell(ReportObject):
-    'A single cell in a table'
+    """Class to create a universal abstract interface for a cell in a table in a report."""
+
     def __init__(self, data, cont=None, **attr):
         super().__init__(cont, **attr)
         self._data = data
@@ -349,7 +354,8 @@ class Cell(ReportObject):
 
 
 class Table(ReportObject):
-    'A table in a report section'
+    """Class to create a universal abstract interface for a report section table."""
+
     def __init__(self, data, header='', footer='', **attr):
         super().__init__(**attr)
         self.header = header
@@ -391,7 +397,8 @@ class Table(ReportObject):
 
 
 class Line(ReportObject):
-    'A single line in a report section'
+    """Class to create a universal abstract interface for a report section line."""
+
     def __init__(self, text, cont=None, **attr):
         super().__init__(cont, **attr)
         self._text = text
@@ -401,7 +408,8 @@ class Line(ReportObject):
 
 
 class Link(ReportObject):
-    'A hyperlink in a line or cell'
+    """Class to create a universal abstract interface for a report hyperlink."""
+
     def __init__(self, text, url=None, cont=None, **attr):
         super().__init__(cont, **attr)
         self._text = text
@@ -418,7 +426,8 @@ class Link(ReportObject):
 
 
 class LinkList(Section):
-    'A link of links'
+    """Class to create a universal abstract interface for a list of hyperlinks in a report."""
+
     def __init__(self, urls, cont=None, **attr):
         super().__init__(cont, **attr)
         self._list = list()
