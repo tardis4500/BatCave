@@ -19,7 +19,8 @@ class TeamCityError(BatCaveException):
 
 
 class TCBuildConfig:
-    'Encapsulates a Build Configuration'
+    """Class to create a universal abstract interface for a TeamCity build configuration."""
+
     def __init__(self, server, config_id):
         self._server = server
         self.config_id = config_id
@@ -41,7 +42,8 @@ class TCBuildConfig:
 
 
 class TeamCityServer:
-    'Represents a TeamCity server'
+    """Class to create a universal abstract interface for a TeamCity server."""
+
     _CA_CERT = (BATCAVE_HOME / 'cacert.pem') if FROZEN else Path(certs.where())
 
     def __init__(self, host, user, passwd, port='80'):

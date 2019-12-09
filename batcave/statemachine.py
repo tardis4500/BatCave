@@ -24,7 +24,14 @@ class StateMachineError(BatCaveException):
 
 
 class StateMachine:
-    'Implements a state machine.'
+    """This class implements a classic state machine.
+
+    Attributes:
+        STATE_STATUSES: The status of the current state.
+        _DEFAULT_STATEFILE: The default file to use to store the current state information.
+        _DEFAULT_LOGFILE: The default file to use to store the log information.
+        _DEFAULT_LOCKFILE: The default file to use for file locking.
+    """
     STATE_STATUSES = Enum('state_status', ('entering', 'exited'))
     _DEFAULT_STATEFILE = Path('state')
     _DEFAULT_LOGFILE = Path('log')

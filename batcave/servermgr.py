@@ -77,7 +77,13 @@ class ServerPathError(BatCaveException):
 
 
 class LoadBalancer:
-    'Class for managing a load balancer'
+    """Class to create a universal abstract interface for a load balancer.
+
+    Attributes:
+        LB_SERVER_SIGNALS: The signals that can be sent to a load balancer to control a server in a VIP.
+        LB_TYPES: The supported load balancer types.
+        LB_VIP_TYPES: The supported load balancer VIP types.
+    """
     LB_SERVER_SIGNALS = Enum('lb_server_signals', ('enable', 'disable'))
     LB_TYPES = Enum('lb_types', ('netscaler',))
     LB_VIP_TYPES = Enum('lb_vip_types', ('HTTP', 'SSL', 'SSL_OFFLOAD'))
@@ -213,7 +219,8 @@ class LoadBalancer:
 
 
 class LoadBalancerObject:
-    'Base class for all load balancer objects'
+    """Class to create a universal abstract interface for an object in a load balancer."""
+
     def __init__(self, load_balancer_ref, lb_object_ref):
         self.load_balancer_ref = load_balancer_ref
         self.lb_object_ref = lb_object_ref
@@ -229,7 +236,8 @@ class LoadBalancerObject:
 
 
 class LoadBalancerServer(LoadBalancerObject):
-    'Class to represent a server in the load balancer'
+    """Class to create a universal abstract interface for a load balancer server."""
+
     def add_service(self, service_name, service_type='HTTP', port=80):
         'Add a service to a server in the load balancer'
         ns_service = NetScalerServerService()
@@ -251,11 +259,12 @@ class LoadBalancerServer(LoadBalancerObject):
 
 
 class LoadBalancerService(LoadBalancerObject):
-    'Class to represent a service in the load balancer'
+    """Class to create a universal abstract interface for a load balancer service."""
 
 
 class LoadBalancerVirtualServer(LoadBalancerObject):
-    'Class to represent a virtual server in the load balancer'
+    """Class to create a universal abstract interface for a load balancer virtual server."""
+
     def bind_service(self, service):
         'Bind a service to the virtual server'
         ns_virtual_service_binding = NetScalerVirtualServiceBinding()
@@ -280,7 +289,14 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
 
 
 class Server:
-    'Class to encapsulate a server as an object'
+    """Class to create a universal abstract interface for a server.
+
+    Attributes:
+        OS_TYPES: The supported server OS types.
+        _WSA_NAME_OR_SERVICE_NOT_KNOWN: Error code indicating the service is unknown.
+        _WSAHOST_NOT_FOUND: Error code indicating the host was not found.
+        _WMI_SERVICE_CREATE_ERRORS: A dictionary to map WMI errors to errors messages.
+    """
     OS_TYPES = Enum('os_types', ('linux', 'windows'))
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
@@ -548,7 +564,8 @@ class Server:
 
 
 class OSManager:
-    'Class to make non WMI OS management look like WMI management'
+    """Class to make non WMI OS management look like WMI management."""
+
     def __init__(self, computer=None, auth=None):
         self.computer = computer
         self.auth = auth
@@ -591,7 +608,8 @@ class OSManager:
 
 
 class NamedOSObject:
-    'Class to allow management of all OS objects using a similar interface'
+    """Class to allow management of all OS objects using a similar interface."""
+
     def __init__(self, Name, computer, auth):
         self.Name = Name
         self.computer = computer
@@ -600,7 +618,8 @@ class NamedOSObject:
 
 
 class LinuxService(NamedOSObject):
-    'Class to abstract a Linux service'
+    """Class to create a universal abstract interface for a Linux daemon service."""
+
     def __init__(self, Name, computer, auth, service_type):
         self.type = service_type
         super().__init__(Name, computer, auth)
@@ -663,7 +682,8 @@ class LinuxService(NamedOSObject):
 
 
 class LinuxProcess:
-    'Class to abstract a Linux process'
+    """Class to create a universal abstract interface for a Linux process."""
+
     def __init__(self, ProcessId):
         self.ProcessId = ProcessId
         self.process_obj = _LinuxProcess(self.ProcessId)
@@ -682,11 +702,12 @@ class LinuxProcess:
 
 
 class LinuxScheduledTask:
-    'Class to abstract a Linux cron job'
+    """Class to create a universal abstract interface for a Linux cron job."""
 
 
 class Win32_ScheduledTask(NamedOSObject):
-    'Class to abstract a Windows Scheduled Task since they are not available using WMI'
+    """Class to abstract a Windows Scheduled Task since they are not available using WMI."""
+
     def __getattr__(self, attr):
         if attr == 'state':
             attr = 'scheduled_task_state'
@@ -745,7 +766,8 @@ class Win32_ScheduledTask(NamedOSObject):
 
 
 class COMObject:
-    'Generic interface for Windows COM objects'
+    """Class to create a universal abstract interface for a Windows COM object."""
+
     def __init__(self, ref, hostname=None):
         self._hostname = hostname
         raise_error = False
@@ -782,7 +804,11 @@ class COMObject:
 
 
 class ManagementObject:
-    'Management object to provide OS independent interface'
+    """Management object to provide OS independent interface.
+
+    Attributes:
+        OBJECT_PREFIX: The prefix to use to correctly translate to a NamesOSObject type.
+    """
     OBJECT_PREFIX = 'Win32_' if WIN32 else 'Linux'
 
     def __init__(self, object_ref, manager, key, value, **key_values):
@@ -814,7 +840,13 @@ class ManagementObject:
 
 
 class Service(ManagementObject):
-    'Class to provide OS independent service management'
+    """Class to create a universal abstract interface for an OS service.
+
+    Attributes:
+        SERVICE_SIGNALS: The possible signals to send to a service.
+        SERVICE_STATES: The possible service status.
+        SERVICE_TYPES: The valid service types.
+    """
     SERVICE_SIGNALS = Enum('service_signals', ('disable', 'enable', 'start', 'stop', 'pause', 'resume', 'restart'))
     SERVICE_STATES = Enum('service_states', ('StartPending', 'ContinuePending', 'Running', 'StopPending', 'Stopped', 'PausePending', 'Paused'))
     SERVICE_TYPES = Enum('linux_service_types', ('systemd', 'sysv', 'upstart', 'windows'))
@@ -903,7 +935,11 @@ class Service(ManagementObject):
 
 
 class Process(ManagementObject):
-    'Class to provide OS independent process management'
+    """Class to create a universal abstract interface for an OS process.
+
+    Attributes:
+        PROCESS_SIGNALS: The possible signals to send to a process.
+    """
     PROCESS_SIGNALS = Enum('process_signals', ('stop', 'kill'))
 
     def manage(self, signal, wait=True, timeout=False):
@@ -930,14 +966,25 @@ class Process(ManagementObject):
 
 
 class ScheduledTask(ManagementObject):
-    'Class to provide OS independent scheduled task management'
+    """Class to create a universal abstract interface for an OS scheduled task.
+
+    Attributes:
+        TASK_HOME: The directory where task definitions are stored.
+        TASK_NAMESPACE: The Windows task namespace needed to parse the XML task definitions.
+        TASK_SIGNALS: The possible signals to send to a task.
+    """
     TASK_HOME = Path(getenv('SystemRoot'), 'system32/Tasks') if WIN32 else Path('/opt/cronjobs')
     TASK_NAMESPACE = 'http://schemas.microsoft.com/windows/2004/02/mit/task'
     TASK_SIGNALS = Enum('task_signals', ('enable', 'disable', 'run', 'end'))
 
 
 class ServerPath:
-    'Class to provide an interface for working with remote paths like local ones'
+    """Class to create a universal abstract interface for an OS directory such that remote and local paths can be managed with the same code.
+
+    Attributes:
+        DEFAULT_REMOTE_COPY_COMMAND: The default command to perform a remote copy based on the OS of the source.
+        DEFAULT_REMOTE_COPY_ARGS: The default arguments used to perform a remote copy based on the OS of the source.
+    """
     DEFAULT_REMOTE_COPY_COMMAND = {Server.OS_TYPES.windows: 'robocopy', Server.OS_TYPES.linux: 'pscp' if WIN32 else 'scp'}
     DEFAULT_REMOTE_COPY_ARGS = {Server.OS_TYPES.windows: ['/MIR', '/MT', '/R:0', '/NFL', '/NDL', '/NP', '/NJH', '/NJS'],
                                 Server.OS_TYPES.linux: ['-r', '-batch']}

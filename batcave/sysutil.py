@@ -77,7 +77,8 @@ LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))
 
 
 class LockFile:
-    'Lockfile interface'
+    """Class to create a universal abstract interface for an OS lock file."""
+
     def __init__(self, filename, handle=None, cleanup=True):
         self._filename = Path(filename)
         self._cleanup = cleanup
@@ -122,7 +123,8 @@ class LockFile:
 
 
 class SysCmdRunner:
-    'Improved interface to sysutil.syscmd()'
+    """This class provides a simplified interface to sysutil.syscmd()."""
+
     def __init__(self, command, *default_args, logger=None, **default_keys):
         self.command = command
         self.writer = logger.loginfo if logger else print

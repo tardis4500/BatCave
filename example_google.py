@@ -4,9 +4,9 @@
 
 # Step1: Add module level docstrings, including attributes.
 # Step2: Add module level function docstrings.
-# Step3: Add class docstrings. Continue with: servermgr.
-
+# Step3: Add class docstrings.
 # Step4: Add Error docstrings.
+
 # Step5: Add class __init__ docstrings.
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings.
