@@ -26,7 +26,13 @@ gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=in
 
 
 class CloudError(BatCaveException):
-    'Class to handle cloud exceptions'
+    """Cloud Exceptions.
+
+    Attributes:
+        INVALIDTYPE: An invalid cloud type was specified.
+        INVALIDTYPE_FOR_OPERATION: The specified cloud type does not support the requested operation.
+        IMAGE_ERROR: There was an error working with a container image.
+    """
     INVALIDTYPE = BatCaveError(1, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in _CLOUD_TYPES])))
     INVALIDTYPE_FOR_OPERATION = BatCaveError(2, Template('Invalid Cloud type ($ctype) for this operation'))
     IMAGE_ERROR = BatCaveError(3, Template('Error ${action}ing image: $err'))

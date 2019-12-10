@@ -49,20 +49,28 @@ _CLIENT_TYPES = Enum('client_types', ('file', 'git', 'perforce'))
 
 
 class CMSError(BatCaveException):
-    'Class for CMS errors'
+    """CMS Exceptions.
+
+    Attributes:
+        INVALIDTYPE: An invalid CMS type was specified.
+        CONNECT_FAILED: Error connecting to the CMS system.
+        CLIENT_NAME_REQUIRED: A client name is required if create=False.
+        CLIENT_DATA_INVALID: The root and mapping arguments cannot be specified if create=False.
+        CHANGELIST_NOT_EDITABLE: An attempt was made to edit a readonly changelist.
+        INVALIDTYPE_FOR_OPERATION = The specified CMS type does not support the requested operation.
+        GIT_FAILURE: Gir returned an error.
+        CLIENT_NOT_FOUND: The specified client was not found.
+        CONNECTINFO_REQUIRED: Connection info is required for the specified CMS type.
+    """
     INVALIDTYPE = BatCaveError(1, Template('Invalid CMS type ($ctype). Must be one of: ' + str([t.name for t in _CLIENT_TYPES])))
     CONNECT_FAILED = BatCaveError(2, Template('Unable to connect to CMS server on $connectinfo'))
     CLIENT_NAME_REQUIRED = BatCaveError(3, 'Name required if client is not being created')
     CLIENT_DATA_INVALID = BatCaveError(4, Template('$data not valid if client exists'))
     CHANGELIST_NOT_EDITABLE = BatCaveError(5, Template('changelist $changelist not opened for edit'))
-    NO_CMS_FILE = BatCaveError(6, Template('Unable to get CMS file: $filename'))
-    INVALIDTYPE_FOR_OPERATION = BatCaveError(7, Template('Invalid CMS type ($ctype) for this operation'))
-    PROJECT_MAPPING_REQUIRED = BatCaveError(8, 'A project is required')
-    INVALIDTYPE_FOR_FIND = BatCaveError(9, Template('Invalid find type: $file_type'))
-    ATTRIBUTE_NOT_FOUND = BatCaveError(10, Template('No such attribute: $attr'))
-    GIT_FAILURE = BatCaveError(11, Template('Git Error:\n$msg'))
-    CLIENT_NOT_FOUND = BatCaveError(12, Template('Client $name not found'))
-    CONNECTINFO_REQUIRED = BatCaveError(13, Template('Connectinfo required for CMS type ($ctype)'))
+    INVALIDTYPE_FOR_OPERATION = BatCaveError(6, Template('Invalid CMS type ($ctype) for this operation'))
+    GIT_FAILURE = BatCaveError(7, Template('Git Error:\n$msg'))
+    CLIENT_NOT_FOUND = BatCaveError(8, Template('Client $name not found'))
+    CONNECTINFO_REQUIRED = BatCaveError(9, Template('Connectinfo required for CMS type ($ctype)'))
 
 
 class Label:

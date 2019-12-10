@@ -10,7 +10,13 @@ from .lang import switch, BatCaveError, BatCaveException
 
 
 class ConfigurationError(BatCaveException):
-    'Class for EnvironmentConfiguration related errors'
+    """Configuration Exceptions.
+
+    Attributes:
+        CONFIG_NOT_FOUND: The specified configuration file was not found.
+        BAD_FORMAT: The configuration file format is invalid.
+        BAD_SCHEMA: The configuration schema is not supported.
+    """
     CONFIG_NOT_FOUND = BatCaveError(1, Template('Unable to find the configuration file: $file'))
     BAD_FORMAT = BatCaveError(2, Template('Bad format for configuration file: $file'))
     BAD_SCHEMA = BatCaveError(3, Template('Invalid schema in configuration file: $file'))
