@@ -50,19 +50,18 @@ _STATUS_CHECK_INTERVAL = 2
 
 class LoadBalancerError(BatCaveException):
     'Class for LoadBalancer related error'
-    INVALID_OBJECT = BatCaveError(1, Template('Requested $type not in load balancer: $name'))
-    UNKNOWN_SERVER_SIGNAL = BatCaveError(2, Template('Unknown server signal: $signal'))
+    BAD_OBJECT = BatCaveError(1, Template('Requested $type not in load balancer: $name'))
+    BAD_SERVER_SIGNAL = BatCaveError(2, Template('Unknown server signal: $signal'))
 
 
 class ServerObjectManagementError(BatCaveException):
     'Class for Service related errors'
-    UNKNOWN_OBJECT_STATE = BatCaveError(1, Template('Unknown object state: $state'))
+    BAD_OBJECT_STATE = BatCaveError(1, Template('Unknown object state: $state'))
     UNKNOWN_OBJECT_SIGNAL = BatCaveError(2, Template('Unknown object signal: $signal'))
     BAD_TRANSITION = BatCaveError(3, Template('Invalid state transition from $from_state to $to_state'))
     SERVER_NOT_FOUND = BatCaveError(4, Template('No server found: $server'))
     REMOTE_CONNECTION_ERROR = BatCaveError(5, Template('Unable to connect to remote server $server: $msg'))
     NOT_UNIQUE = BatCaveError(6, Template('Unable to locate unique $type according to $filters'))
-    SERVICE_CONTROL_ERROR = BatCaveError(7, Template('Error sending $signal signal to service: $ret'))
     OBJECT_NOT_FOUND = BatCaveError(8, Template('No $type object found'))
     BAD_FILTER = BatCaveError(9, 'One and only one filter must be provided for this object')
     REMOTE_NOT_SUPPORTED = BatCaveError(10, 'Remote objects are not supported for Linux servers')
@@ -111,7 +110,7 @@ class LoadBalancer:
             return group_ref
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.INVALID_OBJECT, type='cache content group', name=group_name)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='cache content group', name=group_name)
             raise
 
     def flush_cache_content(self, group_name):
@@ -124,7 +123,7 @@ class LoadBalancer:
         try:
             self.get_server(server_info)
         except LoadBalancerError as err:
-            if err.code == LoadBalancerError.INVALID_OBJECT.code:
+            if err.code == LoadBalancerError.BAD_OBJECT.code:
                 return False
             raise
         else:
@@ -146,7 +145,7 @@ class LoadBalancer:
             return LoadBalancerServer(self, NetScalerServer.get(self.ns_session, server_hostname))
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.INVALID_OBJECT, type='server', name=server_hostname)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='server', name=server_hostname)
             raise
 
     def add_virtual_server(self, server_info, service_type=LB_VIP_TYPES.HTTP, port=None, servers=tuple(), services=tuple(), certificates=tuple(), responder_policies=tuple()):
@@ -201,13 +200,13 @@ class LoadBalancer:
             return LoadBalancerVirtualServer(self, NetScalerVirtualServer.get(self.ns_session, server_hostname))
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.INVALID_OBJECT, type='virtual server', name=server_hostname)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='virtual server', name=server_hostname)
             raise
 
     def manage_servers(self, signal, servers, validate=True):
         'Manage a server serviced by the load balancer'
         if signal not in (self.LB_SERVER_SIGNALS.enable, self.LB_SERVER_SIGNALS.disable):
-            raise LoadBalancerError(LoadBalancerError.UNKNOWN_SERVER_SIGNAL, signal=signal.name)
+            raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
         if not (isinstance(servers, tuple) or isinstance(servers, list)):
             servers = [servers]
@@ -254,7 +253,7 @@ class LoadBalancerServer(LoadBalancerObject):
             return LoadBalancerService(self, NetScalerServerService.get(self.load_balancer_ref.ns_session, service_name))
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.INVALID_OBJECT, type='service', name=service_name)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='service', name=service_name)
             raise
 
 
@@ -911,7 +910,7 @@ class Service(ManagementObject):
                         control_method = 'ResumeService'
                     break
                 if case():
-                    raise ServerObjectManagementError(ServerObjectManagementError.UNKNOWN_OBJECT_STATE, state=self.state)
+                    raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_STATE, state=self.state)
             wait_length = 0
             while self.state != waitfor:
                 sleep(_STATUS_CHECK_INTERVAL)

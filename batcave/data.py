@@ -70,27 +70,26 @@ _SOURCE_TYPES = Enum('source_types', ('text', 'ini', 'pickle', 'xml_single', 'xm
 
 
 class DataError(BatCaveException):
-    'Class for Data errors'
-    INVALIDTYPE = BatCaveError(1, 'Invalid data source type. Must be one of: ' + str([t.name for t in _SOURCE_TYPES]))
-    NOTABLE = BatCaveError(2, Template('No table named "$table_name" in data source "$source_name"'))
-    NOTSUPPORTED = BatCaveError(3, Template('Function "$function" not supported for source type "$source_type"'))
-    FILEOPEN = BatCaveError(4, Template('Unable to open file: $errmsg'))
-    WRONGSCHEMA = BatCaveError(5, Template('Wrong schema ($schema) specified for data source ($found)'))
-    BADURL = BatCaveError(6, Template('No valid DataSource found at URL: $url'))
+    """Data related Exceptions.
 
-
-class TextError(DataError):
-    'Class for text source type data errors'
-    BADCOLUMN = BatCaveError(1, Template('invalid column: $col\nonline $line'))
-
-
-class PickleError(DataError):
-    'Class for pickle source type data errors'
-
-
-class XMLError(DataError):
-    'Class for XML source type data errors'
-    BADROOT = BatCaveError(1, Template('the root element "$root_name" is not the one requested ($expected) in $source_name'))
+    Attributes:
+        BAD_COLUMN: The column specified was not found.
+        BAD_ROOT: The root element for the XML data source was not the one requested.
+        BAD_SCHEMA: The data source schema does not match the one requested.
+        BAD_TABLE: The requested table was not found.
+        BAD_URL: The URL specified does not contain a valid data source.
+        FILE_OPEN: Error opening the data source file.
+        INVALID_OPERATION: The specified data source type does not support the requested operation.
+        INVALID_TYPE: An invalid data source type was specified.
+    """
+    BAD_COLUMN = BatCaveError(1, Template('invalid column: $col\nonline $line'))
+    BAD_ROOT = BatCaveError(2, Template('the root element "$root_name" is not the one requested ($expected) in $source_name'))
+    BAD_SCHEMA = BatCaveError(3, Template('Wrong schema ($schema) specified for data source ($found)'))
+    BAD_TABLE = BatCaveError(4, Template('No table named "$table_name" in data source "$source_name"'))
+    BAD_URL = BatCaveError(5, Template('No valid DataSource found at URL: $url'))
+    FILE_OPEN = BatCaveError(6, Template('Unable to open file: $errmsg'))
+    INVALID_OPERATION = BatCaveError(7, Template('Function "$function" not supported for source type "$source_type"'))
+    INVALID_TYPE = BatCaveError(8, 'Invalid data source type. Must be one of: ' + str([t.name for t in _SOURCE_TYPES]))
 
 
 class DataSource:
@@ -149,7 +148,7 @@ class DataSource:
             if create and (ioe.errno == 2):
                 self._create()
             else:
-                raise DataError(DataError.FILEOPEN, errmsg=str(ioe))
+                raise DataError(DataError.FILE_OPEN, errmsg=str(ioe))
 
     filename = property(lambda s: s._connectinfo)
 
@@ -168,19 +167,19 @@ class DataSource:
         except IndexError:
             return 0
         except DataError as err:
-            if err.code != DataError.NOTABLE.code:
+            if err.code != DataError.BAD_TABLE.code:
                 raise
             return 0
 
     def _validate_type(self):
         'determines if the specified data source type is valid'
         if self.type not in self.SOURCE_TYPES:
-            raise DataError(DataError.INVALIDTYPE)
+            raise DataError(DataError.INVALID_TYPE)
 
     def _validate_schema(self):
         'determines if the specified data source type is valid'
         if self._schema != self.schema:
-            raise DataError(DataError.WRONGSCHEMA, schema=self._schema, found=self.schema)
+            raise DataError(DataError.BAD_SCHEMA, schema=self._schema, found=self.schema)
 
     def _create(self):
         for case in switch(self.type):
@@ -220,7 +219,7 @@ class DataSource:
                         try:
                             (col, val) = pair.split(self._TEXT_VAL_DELIMITER)
                         except ValueError:
-                            raise TextError(TextError.BADCOLUMN, col=pair, line=line)
+                            raise DataError(DataError.BAD_COLUMN, col=pair, line=line)
                         row[col] = val
                     self._source[table_name].append(row)
                 break
@@ -254,11 +253,11 @@ class DataSource:
                         self._connection = xml_etree.parse(self._closer)
                     except expat.ExpatError as err:
                         if expat.ErrorString(err.code) == expat.errors.XML_ERROR_SYNTAX:  # pylint: disable=E1101
-                            raise DataError(DataError.BADURL, url=self._connectinfo)
+                            raise DataError(DataError.BAD_URL, url=self._connectinfo)
                         raise
                 self._source = self._connection.getroot()
                 if self._source.tag != self.name:
-                    raise XMLError(XMLError.BADROOT, source_name=self._connectinfo, root_name=self._source.tag, expected=self.name)
+                    raise DataError(DataError.BAD_ROOT, source_name=self._connectinfo, root_name=self._source.tag, expected=self.name)
                 break
 
     def gettables(self):
@@ -312,7 +311,7 @@ class DataSource:
                         break
                 break
         if table is None:
-            raise DataError(DataError.NOTABLE, table_name=name, source_name=self.name)
+            raise DataError(DataError.BAD_TABLE, table_name=name, source_name=self.name)
         return DataTable(self.type, name, table, self._source)
 
     def hastable(self, name):
@@ -354,7 +353,7 @@ class DataSource:
                 self._source.set(name, self.INI_ROWLIST_OPT, '')
                 break
             if case(self.SOURCE_TYPES.xml_single):
-                raise DataError(DataError.NOTSUPPORTED, function='addtable', source_type=self.type)
+                raise DataError(DataError.INVALID_OPERATION, function='addtable', source_type=self.type)
             if case(self.SOURCE_TYPES.xml_flat):
                 break
             if case(self.SOURCE_TYPES.xml):

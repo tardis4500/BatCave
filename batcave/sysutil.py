@@ -48,7 +48,7 @@ class CMDError(BatCaveException):
     CMDTYPE_NOT_FOUND = BatCaveError(1, Template('Invalid Command type: $cmdtype'))
     CMD_NOT_FOUND = BatCaveError(2, Template('Command not found when running: $cmd'))
     CMD_ERROR = BatCaveError(3, '')
-    UNSUPPORTED = BatCaveError(4, Template('$func is not supported for $context'))
+    INVALID_OPERATION = BatCaveError(4, Template('$func is not supported for $context'))
 
     def __str__(self):
         if self._errobj.code == CMDError.CMD_ERROR.code:
@@ -66,11 +66,7 @@ class OSUtilError(BatCaveException):
     """Exceptions when performing OS level tasks."""
     GROUP_EXISTS = BatCaveError(1, Template('The group already exists: $group'))
     USER_EXISTS = BatCaveError(2, Template('The user already exists: $user'))
-
-
-class PlatformError(BatCaveException):
-    'Used to indicate an unsupported platform'
-    UNSUPPORTED = BatCaveError(1, Template('platform unsupported: $platform'))
+    INVALID_OPERATION = BatCaveError(3, Template('platform unsupported: $platform'))
 
 
 LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))
@@ -153,13 +149,13 @@ def create_group(group_name, exists_ok=True):
 
     Raises:
         OSUtilError.GROUP_EXISTS: If the group exists and exists_ok is False.
-        PlatformError.UNSUPPORTED: If this is a Windows platform.
+        OSUtilError.INVALID_OPERATION: If this is a Windows platform.
 
     Todo:
         Implement for the Windows platform.
     """
     if WIN32:
-        raise PlatformError(PlatformError.UNSUPPORTED, platform='Windows')
+        raise OSUtilError(OSUtilError.INVALID_OPERATION, platform='Windows')
     try:
         getgrnam(group_name)
         if not exists_ok:
@@ -180,13 +176,13 @@ def create_user(username, groups=tuple(), exists_ok=True):
 
     Raises:
         OSUtilError.USER_EXISTS: If the user exists and exists_ok is False.
-        PlatformError.UNSUPPORTED: If this is a Windows platform.
+        OSUtilError.INVALID_OPERATION: If this is a Windows platform.
 
     Todo:
         Implement for the Windows platform.
     """
     if WIN32:
-        raise PlatformError(PlatformError.UNSUPPORTED, platform='Windows')
+        raise OSUtilError(OSUtilError.INVALID_OPERATION, platform='Windows')
     create_group(username, exists_ok)
     try:
         getpwnam(username)
@@ -372,7 +368,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
         The string (or string-list) output of the command.
 
     Raises:
-        CMDError.UNSUPPORTED:
+        CMDError.INVALID_OPERATION:
             If PowerShell remoting is requested while trying to pass remote credentials,
             If remote execution requires the executable to be copied before execution and the local or remote system is Linux.
             If remote execution requires the executable to be copied before execution and PowerShell remoting is requested.
@@ -387,7 +383,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
             if remote_is_windows:
                 if remote_powershell:
                     if remote_auth or copy_for_remote:
-                        raise CMDError(CMDError.UNSUPPORTED, func='remote_auth' if remote_auth else 'copy_for_remote', context='PowerShell')
+                        raise CMDError(CMDError.INVALID_OPERATION, func='remote_auth' if remote_auth else 'copy_for_remote', context='PowerShell')
                     remote_driver = ['powershell', '-NoLogo', '-NonInteractive', '-Command', 'Invoke-Command', '-ComputerName', remote, '-ScriptBlock']
                 else:
                     ignore_stderr = True  # psexec puts status info on stderr
@@ -399,14 +395,14 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
                         copy_for_remote = False
             else:
                 if copy_for_remote:
-                    raise CMDError(CMDError.UNSUPPORTED, func='copy_for_remote', context='Linux')
+                    raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
                 remote_driver = ['plink', '-batch', '-v']
                 if remote_auth:
                     remote_driver += ['-l', remote_auth[0], '-pw', remote_auth[1]]
                 remote_driver += [remote]
         else:
             if copy_for_remote:
-                raise CMDError(CMDError.UNSUPPORTED, func='copy_for_remote', context='Linux')
+                raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
             remote_driver = ['ssh', '-t', '-t']
             if remote_auth:
                 remote_driver += ['-u', remote_auth[0], '-p', remote_auth[1]]
@@ -420,7 +416,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
             remote_cmd = ['{'] + remote_cmd + ['}']
         cmd_spec = remote_driver + remote_cmd
     elif remote_auth or copy_for_remote or remote_powershell or remote_is_windows:
-        raise CMDError(CMDError.UNSUPPORTED, func='remote options', context='local servers')
+        raise CMDError(CMDError.INVALID_OPERATION, func='remote options', context='local servers')
 
     cmd_str = ' '.join([f'"{c}"' for c in cmd_spec])
     if show_cmd or is_debug('SYSCMD'):

@@ -52,29 +52,34 @@ from .fileutil import slurp
 from .lang import is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, WIN32
 
 
-class FormatterError(BatCaveException):
-    'Formatter Exceptions'
-    BAD_FORMAT = BatCaveError(1, Template('Unknown output format requested: $format'))
-
-
-class ItemError(BatCaveException):
-    'Item Exceptions'
-    MISSING_ATTRIBUTE = BatCaveError(1, Template('$attr'))
-
-
 class ExpanderError(BatCaveException):
-    'Expander Exceptions'
+    """Expansion Exceptions.
+
+    Attributes:
+        NO_POST_DELIMITER: No postfix delimiter was found.
+        NO_REPLACEMENT: No replacement was found for the specified variable
+    """
     NO_POST_DELIMITER = BatCaveError(1, Template('No closing delimiter found in $substr'))
-    NO_VARIABLE = BatCaveError(2, Template('No replacement found for variable ($var) in: $thing'))
+    NO_REPLACEMENT = BatCaveError(2, Template('No replacement found for variable ($var) in: $thing'))
 
 
 class ProcedureError(BatCaveException):
-    'Procedure Exceptions'
-    WRONG_SCHEMA = BatCaveError(1, Template('Procedure specified in wrong schema ($schema). Please use schema $expected.'))
-    UNKNOWN_ENVIRONMENT = BatCaveError(2, Template('Unknown environment requested: $env.'))
-    UNKNOWN_LIBRARY = BatCaveError(3, Template('Unable to locate import: $lib.'))
-    BAD_FLAG = BatCaveError(4, Template('Invalid value for flag: $value'))
-    EXPANSION_ERROR = BatCaveError(5, Template('$err\n  On line: $text'))
+    """Procedure Exceptions.
+
+    Attributes:
+        BAD_ENVIRONMENT: The requested environment is not valid.
+        BAD_FLAG: The specified flag value is not value.
+        BAD_FORMAT: The requested output format is not valid.
+        BAD_LIBRARY: The requested library is not valid.
+        BAD_SCHEMA: The procedure schema is not supported.
+        EXPANSION_ERROR: The was an unspecified error during expansion.
+    """
+    BAD_ENVIRONMENT = BatCaveError(1, Template('Unknown environment requested: $env.'))
+    BAD_FLAG = BatCaveError(2, Template('Invalid value for flag: $value'))
+    BAD_FORMAT = BatCaveError(3, Template('Unknown output format requested: $format'))
+    BAD_LIBRARY = BatCaveError(4, Template('Unable to locate import: $lib.'))
+    BAD_SCHEMA = BatCaveError(5, Template('Procedure specified in wrong schema ($schema). Please use schema $expected.'))
+    EXPANSION_ERROR = BatCaveError(6, Template('$err\n  On line: $text'))
 
 
 class Formatter:
@@ -109,7 +114,7 @@ class Formatter:
                 self.eol = '</li></h2>'
                 break
             if case():
-                raise FormatterError(FormatterError.BAD_FORMAT, format=self.format)
+                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
 
     @property
     def bol(self):
@@ -124,7 +129,7 @@ class Formatter:
                 if case(self.OUTPUT_FORMATS.html):
                     return self._bol
                 if case():
-                    raise FormatterError(FormatterError.BAD_FORMAT, format=self.format)
+                    raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         else:
             if self.format == self.OUTPUT_FORMATS.csv:
                 space = ''
@@ -180,7 +185,7 @@ class Formatter:
                 replace_with = f'<a href="{link}">{text}</a>'
                 break
             if case():
-                raise FormatterError(FormatterError.BAD_FORMAT, format=self.format)
+                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         return line.replace(replace_what, replace_with)
 
 
@@ -243,7 +248,7 @@ class Expander:
                         break
 
             if fail:
-                raise ExpanderError(ExpanderError.NO_VARIABLE, var=var, thing=thing)
+                raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=var, thing=thing)
 
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
@@ -312,7 +317,7 @@ class Expander:
             return result
         except NameError as err:
             badvar = str(err)
-        raise ExpanderError(ExpanderError.NO_VARIABLE, var=badvar, thing=expression)
+        raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=badvar, thing=expression)
 
 
 def file_expander(in_file, out_file, vardict=None, varprops=None):
@@ -368,7 +373,7 @@ class Procedure:
         xmlroot = xmlparse(slurp(procfile))
         schema = str_to_pythonval(xmlroot.get(self._SCHEMA_ATTR, 0))
         if schema != self._REQUIRED_PROCEDURE_SCHEMA:
-            raise ProcedureError(ProcedureError.WRONG_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
+            raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
         self.header = xmlroot.findtext(self._HEADER_TAG) if xmlroot.findtext(self._HEADER_TAG) else ''
         flags = {f.tag: self.parse_flag(f.text) for f in list(xmlroot.find(self._FLAGS_TAG))} if xmlroot.find(self._FLAGS_TAG) else dict()
         self.directories = [d.text for d in list(xmlroot.find(self._DIRECTORIES_TAG))] if xmlroot.find(self._DIRECTORIES_TAG) else list()
@@ -422,7 +427,7 @@ class Procedure:
     def setup_expander(self, environment):
         'Setup the Expander for the requested environment'
         if environment not in self.environments:
-            ProcedureError(ProcedureError.UNKNOWN_ENVIRONMENT, env=environment)
+            ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
         self.expander = Expander(self.environments[environment])
 
     def expand(self, text):
@@ -430,7 +435,7 @@ class Procedure:
         try:
             return self.expander.expand(text)
         except ExpanderError as err:
-            if err.code == ExpanderError.NO_VARIABLE.code:
+            if err.code == ExpanderError.NO_REPLACEMENT.code:
                 raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text)
             raise
 
@@ -457,7 +462,7 @@ class Procedure:
                 footer = '</ol></body></html>'
                 break
             if case():
-                raise FormatterError(FormatterError.BAD_FORMAT, format=self.output_format)
+                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.output_format)
 
         content = ''
         for step in self.steps:
@@ -479,7 +484,7 @@ class Procedure:
 
         if step.libimport:
             if step.libimport not in self.library:
-                ProcedureError(ProcedureError.UNKNOWN_LIBRARY, lib=step.libimport)
+                ProcedureError(ProcedureError.BAD_LIBRARY, lib=step.libimport)
             lib_step = deepcopy(self.library[step.libimport])
             lib_step.repeat = step.repeat
             lib_step.vars.update(step.vars)

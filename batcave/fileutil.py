@@ -24,14 +24,23 @@ from .lang import switch, BatCaveError, BatCaveException
 
 
 class ConvertError(BatCaveException):
-    'Error class for conversion errors'
+    """File Conversion Exceptions.
+
+    Attributes:
+        BACKUP_EXISTS: The backup file already exists.
+    """
     BACKUP_EXISTS = BatCaveError(1, Template('$file already exists'))
 
 
 class PackError(BatCaveException):
-    'Error class for packing errors'
-    NO_FILES = BatCaveError(1, 'No files to add')
-    UNKNOWN_ARCHIVE = BatCaveError(2, Template('Unknown archive type: $arctype'))
+    """File Packing Exceptions.
+
+    Attributes:
+        INVALID_TYPE: An invalid archive type was specified.
+        NO_FILES: No files were found to pack into the archive.
+    """
+    INVALID_TYPE = BatCaveError(1, Template('Unknown archive type: $arctype'))
+    NO_FILES = BatCaveError(2, 'No files to add')
 
 
 CONVERSION_MODES = Enum('conversion_modes', ('to_unix', 'to_dos'))
@@ -168,7 +177,7 @@ def unpack(arcfile, dest=None, arctype=None):
         Nothing.
 
     Raises:
-        PackError.UNKNOWN_ARCHIVE: If the arctype is unknown.
+        PackError.INVALID_TYPE: If the arctype is unknown.
     """
     archive = Path(arcfile).resolve() if isinstance(arcfile, str) else arcfile
     if dest:
@@ -193,7 +202,7 @@ def unpack(arcfile, dest=None, arctype=None):
             extractor = 'extract'
             break
         if case():
-            raise PackError(PackError.UNKNOWN_ARCHIVE, arctype=arctype)
+            raise PackError(PackError.INVALID_TYPE, arctype=arctype)
 
     for member_info in getattr(pkgfile, lister)():
         member_path = Path(member_info.name if (arctype == 'tar') else member_info)

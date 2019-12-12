@@ -52,25 +52,25 @@ class CMSError(BatCaveException):
     """CMS Exceptions.
 
     Attributes:
-        INVALIDTYPE: An invalid CMS type was specified.
-        CONNECT_FAILED: Error connecting to the CMS system.
-        CLIENT_NAME_REQUIRED: A client name is required if create=False.
-        CLIENT_DATA_INVALID: The root and mapping arguments cannot be specified if create=False.
         CHANGELIST_NOT_EDITABLE: An attempt was made to edit a readonly changelist.
-        INVALIDTYPE_FOR_OPERATION = The specified CMS type does not support the requested operation.
-        GIT_FAILURE: Gir returned an error.
+        CLIENT_DATA_INVALID: The root and mapping arguments cannot be specified if create=False.
+        CLIENT_NAME_REQUIRED: A client name is required if create=False.
         CLIENT_NOT_FOUND: The specified client was not found.
+        CONNECT_FAILED: Error connecting to the CMS system.
         CONNECTINFO_REQUIRED: Connection info is required for the specified CMS type.
+        GIT_FAILURE: Gir returned an error.
+        INVALID_OPERATION: The specified CMS type does not support the requested operation.
+        INVALID_TYPE: An invalid CMS type was specified.
     """
-    INVALIDTYPE = BatCaveError(1, Template('Invalid CMS type ($ctype). Must be one of: ' + str([t.name for t in _CLIENT_TYPES])))
-    CONNECT_FAILED = BatCaveError(2, Template('Unable to connect to CMS server on $connectinfo'))
+    CHANGELIST_NOT_EDITABLE = BatCaveError(1, Template('changelist $changelist not opened for edit'))
+    CLIENT_DATA_INVALID = BatCaveError(2, Template('$data not valid if client exists'))
     CLIENT_NAME_REQUIRED = BatCaveError(3, 'Name required if client is not being created')
-    CLIENT_DATA_INVALID = BatCaveError(4, Template('$data not valid if client exists'))
-    CHANGELIST_NOT_EDITABLE = BatCaveError(5, Template('changelist $changelist not opened for edit'))
-    INVALIDTYPE_FOR_OPERATION = BatCaveError(6, Template('Invalid CMS type ($ctype) for this operation'))
+    CLIENT_NOT_FOUND = BatCaveError(4, Template('Client $name not found'))
+    CONNECT_FAILED = BatCaveError(5, Template('Unable to connect to CMS server on $connectinfo'))
+    CONNECTINFO_REQUIRED = BatCaveError(6, Template('Connectinfo required for CMS type ($ctype)'))
     GIT_FAILURE = BatCaveError(7, Template('Git Error:\n$msg'))
-    CLIENT_NOT_FOUND = BatCaveError(8, Template('Client $name not found'))
-    CONNECTINFO_REQUIRED = BatCaveError(9, Template('Connectinfo required for CMS type ($ctype)'))
+    INVALID_OPERATION = BatCaveError(8, Template('Invalid CMS type ($ctype) for this operation'))
+    INVALID_TYPE = BatCaveError(9, Template('Invalid CMS type ($ctype). Must be one of: ' + str([t.name for t in _CLIENT_TYPES])))
 
 
 class Label:
@@ -95,7 +95,7 @@ class Label:
                     changed = True
                     break
                 if case():
-                    raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                    raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
         if description:
             for case in switch(self._client.type):
                 if case(Client.CLIENT_TYPES.perforce):
@@ -103,14 +103,14 @@ class Label:
                     changed = True
                     break
                 if case():
-                    raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                    raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
         if changed:
             for case in switch(self._client.type):
                 if case(Client.CLIENT_TYPES.perforce):
                     self._save()
                     break
                 if case():
-                    raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                    raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
         if lock:
             self.lock()
 
@@ -125,7 +125,7 @@ class Label:
             if case(Client.CLIENT_TYPES.perforce):
                 return '\n'.join([f'{i}: {v}' for (i, v) in self._client._p4fetch('label', self._name).items()])  # pylint: disable=W0212
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     description = property(lambda s: s._get_info('Description'))
     name = property(lambda s: s._name)
@@ -138,7 +138,7 @@ class Label:
                 self._label = self._client._p4fetch('label', self._name)  # pylint: disable=W0212
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def _save(self):
         for case in switch(self._client.type):
@@ -146,7 +146,7 @@ class Label:
                 self._client._p4save('label', self._label)  # pylint: disable=W0212
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def _get_info(self, field):
         return self._label[field]
@@ -161,7 +161,7 @@ class Label:
                 self._label['Options'] += 'locked'
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
         self._save()
 
     def unlock(self):
@@ -174,7 +174,7 @@ class Label:
                 self._label['Options'] += 'unlocked'
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
         self._save()
 
     def apply(self, *files, no_execute=False):
@@ -182,7 +182,7 @@ class Label:
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 if self._type == self.LABEL_TYPES.project:
-                    raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                    raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
                 args = ['labelsync', '-l', self._name]
                 if no_execute:
                     args.append('-n')
@@ -190,13 +190,13 @@ class Label:
                     args += files
                 return self._client._p4run(*args)  # pylint: disable=W0212
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def remove(self, *files):
         'Remove the label from a list of files'
         for case in switch(self._client.type):
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
 
 class Client:
@@ -244,7 +244,7 @@ class Client:
                     connectinfo = self.get_cms_sys_value('P4PORT')
                     break
                 if case():
-                    raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                    raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         self._connectinfo = connectinfo
 
         if not user:
@@ -256,7 +256,7 @@ class Client:
                     user = self.get_cms_sys_value('P4USER')
                     break
                 if case():
-                    raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                    raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         self._user = user
 
         if info:
@@ -287,7 +287,7 @@ class Client:
                         name = self._user + '_' + self._tmpdir.name
                         break
                     if case():
-                        raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         elif not name:
             raise CMSError(CMSError.CLIENT_NAME_REQUIRED)
         self._name = name
@@ -348,7 +348,7 @@ class Client:
                     self._p4save('client', clientspec)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def __enter__(self):
         return self
@@ -380,7 +380,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return Path(self._p4fetch('client')['Root'])
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     @property
     def mapping(self):
@@ -402,7 +402,7 @@ class Client:
                 self._p4save('client', client_spec)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     @property
     def cms_info(self):
@@ -416,7 +416,7 @@ class Client:
                 return '\n'.join([f'{i}: {v}' for (i, v) in self._p4run('info')[0].items()] +
                                  ['server_level='+self._client.server_level, 'api_level='+self._client.api_level])
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     @property
     def branches(self):
@@ -425,7 +425,7 @@ class Client:
             if case(self.CLIENT_TYPES.git):
                 return self._client.heads + self._client.remotes.origin.refs
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     @property
     def streams(self):
@@ -434,7 +434,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('streams', ['-T', 'Stream'])
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def _validatetype(self):
         'determines if the specified CMS type is valid'
@@ -443,7 +443,7 @@ class Client:
     def _p4run(self, method, *args):
         'runs a Perforce command'
         if self._type != self.CLIENT_TYPES.perforce:
-            raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+            raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         if is_debug('P4'):
             print('Executing P4 command:', method, args, self._connected)
         try:
@@ -499,7 +499,7 @@ class Client:
                     raise
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def list(self):
         'returns a list of all the files in the current client'
@@ -517,7 +517,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('have')
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def find(self, file_regex=''):
         'returns a list of files matching the specifications'
@@ -533,7 +533,7 @@ class Client:
                         raise
                 return list()
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def integrate(self, source, target, no_execute=False):
         'integrates the source into the target'
@@ -544,7 +544,7 @@ class Client:
                     args.append('-n')
                 return self._p4run(*args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def reconcile(self, *files, no_execute=False):
         'reconciles the workspace against the server and creates a changelist for the changes'
@@ -558,7 +558,7 @@ class Client:
                     args += files
                 return self._p4run(*args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def add_files(self, *files, no_execute=False):
         'adds files to the client'
@@ -574,7 +574,7 @@ class Client:
                 args += files
                 return self._p4run('add', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def remove_files(self, *files, no_execute=False):
         'removes files from the client'
@@ -593,7 +593,7 @@ class Client:
                 args += files
                 return self._p4run('delete', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def chmod_files(self, *files, mode, no_execute=False):
         'chmod the file list'
@@ -604,7 +604,7 @@ class Client:
                         self._client.git.update_index(f'--chmod={mode}', cms_file)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def lock_files(self, *files, no_execute=False):
         'places a lock on the files to prevent edits by other users'
@@ -614,7 +614,7 @@ class Client:
                 args += files
                 return self._p4run('lock', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def unlock_files(self, *files, no_execute=False):
         'removes a lock on the files to allow edits by other users'
@@ -624,7 +624,7 @@ class Client:
                 args += files
                 return self._p4run('unedit', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def checkout_files(self, *files, no_execute=False):
         'opens files for editting on the client'
@@ -643,7 +643,7 @@ class Client:
                 args += files
                 return self._p4run('edit', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def checkin_files(self, description, *files, all_branches=False, remote='origin', fail_on_empty=False, no_execute=False, **extra_args):
         'commits files open on the client'
@@ -672,7 +672,7 @@ class Client:
                         raise
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def unco_files(self, *files, unchanged_only=False, no_execute=False):
         'reverts files open for editting on the client'
@@ -699,7 +699,7 @@ class Client:
                         raise
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def create_repo(self, repository, repo_type=None, no_execute=False):
         'Create a repository'
@@ -712,7 +712,7 @@ class Client:
                     self._p4save('depot', depotspec)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def create_branch(self, name, branch_from=None, repo=None, branch_type=None, options=None, no_execute=False):
         'Create a branch'
@@ -742,7 +742,7 @@ class Client:
                     self._client.git.push('origin', name, set_upstream=True)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def populate_branch(self, source, target, no_execute=False):
         'Populate a branch'
@@ -752,7 +752,7 @@ class Client:
                     self._p4run('populate', [source, target])
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def add_remote_ref(self, name, url, exists_ok=False, no_execute=False):
         'Add a remote reference for a DVCS client'
@@ -764,7 +764,7 @@ class Client:
                     self._client.create_remote(name, url)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def rename_remote_ref(self, oldname, newname, no_execute=False):
         'Rename a remote reference for a DVCS client '
@@ -774,7 +774,7 @@ class Client:
                     self._client.remotes[oldname].rename(newname)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def merge(self, source_branch, checkin=True, checkin_message=None, no_execute=False):
         'performs a file merge on files open on the client'
@@ -787,7 +787,7 @@ class Client:
                     self.checkin_files(checkin_message, all_branches=True, no_execute=no_execute)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def switch(self, branch):
         'switches to the specified branch'
@@ -797,7 +797,7 @@ class Client:
                     self._client.create_head(branch, getattr(self._client.remotes.origin.refs, branch))
                 return self._client.git.checkout(branch)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_users(self):
         'returns the list of valid users'
@@ -805,7 +805,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('users')
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_file(self, filename, checkout=False):
         'returns the named file contents'
@@ -820,7 +820,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('print', filename)[1:]
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_filepath(self, file_name):
         'returns the full local OS path to the file'
@@ -831,7 +831,7 @@ class Client:
                 file_info = self._p4run('fstat', file_name)
                 return file_info[0]['clientFile']
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_changelists(self, *names, forfiles=None, count=None):
         'returns a list of changelist objects for the specified changelist names'
@@ -846,7 +846,7 @@ class Client:
                     names = self._p4run('changes', *arglist)
                 return [ChangeList(self, c, ) for c in names]
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_changelist(self, name, *files, edit=False):
         'returns a list of changelist objects for the specified changelist names'
@@ -865,7 +865,7 @@ class Client:
                     self._client.create_tag(tag_name)
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_labels(self, *args):
         'returns the labels in the cms system'
@@ -873,7 +873,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('labels', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_clients(self, *args):
         'returns the clients in the cms system'
@@ -881,7 +881,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('clients', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_repos(self, *args):
         'returns the repositories in the cms system'
@@ -889,7 +889,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('depots', *args)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_max_changelist(self, label=''):
         'Return the highest changelist number'
@@ -899,7 +899,7 @@ class Client:
                     label = '@' + label
                 return self._p4run('changes', '-m1', f'//...{label}')[0]['change']
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_user_record(self, username):
         'returns the cms system information about the specified username'
@@ -907,7 +907,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4fetch('user', username)
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_server_connection(self):
         'returns the cms system name of the server'
@@ -917,7 +917,7 @@ class Client:
             if case(self.CLIENT_TYPES.perforce):
                 return self._connectinfo
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
     server_name = property(lambda s: s.get_server_connection()[0])
 
     def close(self):
@@ -955,7 +955,7 @@ class Client:
             if case(self.CLIENT_TYPES.git):
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         if (clean == self.CLEAN_TYPES.all) and client_root and client_root.is_dir():
             rmtree_hard(client_root)
         return results
@@ -987,7 +987,7 @@ class Client:
                 if var == 'USER':
                     if getuser():
                         return getuser()
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
 
 def walk_git_tree(tree, parent=None):
@@ -1085,7 +1085,7 @@ class ChangeList:
                     self._id = self._changelist['change']
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     name = property(lambda s: s._id)
 
@@ -1099,7 +1099,7 @@ class ChangeList:
             if case(Client.CLIENT_TYPES.perforce):
                 return self._changelist['User' if self._editable else 'user']
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @user.setter
     def user(self, newuser):
@@ -1111,7 +1111,7 @@ class ChangeList:
                 self._changelist['User'] = newuser
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @property
     def time(self):
@@ -1123,7 +1123,7 @@ class ChangeList:
                 else:
                     return datetime.fromtimestamp(int(self._changelist['time']))
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @time.setter
     def time(self, newtime):
@@ -1135,7 +1135,7 @@ class ChangeList:
                 self._changelist['Date'] = newtime.strftime('%Y/%m/%d %H:%M:%S') if isinstance(newtime, datetime) else newtime
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @property
     def desc(self):
@@ -1144,7 +1144,7 @@ class ChangeList:
             if case(Client.CLIENT_TYPES.perforce):
                 return self._changelist['Description' if self._editable else 'desc']
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @desc.setter
     def desc(self, newdesc):
@@ -1156,7 +1156,7 @@ class ChangeList:
                 self._changelist['Description'] = newdesc
                 break
             if case():
-                raise CMSError(CMSError.INVALIDTYPE_FOR_OPERATION, ctype=self._client.type.name)
+                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @property
     def files(self):
@@ -1206,10 +1206,10 @@ def validatetype(ctype):
         Nothing.
 
     Raises
-        CMSError.INVALIDTYPE: If the CMS type is not valid.
+        CMSError.INVALID_TYPE: If the CMS type is not valid.
     """
     if ctype not in Client.CLIENT_TYPES:
-        raise CMSError(CMSError.INVALIDTYPE, ctype=ctype)
+        raise CMSError(CMSError.INVALID_TYPE, ctype=ctype)
 
 
 # cSpell:ignore checkin unedit

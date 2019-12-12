@@ -23,13 +23,8 @@ class IISConfigurationError(BatCaveException):
 
 class IISAdvancedLogError(BatCaveException):
     'Class for IISAdvancedLog errors'
-    INVALID_FIELD = BatCaveError(1, Template('attempt to add non-existent field: $field'))
+    BAD_FIELD = BatCaveError(1, Template('attempt to add non-existent field: $field'))
     NOT_INSTALLED = BatCaveError(2, 'IIS Advanced Logging is not installed on the target system')
-
-
-class IISObjectError(BatCaveException):
-    'Class for IISObject errors'
-    UNKNOWN_TYPE_ERROR = BatCaveError(1, Template('Unknown IISObject type: $type'))
 
 
 class IISObject:
@@ -325,7 +320,7 @@ class IISAdvancedLogger(IISConfigurationSection):
     def add_logfield(self, log_name, field_name, field_values=None):
         'Adds a field to a log definition'
         if not self.has_collection_member('fields', 'id', field_name):
-            raise IISAdvancedLogError(IISAdvancedLogError.INVALID_FIELD, field=field_name)
+            raise IISAdvancedLogError(IISAdvancedLogError.BAD_FIELD, field=field_name)
         self.add_collection_member(f"logDefinitions.[baseFileName='{log_name}'].selectedFields",
                                    {'id': field_name,
                                     'logHeaderName': '',

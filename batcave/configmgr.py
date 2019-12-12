@@ -13,13 +13,13 @@ class ConfigurationError(BatCaveException):
     """Configuration Exceptions.
 
     Attributes:
-        CONFIG_NOT_FOUND: The specified configuration file was not found.
         BAD_FORMAT: The configuration file format is invalid.
         BAD_SCHEMA: The configuration schema is not supported.
+        CONFIG_NOT_FOUND: The specified configuration file was not found.
     """
-    CONFIG_NOT_FOUND = BatCaveError(1, Template('Unable to find the configuration file: $file'))
-    BAD_FORMAT = BatCaveError(2, Template('Bad format for configuration file: $file'))
-    BAD_SCHEMA = BatCaveError(3, Template('Invalid schema in configuration file: $file'))
+    BAD_FORMAT = BatCaveError(1, Template('Bad format for configuration file: $file'))
+    BAD_SCHEMA = BatCaveError(2, Template('Invalid schema in configuration file: $file'))
+    CONFIG_NOT_FOUND = BatCaveError(3, Template('Unable to find the configuration file: $file'))
 
 
 class ConfigCollection:

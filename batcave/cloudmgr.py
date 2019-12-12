@@ -29,13 +29,13 @@ class CloudError(BatCaveException):
     """Cloud Exceptions.
 
     Attributes:
-        INVALIDTYPE: An invalid cloud type was specified.
-        INVALIDTYPE_FOR_OPERATION: The specified cloud type does not support the requested operation.
         IMAGE_ERROR: There was an error working with a container image.
+        INVALID_OPERATION: The specified cloud type does not support the requested operation.
+        INVALID_TYPE: An invalid cloud type was specified.
     """
-    INVALIDTYPE = BatCaveError(1, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in _CLOUD_TYPES])))
-    INVALIDTYPE_FOR_OPERATION = BatCaveError(2, Template('Invalid Cloud type ($ctype) for this operation'))
-    IMAGE_ERROR = BatCaveError(3, Template('Error ${action}ing image: $err'))
+    IMAGE_ERROR = BatCaveError(1, Template('Error ${action}ing image: $err'))
+    INVALID_OPERATION = BatCaveError(2, Template('Invalid Cloud type ($ctype) for this operation'))
+    INVALID_TYPE = BatCaveError(3, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in _CLOUD_TYPES])))
 
 
 class Cloud:
@@ -74,7 +74,7 @@ class Cloud:
             Nothing
 
         Raises:
-            CloudError.INVALIDTYPE_FOR_OPERATION: if the value of self.ctype is not in CLOUD_TYPES
+            CloudError.INVALID_OPERATION: if the value of self.ctype is not in CLOUD_TYPES
         """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
@@ -88,7 +88,7 @@ class Cloud:
                 self.client = True
                 break
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
     def get_image(self, tag: str) -> Image:  # noqa:F821, pylint: disable=used-before-assignment
         """Get an image from the cloud container registry.
@@ -125,7 +125,7 @@ class Cloud:
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
                 return [Container(self, c.name) for c in self.client.containers.list(filters=filters)]
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
     containers = property(get_containers)
 
     def exec(self, *args, **opts):
@@ -134,7 +134,7 @@ class Cloud:
             if case(self.CLOUD_TYPES.gcloud):
                 return gcloud(None, *args, **opts)
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
 
 class Image:
@@ -156,7 +156,7 @@ class Image:
                 self.ref = None
                 break
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def __enter__(self):
         return self
@@ -175,7 +175,7 @@ class Image:
                     args += ('--filter='+image_filter,)
                 return sorted([t for i in json_read(self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)) for t in i['tags']])
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
     tags = property(get_tags)
     containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}))
 
@@ -189,7 +189,7 @@ class Image:
                     raise CloudError(CloudError.IMAGE_ERROR, action=action, err=''.join(errors))
                 return docker_log
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def push(self):
         'Push an image to the cloud registry'
@@ -214,7 +214,7 @@ class Image:
                 new_ref = Image(self.cloud, new_tag)
                 break
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
         return new_ref
 
     def run(self, detach=True, update=True, **args):
@@ -225,7 +225,7 @@ class Image:
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self.cloud.client.containers.run(self.name, detach=detach, **args)
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
 
 class Container:
@@ -239,7 +239,7 @@ class Container:
                 self.ref = self.cloud.client.containers.get(self.name)
                 break
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def __enter__(self):
         return self
@@ -253,7 +253,7 @@ class Container:
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self.ref.stop()
             if case():
-                raise CloudError(CloudError.INVALIDTYPE_FOR_OPERATION, ctype=self.cloud.type.name)
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
 
 def validatetype(ctype):
@@ -266,7 +266,7 @@ def validatetype(ctype):
         Nothing.
 
     Raises
-        CloudError.INVALIDTYPE: If the cloud type is not valid.
+        CloudError.INVALID_TYPE: If the cloud type is not valid.
     """
     if ctype not in Cloud.CLOUD_TYPES:
-        raise CloudError(CloudError.INVALIDTYPE, ctype=ctype)
+        raise CloudError(CloudError.INVALID_TYPE, ctype=ctype)

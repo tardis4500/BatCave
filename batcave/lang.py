@@ -80,7 +80,7 @@ class BatCaveError:
 
 class PythonVersionError(BatCaveException):
     'Used to indicate the wrong version of Python'
-    WRONG_VERSION = BatCaveError(1, Template('Python $needed required but $used used'))
+    BAD_VERSION = BatCaveError(1, Template('Python $needed required but $used used'))
 
 
 class switch:  # pylint: disable=C0103
@@ -241,12 +241,12 @@ def validate_python(test_against=(3, 6)):
         test_against (optional, default=(3,7)): The value of Python to check.
 
     Raises:
-        PythonVersionError.WRONG_VERSION: If the version is too low.
+        PythonVersionError.BAD_VERSION: If the version is too low.
     """
     used = version_info[:2]
     needed = test_against if test_against else (3, 6)
     if used != needed:
-        raise PythonVersionError(PythonVersionError.WRONG_VERSION, used=used, needed=needed)
+        raise PythonVersionError(PythonVersionError.BAD_VERSION, used=used, needed=needed)
 
 
 def xor(value1, value2):
