@@ -29,7 +29,7 @@ class ConvertError(BatCaveException):
     Attributes:
         BACKUP_EXISTS: The backup file already exists.
     """
-    BACKUP_EXISTS = BatCaveError(1, Template('$file already exists'))
+    BACKUP_EXISTS = BatCaveError(1, Template('File already exists: $file'))
 
 
 class PackError(BatCaveException):

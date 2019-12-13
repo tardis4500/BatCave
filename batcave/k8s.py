@@ -24,13 +24,26 @@ kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
 
 
 class ClusterError(BatCaveException):
-    'Class the handle cluster exceptions'
+    """Kubernetes Cluster Exceptions.
+
+    Attributes:
+        BAD_ARGS: Bad arguments were specified.
+        TIMEOUT: There was a timeout on the cluster.
+    """
     BAD_ARGS = BatCaveError(1, Template('$error'))
     TIMEOUT = BatCaveError(2, Template('Timeout waiting for $seconds seconds for $what $action'))
 
 
 class PodError(BatCaveException):
-    'Class to handle pod exceptions'
+    """Kubernetes Pod Exceptions.
+
+    Attributes:
+        BAD_COPY_FILENAME: The file specified for the copy was invalid.
+        COPY_ERROR: There was an error transfering a file to or from a pod.
+        EXEC_ERROR: There was an error executing a pod command.
+        FILE_NOT_FOUND: The file specified for the copy was not found in the pod.
+        INVALID_COPY_MODE: The copy mode was invalid.
+    """
     BAD_COPY_FILENAME = BatCaveError(1, Template('File not copied $mode, check filenames'))
     COPY_ERROR = BatCaveError(2, Template('Error copying pod file: $errlines'))
     EXEC_ERROR = BatCaveError(3, Template('Error executing pod command: $errlines'))

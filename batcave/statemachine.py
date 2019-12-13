@@ -12,14 +12,25 @@ from .lang import is_debug, BatCaveError, BatCaveException
 
 
 class StateMachineError(BatCaveException):
-    'State machine exception class.'
-    CRASHED = BatCaveError(1, Template('State machine crashed in state: $state'))
-    BAD_STATUS = BatCaveError(2, Template('Unknown status: $status'))
-    BAD_ENTRY = BatCaveError(3, 'Attempt to enter next state before exiting current one')
-    BAD_EXIT = BatCaveError(4, 'Attempt to exit state before entering')
-    BAD_ROLLBACK = BatCaveError(5, 'Attempt to rollback state before entering')
-    DONE = BatCaveError(6, 'Attempt to enter state after final state')
-    ALREADY_STARTED = BatCaveError(7, 'State machine already started')
+    """State Machine Exceptions.
+
+    Attributes:
+        ALREADY_STARTED: There was an attempt to start a state machine that is already in progress.
+        BAD_ENTRY: There was an attempt to enter next state before exiting current one.
+        BAD_EXIT: There was an attempt to exit the state before it was entered.
+        BAD_ROLLBACK: There was an attempt to rollback a state before it entered.
+        BAD_STATUS: An invalid status was requested.
+        CRASHED: The state machine crashed in a state.
+        DONE: There was an attempt to enter a state after the final state.
+        NOT_STARTED: There was an attempt to continue a state machine that has not started.
+    """
+    ALREADY_STARTED = BatCaveError(1, 'State machine already started')
+    BAD_ENTRY = BatCaveError(2, 'Attempt to enter next state before exiting current one')
+    BAD_EXIT = BatCaveError(3, 'Attempt to exit state before entering')
+    BAD_ROLLBACK = BatCaveError(4, 'Attempt to rollback state before entering')
+    BAD_STATUS = BatCaveError(5, Template('Unknown status: $status'))
+    CRASHED = BatCaveError(6, Template('State machine crashed in state: $state'))
+    DONE = BatCaveError(7, 'Attempt to enter state after final state')
     NOT_STARTED = BatCaveError(8, 'State machine not started')
 
 

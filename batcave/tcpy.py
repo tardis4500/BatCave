@@ -14,8 +14,12 @@ from .lang import BatCaveError, BatCaveException, FROZEN, BATCAVE_HOME
 
 
 class TeamCityError(BatCaveException):
-    'Container for TeamCity exceptions'
-    INVALID_CONFIG = BatCaveError(1, Template('Invalid configuration ID: $id'))
+    """TeamCity Exceptions.
+
+    Attributes:
+        BAD_CONFIG: The requested configuration was not found.
+    """
+    BAD_CONFIG = BatCaveError(1, Template('Invalid configuration ID: $id'))
 
 
 class TCBuildConfig:
@@ -30,7 +34,7 @@ class TCBuildConfig:
         except exceptions.HTTPError:
             fail = True
         if fail:
-            raise TeamCityError(TeamCityError.INVALID_CONFIG, id=self.config_id)
+            raise TeamCityError(TeamCityError.BAD_CONFIG, id=self.config_id)
 
     def __str__(self):
         return str(self.info)

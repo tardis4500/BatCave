@@ -62,7 +62,7 @@ class CMSError(BatCaveException):
         INVALID_OPERATION: The specified CMS type does not support the requested operation.
         INVALID_TYPE: An invalid CMS type was specified.
     """
-    CHANGELIST_NOT_EDITABLE = BatCaveError(1, Template('changelist $changelist not opened for edit'))
+    CHANGELIST_NOT_EDITABLE = BatCaveError(1, Template('Changelist $changelist not opened for edit'))
     CLIENT_DATA_INVALID = BatCaveError(2, Template('$data not valid if client exists'))
     CLIENT_NAME_REQUIRED = BatCaveError(3, 'Name required if client is not being created')
     CLIENT_NOT_FOUND = BatCaveError(4, Template('Client $name not found'))

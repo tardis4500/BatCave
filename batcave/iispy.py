@@ -12,18 +12,31 @@ from .lang import bool_to_str, str_to_pythonval, BatCaveError, BatCaveException
 
 
 class AppCmdError(BatCaveException):
-    'Class for IISConfiguration errors'
-    SYS_CMD_ERROR = BatCaveError(1, Template('error running appcmd: $message'))
+    """appcmd Exceptions.
+
+    Attributes:
+        APPCMD_ERROR: There was an error executing appcmd.exe.
+    """
+    APPCMD_ERROR = BatCaveError(1, Template('Error running appcmd: $message'))
 
 
 class IISConfigurationError(BatCaveException):
-    'Class for IISConfiguration errors'
-    PARSE_ERROR = BatCaveError(1, Template("unable to locate '$expected' in configuration"))
+    """IIS Configuration Exceptions.
+
+    Attributes:
+        PARSE_ERROR: There was an error locating the specified configuration section.
+    """
+    PARSE_ERROR = BatCaveError(1, Template("Unable to locate '$expected' in configuration"))
 
 
 class IISAdvancedLogError(BatCaveException):
-    'Class for IISAdvancedLog errors'
-    BAD_FIELD = BatCaveError(1, Template('attempt to add non-existent field: $field'))
+    """IIS AdvancedLog Exceptions.
+
+    Attributes:
+        BAD_FIELD: There was an attempt to add a non-existent field.
+        NOT_INSTALLED: Advanced logging is not installed.
+    """
+    BAD_FIELD = BatCaveError(1, Template('Attempt to add non-existent field: $field'))
     NOT_INSTALLED = BatCaveError(2, 'IIS Advanced Logging is not installed on the target system')
 
 
@@ -361,7 +374,7 @@ def appcmd(*cmd_args, hostname, **sys_cmd_args):
         Nothing.
 
     Raises:
-        AppCmdError.SYS_CMD_ERROR: If there are errors reported by appcmd.
+        AppCmdError.APPCMD_ERROR: If there are errors reported by appcmd.
     """
     _appcmd = Path(getenv('SystemRoot', ''), 'system32/inetsrv/appcmd.exe')
 
@@ -378,7 +391,7 @@ def appcmd(*cmd_args, hostname, **sys_cmd_args):
             raise
         return_code = err.vars['returncode']
 
-    err_object = AppCmdError(AppCmdError.SYS_CMD_ERROR, message=errmsg.attrib['message'])
+    err_object = AppCmdError(AppCmdError.APPCMD_ERROR, message=errmsg.attrib['message'])
     err_object.vars['returncode'] = return_code
     raise err_object
 

@@ -49,30 +49,54 @@ _STATUS_CHECK_INTERVAL = 2
 
 
 class LoadBalancerError(BatCaveException):
-    'Class for LoadBalancer related error'
+    """Loadbalancer Exceptions.
+
+    Attributes:
+        BAD_OBJECT: The object type was not found in the load balancer.
+        BAD_SERVER_SIGNAL: The signal is invalid.
+    """
     BAD_OBJECT = BatCaveError(1, Template('Requested $type not in load balancer: $name'))
     BAD_SERVER_SIGNAL = BatCaveError(2, Template('Unknown server signal: $signal'))
 
 
 class ServerObjectManagementError(BatCaveException):
-    'Class for Service related errors'
-    BAD_OBJECT_STATE = BatCaveError(1, Template('Unknown object state: $state'))
-    UNKNOWN_OBJECT_SIGNAL = BatCaveError(2, Template('Unknown object signal: $signal'))
-    BAD_TRANSITION = BatCaveError(3, Template('Invalid state transition from $from_state to $to_state'))
-    SERVER_NOT_FOUND = BatCaveError(4, Template('No server found: $server'))
-    REMOTE_CONNECTION_ERROR = BatCaveError(5, Template('Unable to connect to remote server $server: $msg'))
-    NOT_UNIQUE = BatCaveError(6, Template('Unable to locate unique $type according to $filters'))
-    OBJECT_NOT_FOUND = BatCaveError(8, Template('No $type object found'))
-    BAD_FILTER = BatCaveError(9, 'One and only one filter must be provided for this object')
-    REMOTE_NOT_SUPPORTED = BatCaveError(10, 'Remote objects are not supported for Linux servers')
-    STATUS_CHECK_TIMEOUT = BatCaveError(11, Template('Timeout waiting for expected $type state: $state'))
-    WMI_ERROR = BatCaveError(12, Template('WMI error on server $server: $msg'))
+    """Server Exceptions.
+
+    Attributes:
+        BAD_FILTER: Multiple filters were specified when only one is allowed.
+        BAD_OBJECT_SIGNAL: The signal type is invalid.
+        BAD_OBJECT_STATE: The object state is unknown.
+        BAD_TRANSITION: The object state transition was unexpected.
+        OBJECT_NOT_FOUND: The requested object was not found.
+        REMOTE_CONNECTION_ERROR: The was an error attempting to connect to the remote server.
+        REMOTE_NOT_SUPPORTED: The request action is not supported for remote servers.
+        SERVER_NOT_FOUND: The requested server was not found.
+        NOT_UNIQUE: A unique instance of the object was not found.
+        STATUS_CHECK_TIMEOUT: The was a timeout checking for the status of the object.
+        WMI_ERROR: The was a WMI error.
+    """
+    BAD_FILTER = BatCaveError(1, 'One and only one filter must be provided for this object')
+    BAD_OBJECT_SIGNAL = BatCaveError(2, Template('Unknown object signal: $signal'))
+    BAD_OBJECT_STATE = BatCaveError(3, Template('Unknown object state: $state'))
+    BAD_TRANSITION = BatCaveError(4, Template('Invalid state transition from $from_state to $to_state'))
+    NOT_UNIQUE = BatCaveError(5, Template('Unable to locate unique $type according to $filters'))
+    OBJECT_NOT_FOUND = BatCaveError(6, Template('No $type object found'))
+    REMOTE_CONNECTION_ERROR = BatCaveError(7, Template('Unable to connect to remote server $server: $msg'))
+    REMOTE_NOT_SUPPORTED = BatCaveError(8, 'Remote objects are not supported for Linux servers')
+    SERVER_NOT_FOUND = BatCaveError(9, Template('No server found: $server'))
+    STATUS_CHECK_TIMEOUT = BatCaveError(10, Template('Timeout waiting for expected $type state: $state'))
+    WMI_ERROR = BatCaveError(11, Template('WMI error on server $server: $msg'))
 
 
 class ServerPathError(BatCaveException):
-    'Class for ServerPath related errors'
-    REMOTE_COPY_SPACE_ERROR = BatCaveError(1, Template('Error during robocopy, possible lack of disk space on $dest'))
-    UNSUPPORTED = BatCaveError(2, 'This function is only supported for remote Windows servers from Windows servers')
+    """ServerPath Exceptions.
+
+    Attributes:
+        INVALID_OPERATION: The specified server type does not support the requested operation.
+        REMOTE_COPY_SPACE_ERROR: The remote server did not have enough disk space for the copy.
+    """
+    INVALID_OPERATION = BatCaveError(1, 'This function is only supported for remote Windows servers from Windows servers')
+    REMOTE_COPY_SPACE_ERROR = BatCaveError(2, Template('Error during robocopy, possible lack of disk space on $dest'))
 
 
 class LoadBalancer:
@@ -744,7 +768,7 @@ class Win32_ScheduledTask(NamedOSObject):
                 control_args = ('/End',)
                 break
             if case():
-                raise ServerObjectManagementError(ServerObjectManagementError.UNKNOWN_OBJECT_SIGNAL, signal=signal.name)
+                raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         self._run_task_scheduler(*control_args)
         while wait and (self.status.lower() == 'running'):
@@ -883,7 +907,7 @@ class Service(ManagementObject):
                 final_state = self.SERVICE_STATES.Paused
                 break
             if case():
-                raise ServerObjectManagementError(ServerObjectManagementError.UNKNOWN_OBJECT_SIGNAL, signal=signal.name)
+                raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         if not ignore_state:
             for case in switch(self.state):
@@ -951,7 +975,7 @@ class Process(ManagementObject):
                 control_method = 'Terminate' if WIN32 else 'Kill'
                 break
             if case():
-                raise ServerObjectManagementError(ServerObjectManagementError.UNKNOWN_OBJECT_SIGNAL, signal=signal.name)
+                raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         if control_method:
             getattr(self, control_method)()
@@ -1119,7 +1143,7 @@ class ServerPath:
             return walk(self.local)
         if self.win_to_win:
             return walk(self.remote)
-        raise ServerPathError(ServerPathError.UNSUPPORTED)
+        raise ServerPathError(ServerPathError.INVALID_OPERATION)
 
 
 def _get_server_object(server):

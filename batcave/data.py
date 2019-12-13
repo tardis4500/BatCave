@@ -82,8 +82,8 @@ class DataError(BatCaveException):
         INVALID_OPERATION: The specified data source type does not support the requested operation.
         INVALID_TYPE: An invalid data source type was specified.
     """
-    BAD_COLUMN = BatCaveError(1, Template('invalid column: $col\nonline $line'))
-    BAD_ROOT = BatCaveError(2, Template('the root element "$root_name" is not the one requested ($expected) in $source_name'))
+    BAD_COLUMN = BatCaveError(1, Template('Invalid column: $col\nonline $line'))
+    BAD_ROOT = BatCaveError(2, Template('The root element "$root_name" is not the one requested ($expected) in $source_name'))
     BAD_SCHEMA = BatCaveError(3, Template('Wrong schema ($schema) specified for data source ($found)'))
     BAD_TABLE = BatCaveError(4, Template('No table named "$table_name" in data source "$source_name"'))
     BAD_URL = BatCaveError(5, Template('No valid DataSource found at URL: $url'))

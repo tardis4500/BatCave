@@ -79,7 +79,11 @@ class BatCaveError:
 
 
 class PythonVersionError(BatCaveException):
-    'Used to indicate the wrong version of Python'
+    """Invalid Python Version Exception.
+
+    Attributes:
+        BAD_VERSION: The version of Python is too low.
+    """
     BAD_VERSION = BatCaveError(1, Template('Python $needed required but $used used'))
 
 

@@ -44,11 +44,16 @@ S_775 = S_770 | S_IROTH | S_IXOTH
 
 
 class CMDError(BatCaveException):
-    'Exceptions which can be raised when running system commands'
-    CMDTYPE_NOT_FOUND = BatCaveError(1, Template('Invalid Command type: $cmdtype'))
+    """System Command Exceptions.
+
+    Attributes:
+        CMD_ERROR: Generic command error.
+        CMD_NOT_FOUND: The command was not found.
+        INVALID_OPERATION: The requested operation is not supported in the current context.
+    """
+    CMD_ERROR = BatCaveError(1, '')
     CMD_NOT_FOUND = BatCaveError(2, Template('Command not found when running: $cmd'))
-    CMD_ERROR = BatCaveError(3, '')
-    INVALID_OPERATION = BatCaveError(4, Template('$func is not supported for $context'))
+    INVALID_OPERATION = BatCaveError(3, Template('$func is not supported for $context'))
 
     def __str__(self):
         if self._errobj.code == CMDError.CMD_ERROR.code:
@@ -58,15 +63,25 @@ class CMDError(BatCaveException):
 
 
 class LockError(BatCaveException):
-    'Used to indicate an unsupported platform'
-    NO_LOCK = BatCaveError(1, Template('unable to get lock'))
+    """Lock File Exceptions.
+
+    Attributes:
+        NO_LOCK: There was a failure attempting to get a lock on the lock file.
+    """
+    NO_LOCK = BatCaveError(1, Template('Unable to get lock'))
 
 
 class OSUtilError(BatCaveException):
-    """Exceptions when performing OS level tasks."""
+    """Operating System Exceptions.
+
+    Attributes:
+        GROUP_EXISTS: The specified group already exists.
+        INVALID_OPERATION: The requested operation is not supported on the current platform.
+        USER_EXISTS: The specified user already exists.
+    """
     GROUP_EXISTS = BatCaveError(1, Template('The group already exists: $group'))
-    USER_EXISTS = BatCaveError(2, Template('The user already exists: $user'))
-    INVALID_OPERATION = BatCaveError(3, Template('platform unsupported: $platform'))
+    INVALID_OPERATION = BatCaveError(2, Template('Platform unsupported: $platform'))
+    USER_EXISTS = BatCaveError(3, Template('The user already exists: $user'))
 
 
 LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))
