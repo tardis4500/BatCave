@@ -19,6 +19,9 @@ class ActionCommandRunner(SysCmdRunner):
                 If an empty string, nothing is printed.
             default_args (optional, default=()): The list of default args passed to SysCmdRunner.
             **kwargs (optional, default={}): The list of default named args passed to SysCmdRunner.
+
+        Attributes:
+            guard: The value of the guard argument.
         """
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
         self.guard = guard
@@ -60,6 +63,9 @@ class Action:
         """
         Args:
             **_unused_kwargs: All arguments passed are ignored by the time they reach this initializer
+
+        Attributes:
+            project_root: The parent directory from where the current action is run.
         """
         self.project_root = Path.cwd().parent
 
