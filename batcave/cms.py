@@ -82,6 +82,24 @@ class Label:
     LABEL_TYPES = Enum('label_types', ('file', 'project'))
 
     def __init__(self, name, label_type, client, description=None, selector=None, lock=False):
+        """
+        Args:
+            name: The label name.
+            label_type: The label type.
+            client: The CMS client used to interact with the label.
+            description (optional, default=None): The description to attach to the label.
+            selector (optional, default=None): The file selector to which to apply the label.
+            lock (optional, default=False): If True the label will be locked against making changes.
+
+        Attributes:
+            _cloud: The value of the client argument.
+            _name: The value of the name argument.
+            _selector: The value of the selector argument.
+            _type: The value of the label_type argument.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         self._client = client
         self._name = name
         self._type = label_type
@@ -220,13 +238,65 @@ class Client:
 
     def __init__(self, ctype, name=None, connectinfo=None, user=None, root=None, altroots=None, mapping=None, hostless=False,
                  changelist_options=None, linestyle=None, cleanup=None, create=None, info=False, password=None, branch=None):
-        ''' Creates a client object for the requested CMS type
-            The meaning of these value is based on the source type
-                Source Type    : connectinfo      : user     : name           : root           : mapping        : branch
-                -------------------------------------------------------------------------------------------------------------
-                file           : directory        : NA       : NA             : connectinfo    : NA             : NA
-                perforce       : P4PORT           : P4USER   : client name    : client root    : client view    : stream name
-                git            : URL              : USERNAME : repo name      : repo root      : NA             : branch name '''
+        """
+        Args:
+            ctype: The client type.
+            name: Required if create is True and info is False.
+                If not required and not provided, it is derived based on the client type:
+                    file: not applicable
+                    git: the repo name
+                    perforce: the client name
+            connectinfo: Required for client type of 'file.'
+                If not required and not provided, it is derived based on the client type:
+                    file: required
+                    git: The value of the GIT_WORK_TREE environment variable
+                    perforce: The value of the P4PORT environment variable
+            user (optional): The name of the CMS user.
+                If not provided, it is derived based on the client type:
+                    file: The value of the USER environment variable
+                    git: The value of the USER environment variable
+                    perforce: The value of the P4USER environment variable
+            root (optional): If create is False, this value is not allowed.
+                If create is True and it is not provided, a temporary root directory will be created.
+            altroots (optional): If create is False, this value is ignored.
+                Provides the altroot field for the Perforce client spec.
+            mapping (optional): If create is False, this value is not allowed.
+                Provides the mapping field for the Perforce client spec.
+            hostless (optional): If create is False, this value is ignored.
+                Provides the host field for the Perforce client spec.
+            changelist_options (optional): If create is False, this value is ignored.
+                Provides the SubmitOptions field for the Perforce client spec.
+            linestyle (optional): If create is False, this value is ignored.
+                Provides the LineEnd field for the Perforce client spec.
+            cleanup (optional): If True, the client directory will be removed when the Client instance is disposed of.
+                The default value depends on the CMS type and will be determined for an argument value of None.
+                    file clients: False
+                    Git clients if create argument is not specified: True
+                    Others: The value of the create argument
+            create (optional): If True, the client will be created.
+                The default value depends on the CMS type and will be determined for an argument value of None.
+                    If not a Git client and the info argument is true: False
+                    Otherwise: True
+            info (optional, default=False): This client will only be used to pull information from the central repository server.
+            password (optional, default=None): This CMS system password used to access the client.
+            branch (optional, default=None): This initial branch against which to create the client.
+
+        Attributes:
+            _connectinfo: The dervied value of the connectinfo argument.
+            _cleanup: The dervied value of the cleanup argument.
+            _client: A reference to the underlying API client.
+            _mapping: The dervied value of the mapping argument.
+            _name: The dervied value of the name argument.
+            _type: The value of the client argument.
+            _user: The dervied value of the user argument.
+
+        Raises:
+            CMSError.CLIENT_DATA_INVALID: If client creation info was provided by the create argument was False.
+            CMSError.CLIENT_NAME_REQUIRED: If  a client name was not supplied when required.
+            CMSError.CONNECT_FAILED: There was an error connecting to the CMS server.
+            CMSError.CONNECTINFO_REQUIRED: If connection info was not supplied when required.
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         self._type = ctype
         self._validatetype()
         self._mapping = mapping
@@ -1019,57 +1089,79 @@ def walk_git_tree(tree, parent=None):
 class FileRevision:
     """This class describes information about a file revision."""
 
-    def __init__(self, filename, revision, author, date, labels, desc):
-        ''' This class describes information about a file revision
-                name - the name of the file
-                revision - the revision number for this revision
-                description - the description for this revision
-                author - the user that made this revision
-                labels - a list of labels on this revision '''
+    def __init__(self, filename, revision, author, date, labels, description):
+        """
+        Args/Attributes:
+            filename: The name of the file.
+            revision: The revision number for this revision.
+            description: The description for this revision.
+            author: The user that made this revision.
+            labels: A list of labels on this revision.
+        """
 
-        self.file = filename
+        self.filename = filename
         self.revision = revision
         self.author = author
         self.date = date
         self.labels = labels
-        self.description = desc
+        self.description = description
 
     def __str__(self):
-        return f'{self.file}#{self.revision} by {self.author} on {self.date}\nLabels: {self.labels}\nDescription: {self.description}\n'
+        return f'{self.filename}#{self.revision} by {self.author} on {self.date}\nLabels: {self.labels}\nDescription: {self.description}\n'
 
 
 class FileChangeRecord:
     """This class describes information about a file change."""
 
     def __init__(self, client, filename, revision, mod_type, changelist):
-        ''' This class describes information about a file change
-                name - the name of the file
-                version - the version identifier for the file
-                mod_type - the type of modification for the file '''
+        """
+        Args/Attributes:
+            client: The CMS Client object where this file change record is located.
+            filename: The name of the file.
+            revision: The revision number for this revision.
+            mod_type: The type of modification for the file.
+            changelist: The changelist number for the change record.
+        """
 
         self._client = client
-        self.file = filename
+        self.filename = filename
         self.revision = revision
         self.type = mod_type
         self.changelist = changelist
 
-    fullname = property(lambda s: f'{s.file}#{s.revision}')
+    fullname = property(lambda s: f'{s.filename}#{s.revision}')
 
     def __str__(self):
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
-                return f'{self.file}#{self.revision} {self.type} {self.changelist}'
+                return f'{self.filename}#{self.revision} {self.type} {self.changelist}'
 
 
 class ChangeList:
     """Class to create a universal abstract interface for a CMS changelist."""
 
     def __init__(self, client, chg_list_id=None, editable=None):
+        """
+        Args:
+            client: The CMS Client object where this file change record is located.
+            chg_list_id (optional, default=None): The unique ID for this changelist.
+            editable (optional, default=not bool(chg_list_id)): If true, this changelist can be editted.
+
+        Attributes:
+            _changelist: A reference to the underlying API changelist.
+            _client: The value of the client argument.
+            _editable: The dervied value of the editable argument.
+            _files: The list of files in the changelist.
+            _id: The value of the chg_list_id argument.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         self._client = client
         self._id = chg_list_id
         self._files = None
         if editable is None:
-            self._editable = False if self._id else True
+            self._editable = not bool(self._id)
         else:
             self._editable = editable
         for case in switch(client.type):
