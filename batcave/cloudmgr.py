@@ -55,8 +55,8 @@ class Cloud:
             login (optional, default=True): Whether or not to login to the cloud provider at instance initialization.
 
         Attributes:
-            type: The value of the ctype argument.
             auth: The value of the auth argument.
+            type: The value of the ctype argument.
             _client: A reference to the underlying client API object.
         """
         self.type = ctype

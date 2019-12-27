@@ -38,16 +38,38 @@ class ConfigCollection:
     _PARAMS_CONFIGURATION = 'configuration'
     _PARENT_CONFIGURATION = 'parent'
 
-    def __init__(self, config_name, create=False, suffix='_config.xml'):
-        if isinstance(config_name, Path):
-            self.name = config_name.name
-            self.config_filename = config_name.parent / (config_name.name + suffix)
+    def __init__(self, name, create=False, suffix='_config.xml'):
+        """
+        Args:
+            name: The configuration collection name.
+            create (optional, default=False): If True the configuration file will be created if it doesn't exist.
+            suffix (optional, default=_config.xml): The suffix to add to the name to derive the configuration file name.
+
+        Attributes:
+            name: The value of the name argument.
+            params: This is the list of configuration parameters read from the configuration section.
+            parent: The parent configuration.
+            _config_filename: The derived name of the configuration file.
+            _configs: This is the collection of configurations.
+            _current: This is the value used by the iterator.
+            _data_source: A reference to the DataSource instance read from the configuration file.
+            _mask_missing: This value is read from the configuration section and
+                if True will prevent missing values from the parent from creating values.
+
+        Raises:
+            ConfigurationError.BAD_FORMAT: The the format of the configuration file is not valid.
+            ConfigurationError.BAD_SCHEMA: If the schema of the configuration file is not supported.
+            ConfigurationError.CONFIG_NOT_FOUND: If the derived configuration file is not found.
+        """
+        if isinstance(name, Path):
+            self.name = name.name
+            self._config_filename = name.parent / (name.name + suffix)
         else:
-            self.name = config_name
-            self.config_filename = Path(self.name + suffix)
+            self.name = name
+            self._config_filename = Path(self.name + suffix)
         failure = False
         try:
-            self.data_source = DataSource(DataSource.SOURCE_TYPES.xml, self.config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
+            self._data_source = DataSource(DataSource.SOURCE_TYPES.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
         except DataError as err:
             for case in switch(err.code):
                 if case(DataError.FILEOPEN.code):
@@ -62,7 +84,7 @@ class ConfigCollection:
             failure = ConfigurationError.BAD_FORMAT
 
         if failure:
-            raise ConfigurationError(failure, file=self.config_filename)
+            raise ConfigurationError(failure, file=self._config_filename)
 
         self.parent = None
         self._mask_missing = True
@@ -71,22 +93,22 @@ class ConfigCollection:
             self.parent = ConfigCollection(getattr(self.params, self._PARENT_CONFIGURATION))
         self._mask_missing = True if hasattr(self.params, self._MASK_MISSING) else False
 
-        self._configs = [getattr(self, t.name) for t in self.data_source.gettables() if t.name not in (DataSource.INFO_TABLE, self._PARAMS_CONFIGURATION)]
+        self._configs = [getattr(self, t.name) for t in self._data_source.gettables() if t.name not in (DataSource.INFO_TABLE, self._PARAMS_CONFIGURATION)]
         config_names = [c.name for c in self._configs]
         if self.parent and not self._mask_missing:
             self._configs += [c for c in self.parent if c.name not in config_names]
         self._current = 0
 
     def __getattr__(self, attr):
-        if self.data_source.hastable(attr):
+        if self._data_source.hastable(attr):
             parent_config = getattr(self.parent, attr) if (self.parent and hasattr(self.parent, attr)) else None
-            config = Configuration(self.data_source, attr, parent_config)
+            config = Configuration(self._data_source, attr, parent_config)
             if hasattr(config, self.INCLUDE_CONFIG_TAG):
-                config = Configuration(self.data_source, attr, parent_config, getattr(self, getattr(config, self.INCLUDE_CONFIG_TAG)))
+                config = Configuration(self._data_source, attr, parent_config, getattr(self, getattr(config, self.INCLUDE_CONFIG_TAG)))
             return config
         elif self.parent and not self._mask_missing:
             return getattr(self.parent, attr)
-        raise AttributeError(f'Unknown configuration ({attr}) in {self.config_filename}')
+        raise AttributeError(f'Unknown configuration ({attr}) in {self._config_filename}')
 
     def __iter__(self):
         return self
@@ -99,8 +121,8 @@ class ConfigCollection:
 
     def add(self, name):
         'Adds an item to the configuration collection'
-        self.data_source.addtable(name).addrow()
-        self.data_source.commit()
+        self._data_source.addtable(name).addrow()
+        self._data_source.commit()
         return getattr(self, name)
 
 
@@ -108,6 +130,20 @@ class Configuration:
     """This is a container class to hold an individual configuration in a collection."""
 
     def __init__(self, config_source, name, parent=None, include=None):
+        """
+        Args:
+            config_source: The configuration source.
+            name: The configuration name.
+            parent (optional, default=None): If not None, the parent configuration.
+            include (optional, default=None): If not None, the configuration to include.
+
+        Attributes:
+            _data_source: The value of the config_source argument.
+            _data_table: The DataTable holding the configuration values for this configuration.
+            _include: The value of the include argument.
+            _name: The value of the name argument.
+            _parent: The value of the parent argument.
+        """
         self._name = name
         self._data_source = config_source
         self._data_table = self._data_source.gettable(name)

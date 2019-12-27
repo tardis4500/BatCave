@@ -6,7 +6,7 @@
 # Step2: Add module level function docstrings.
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
-# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises, prefix protected with _. Next: Commander
+# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises, prefix protected with _. Next: data
 
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings.
