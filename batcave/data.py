@@ -125,14 +125,31 @@ class DataSource:
     _XML_SINGLE_COL_NAME = 'name'
 
     def __init__(self, data_type, connectinfo, name, schema, create=False):
-        ''' Creates a data object for the requested data source type
-            The meaning of these value is based on the source type
-                Source Type         : connectinfo       : connection                 : source
-                -------------------------------------------------------------------------------
-                TEXT                : text file name    : temporary file obj         : file contents
-                PICKLE              : pickle file name  : temporary file obj         : top dictionary
-                INI                 : ini file name     : temporary file obj         : RawConfigParser obj
-                XML_*               : XML file name     : parsed XML tree            : XML root '''
+        """
+        Args:
+            data_type: The data source type.
+            connectinfo: The data source file name.
+            name: The data source name.
+            schema: The schema version of the data source.
+            create (optional, default=False): If True, the data source will be created if it does not exist.
+
+        Attributes:
+            name: The value of the name argument.
+            type: The value of the data_type argument.
+            _closer: This is the method used to close the data source.
+            _connectinfo: The value of the connectinfo argument.
+            _connection: For XML_* data source types, this it the parsed XML tree,
+                otherwise it is a temporary file object.
+            _schema: The value of the schema argument.
+            _source: The value depends on the data source type.
+                TEXT: the file contents
+                PICKLE: the top dictionary
+                INI: The RawConfigParser object from the INI file
+                XML_*: The XML root of the file
+
+        Raises:
+            DataError.FILE_OPEN: If the data source file is already open.
+        """
         self.type = data_type
         self.name = name
         self._schema = schema
@@ -411,7 +428,17 @@ class DataRow:
     """Class to create a universal abstract interface for a data row."""
 
     def __init__(self, data_type, raw, parent):
-        'container for an individual row in a table'
+        """
+        Args:
+            data_type: The data source type.
+            raw: The raw value of the row as read from the data source.
+            parent: This is a reference to the table containing the row.
+
+        Attributes:
+            type: The value of the data_type argument.
+            _parent: The value of the parent argument.
+            _row: The value of the raw argument.
+        """
         self.type = data_type
         self._row = raw
         self._parent = parent
@@ -567,6 +594,19 @@ class DataTable:
     _XML_SINGLE_ROW_TAG = 'environment'
 
     def __init__(self, data_type, name, raw, parent):
+        """
+        Args:
+            data_type: The data source type.
+            name: The table name.
+            raw: The raw value of the table as read from the data source.
+            parent: This is a reference to the data source containing the table.
+
+        Attributes:
+            name: The value of the name argument.
+            type: The value of the data_type argument.
+            _parent: The value of the parent argument.
+            _table: The value of the raw argument.
+        """
         self.type = data_type
         self.name = name
         self._parent = parent

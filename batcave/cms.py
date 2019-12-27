@@ -287,7 +287,7 @@ class Client:
             _client: A reference to the underlying API client.
             _mapping: The dervied value of the mapping argument.
             _name: The dervied value of the name argument.
-            _type: The value of the client argument.
+            _type: The value of the ctype argument.
             _user: The dervied value of the user argument.
 
         Raises:
