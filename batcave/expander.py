@@ -93,6 +93,27 @@ class Formatter:
     _LINK_PRELIM = '{link:'
 
     def __init__(self, output_format):
+        """
+        Args:
+            output_format: The output format.
+
+        Attributes:
+            name: The value of the name argument.
+            type: The value of the data_type argument.
+            _closer: This is the method used to close the data source.
+            _connectinfo: The value of the connectinfo argument.
+            _connection: For XML_* data source types, this it the parsed XML tree,
+                otherwise it is a temporary file object.
+            _schema: The value of the schema argument.
+            _source: The value depends on the data source type.
+                TEXT: the file contents
+                PICKLE: the top dictionary
+                INI: The RawConfigParser object from the INI file
+                XML_*: The XML root of the file
+
+        Raises:
+            DataError.FILE_OPEN: If the data source file is already open.
+        """
         self.format = output_format
         self.level = 0
         self.count = 1
