@@ -98,21 +98,15 @@ class Formatter:
             output_format: The output format.
 
         Attributes:
-            name: The value of the name argument.
-            type: The value of the data_type argument.
-            _closer: This is the method used to close the data source.
-            _connectinfo: The value of the connectinfo argument.
-            _connection: For XML_* data source types, this it the parsed XML tree,
-                otherwise it is a temporary file object.
-            _schema: The value of the schema argument.
-            _source: The value depends on the data source type.
-                TEXT: the file contents
-                PICKLE: the top dictionary
-                INI: The RawConfigParser object from the INI file
-                XML_*: The XML root of the file
+            format: The value of the name argument.
+            count: This current character count on the line.
+            keeper: The indentation stack
+            level: The current indentation level.
+            link_regex: The regular expression to locate a hyperlink.
+            prefix: The line prefix for the current line.
 
         Raises:
-            DataError.FILE_OPEN: If the data source file is already open.
+            ProcedureError.BAD_FORMAT: If the requested output format is invlid.
         """
         self.format = output_format
         self.level = 0
@@ -221,6 +215,20 @@ class Expander:
     _POSTLIM_DEFAULT = '}'
 
     def __init__(self, vardict=None, varprops=None, prelim=_PRELIM_DEFAULT, postlim=_POSTLIM_DEFAULT):
+        """
+        Args:
+            vardict: A dictionary of expansion variables.
+            varprop: An object with properties that resolve variables.
+            prelim: The leading string to identify an expansion.
+            postlim: The training string to identify an expansion.
+
+        Attributes:
+            postlim: The value of the postlim argument.
+            prelim: The value of the prelim argument.
+            re_var: The regular expression to identify a variable to expand.
+            vardict: The value of the vardict argument.
+            varprop: The value of the varprop argument.
+        """
         self.vardict = vardict if vardict else dict()
         self.varprops = varprops if (isinstance(varprops, list) or isinstance(varprops, tuple)) else [varprops]
         self.prelim = prelim
