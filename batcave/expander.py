@@ -395,6 +395,25 @@ class Procedure:
     _ENVIRONMENT_VARIABLE = 'Environment'
 
     def __init__(self, procfile, output_format=Formatter.OUTPUT_FORMATS.html, variable_overrides=None):
+        """
+        Args:
+            procfile: The procedure file.
+            output_format: The output format.
+            variable_overrides: A dictionary of values used to override values defined in the procedure file.
+
+        Attributes:
+            directories: The list of directories defined in the procedure file.
+            environments: The dictionary of directories defined in the procedure file.
+            expander: The expander object used to expand the procedure file.
+            formatter: The formatter object used to format the output.
+            header: The header of the output.
+            library: The list of step libraries defined in the procedure file.
+            output_format: The value of the output_format argument.
+            steps: The list of steps defined in the procedure file.
+
+        Raises:
+            ProcedureError.BAD_SCHEMA: If the schema of the procedure file is not supported.
+        """
         self.output_format = output_format
         self.formatter = None
         self.expander = None
@@ -585,6 +604,19 @@ class Step:
     _VARS_ATTR = 'vars'
 
     def __init__(self, step_def):
+        """
+        Args:
+            step_def: The dictionary which defined the step.
+
+        Attributes:
+            condition: The condition the determines if the step is emitted.
+            libimport: The library that is imported for the step.
+            name: The step name.
+            repeat: The repeat parameters for the step.
+            substeps: The list of substeps for the step.
+            text: The text emitted for the step.
+            vars: The dictionary of variables defined for the step.
+        """
         self.condition = step_def.get(self._CONDITION_ATTR)
         self.libimport = step_def.get(self._IMPORT_ATTR)
         self.name = step_def.get(self.NAME_ATTR)
