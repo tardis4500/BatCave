@@ -79,6 +79,14 @@ class CompressedFile:
     """Class to add support for compressed file types which are missing some methods."""
 
     def __init__(self, filename, **attr):
+        """
+        Args:
+            filename: The name of the compressed file.
+            attr: The list of attributes to pass to the base class.
+
+        Attributes:
+            _filename: The value of the filename argument.
+        """
         super().__init__(filename, **attr)
         self._filename = Path(filename)
 

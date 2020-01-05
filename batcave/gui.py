@@ -40,6 +40,10 @@ class Title(MsgStr):
                  'results': 'Search Results'}
 
     def __init__(self, **args):
+        """
+        Args:
+            args: The list of arguments to pass to the base class.
+        """
         super().__init__(transform='title', **args)
 
 
@@ -71,6 +75,19 @@ class BatCaveValidator:
     """Class to support control validation."""
 
     def __init__(self, callback, falseval, how, what):
+        """
+        Args:
+            callback: The callback to use for validation.
+            falseval: The value to indicate a false validation.
+            how: The verb to use in the error message.
+            what: The noun to use in the error message.
+
+        Attributes:
+            callback: The value of the callback argument.
+            falseval: The value of the falseval argument.
+            how: The value of the how argument.
+            what: The value of the what argument.
+        """
         self.callback = callback
         self.falseval = falseval
         self.how = how
@@ -81,6 +98,13 @@ class BatCaveGUIOutput:
     """Class to manage output to a widget."""
 
     def __init__(self, widget):
+        """
+        Args:
+            widget: The widget to which output will be sent.
+
+        Attributes:
+            widget: The value of the widget argument.
+        """
         self.widget = widget
 
     def write(self, output):
@@ -95,6 +119,16 @@ class BatCaveBaseGUI:
     """
 
     def __init__(self, _unused_parent=None, title=None, icon=None):
+        """
+        Args:
+            _unused_parent: The parent for this object.
+            title (optional, default=None): The title for this object.
+            icon (optional, default=None): The icon for this object.
+
+        Attributes:
+            validators: The list of widget validators.
+            _saved_output_streams: The list of saved output streams.
+        """
         self.setupUi(self)  # pylint: disable=E1101
         self.validators = list()
         self._saved_output_streams = None
@@ -127,6 +161,12 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
     """This class provides functionality for a main window."""
 
     def __init__(self, parent=None, title=None, icon=None):
+        """
+        Args:
+            parent (optional, default=None): The parent for the window.
+            title (optional, default=None): The title for the window.
+            icon (optional, default=None): The icon for the window.
+        """
         super().__init__(parent, title=(title if title else get_version_info(VERSION_STYLES.brief)), icon=icon)
         self.actionAbout.triggered.connect(self.OnAbout)
 
@@ -139,6 +179,10 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
     """This class provides functionality for a dialog box window."""
 
     def __init__(self, **args):
+        """
+        Args:
+            args: The list of arguments to pass to the base class.
+        """
         super().__init__(**args)
 
     def accept(self):
@@ -176,6 +220,14 @@ class MessageBox(QMessageBox):
                       _MESSAGE_TYPES.results: QMessageBox.Information}
 
     def __init__(self, parent, message, msg_type=_MESSAGE_TYPES.info, detail=None, image=None):
+        """
+        Args:
+            parent: The parent for the message box.
+            message: The message for the message box.
+            msg_type (optional, default=_MESSAGE_TYPES.info): The message type to display in the message box.
+            detail (optional, default=None): The detail information to put in the message box.
+            image (optional, default=None): The image to display in the message box.
+        """
         super().__init__(parent)
         if image:
             self.setWindowIcon(QIcon(find_image(image)))
