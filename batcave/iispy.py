@@ -44,6 +44,15 @@ class IISObject:
     """Class to create a universal abstract interface for an IIS object."""
 
     def __init__(self, name, iis_ref):
+        """
+        Args:
+            name: The name of the object.
+            iis_ref: A reference to the IIS owner instance.
+
+        Attributes:
+            name: The value of the name argument.
+            iis_ref: The value of the iis_ref argument.
+        """
         self.name = name
         self.iis_ref = iis_ref
 
@@ -98,6 +107,16 @@ class IISInstance:
                      WebSite: 'SITE'}
 
     def __init__(self, hostname=None, remote_powershell=None):
+        """
+        Args:
+            hostname (optional, default=localhost): The name of the IIS server hosting the instance.
+            remote_powershell (optional): Determines if PowerShell remoting is used when executing appcmd against a remote server.
+                Defaults to False for hostname is None, otherwise defaults to True.
+
+        Attributes:
+            hostname: The value of the hostname argument.
+            _remote_powershell: The resolved value of the remote_powershell argument.
+        """
         self.hostname = hostname
         self._remote_powershell = (True if (remote_powershell is None) else remote_powershell) if hostname else False
 
@@ -213,6 +232,22 @@ class IISConfigurationSection:
     """Class to create a universal abstract interface for an IIS configuration section."""
 
     def __init__(self, name, path, set_location=None, hostname=None, remote_powershell=None):
+        """
+        Args:
+            name: The name of the IIS configuration section.
+            path: The path to the configuration section.
+            set_location (optional, default=None): If not None, will be applied to the appcmd /commit option.
+            hostname (optional, default=localhost): The name of the IIS server hosting the instance.
+            remote_powershell (optional): Determines if PowerShell remoting is used when executing appcmd against a remote server.
+                Defaults to False for hostname is None, otherwise defaults to True.
+
+        Attributes:
+            _hostname: The value of the hostname argument.
+            _name: The value of the name argument.
+            _path: The value of the path argument.
+            _remote_powershell: The resolved value of the remote_powershell argument.
+            _set_location: The value of the set_location argument.
+        """
         self._name = name
         self._path = path if path else ''
         self._set_location = set_location
@@ -282,8 +317,17 @@ class IISConfigurationSection:
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path, logtype, set_location, hostname=None):
-        super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname)
+    def __init__(self, path, logtype, set_location, hostname=None, remote_powershell=None):
+        """
+        Args:
+            path: The path to AdvancedLogger configuration section.
+            logtype: The AdvancedLogger type.
+            set_location: Passed to the base class.
+            hostname (optional, default=localhost): The name of the IIS server hosting the instance.
+            remote_powershell (optional): Determines if PowerShell remoting is used when executing appcmd against a remote server.
+                Defaults to False for hostname is None, otherwise defaults to True.
+        """
+        super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
 
     def add_field(self, field_id, field_values=None):
         'Adds a field to the advanced logger configuration'

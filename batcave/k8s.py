@@ -55,6 +55,15 @@ class Cluster:
     """Class to create a universal abstract interface for a Kubernetes cluster."""
 
     def __init__(self, cluster_config=None):
+        """
+        Args:
+            cluster_config (optional, default=None): The cluster configuration file to use.
+
+        Attributes:
+            config: The value of the cluster_config argument.
+            _batch_api: A reference to the BatchV1Api object.
+            _core_api: A reference to the CoreV1Api object.
+        """
         self.config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
         k8s_config.load_kube_config(self.config)
         self._core_api = CoreV1Api()
@@ -143,6 +152,15 @@ class ClusterObject:
     """Class to create a universal abstract interface for a Kubernetes cluster object."""
 
     def __init__(self, cluster, object_ref):
+        """
+        Args:
+            cluster: The cluster containing this object.
+            object_ref: A reference to the underlying API object.
+
+        Attributes:
+            _cluster_obj: The value of the cluster argument.
+            _object_ref: The value of the object_ref argument.
+        """
         self._cluster_obj = cluster
         self._object_ref = object_ref
 

@@ -49,7 +49,7 @@ class MsgStr:
         return self._self_to_str(self._str)
 
     def _self_to_str(self, _str):
-        if not isinstance(_str, str):
+        if isinstance(_str, Template):
             _str = _str.substitute(self._vars)
         if self._transform:
             _str = getattr(_str, self._transform)()
