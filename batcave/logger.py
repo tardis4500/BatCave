@@ -7,15 +7,26 @@ from pathlib import Path
 
 
 class Logger:
-    """Class to provide a simplified interface to the standard loggin module."""
+    """Class to provide a simplified interface to the standard logging module."""
 
     def __init__(self, logname=None, stream=None, pipe=None, queue=None, msg_fmt='%(asctime)s %(levelname)s %(message)s', date_fmt='%Y/%m/%d %H:%M:%S',
                  logref='batcave', logref_suffix=None):
-        """The logger is initialized by instantiating the Logger class with the following arguments:
-            logname: the name of the logfile to be used (optional, default=None)
-            stream: also write the message to a stream (optional, default=None)
-            pipe: also write the message to a pipe (optional, default=None)
-            queue: also place the message in a queue (optional, default=None)
+        """
+        Args:
+            logname (optional, default=None): The name of the logfile to be used.
+            stream (optional, default=None): The stream to which message should be written.
+            pipe (optional, default=None): The pipe to which message should be written.
+            queue (optional, default=None): The queue to which message should be written.
+            msg_fmt (optional, default='%(asctime)s %(levelname)s %(message)s'): The output message formatting string.
+            date_fmt (optional, default='%Y/%m/%d %H:%M:%S'): The message date formatting string.
+            logref (optional, default='batcave'): A string to uniquely identify this Logger instance.
+            logref_suffix (optional, default=None): The suffix to append to the value of logref.
+
+        Attributes:
+            level: The current logging level. Initialized to INFO.
+            _logger: The standard module logging instance used to handle logging.
+            _pipe: The value of the pipe argument.
+            _queue: The value of the queue argument.
         """
         formatter = Formatter(msg_fmt, date_fmt)
         logref += f'.{logref_suffix}' if logref_suffix else ''

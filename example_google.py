@@ -6,7 +6,7 @@
 # Step2: Add module level function docstrings.
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
-# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises. Next: lang
+# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises. Left: menu, qbpy, reporter, servermgr, statemachine, sysutil, tcpy
 
 # Added docstrings for class init methods for the expander module. (GitLab #29)
 

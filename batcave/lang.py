@@ -36,6 +36,17 @@ class MsgStr:
             MyMsg(what='this').Message2
     """
     def __init__(self, instr='', transform=None, **variables):
+        """
+        Args:
+            instr (optional, default=''): The input message string.
+            transform (optional, default=None): A string method used to transform the input message string on output.
+            variables (optional): A dictionary of variables to pass to the string.Template.substitute method.
+
+        Attributes:
+            _str: The value of the instr argument.
+            _transform: The value of the transform argument.
+            _vars: The value of the variables argument.
+        """
         self._str = instr
         self._transform = transform
         self._vars = variables
@@ -57,23 +68,46 @@ class MsgStr:
 
 
 class BatCaveException(Exception, MsgStr):
-    'Generic Class for BatCave exceptions'
+    """A base class to provide easier Exception management.
+
+    Attributes:
+        _message: A dictionary of messages provided by subclasses.
+    """
     _messages = dict()
 
     def __init__(self, errobj, **variables):
+        """
+        Args:
+            errobj: The input message string.
+            variables (optional): A dictionary of variables to pass to the string.Template.substitute method.
+
+        Attributes:
+            vars: The value of the variables argument.
+            _errobj: The value of the errobj argument.
+        """
         Exception.__init__(self, errobj, variables)
         MsgStr.__init__(self, errobj.msg, **variables)
         self._errobj = errobj
         self.vars = variables
-        self.code = errobj.code
+
+    code = property(lambda s: s._errobj.code)
 
     def __str__(self):
         return MsgStr.__str__(self)
 
 
 class BatCaveError:
-    'Provides interface for inspecting exceptions'
+    """A class to provide an interface for inspecting exceptions."""
     def __init__(self, code, msg):
+        """
+        Args:
+            code: A unique error code for this error.
+            msg: A user-facing message for this error.
+
+        Attributes:
+            code: The value of the code argument.
+            msg: The value of the msg argument.
+        """
         self.code = code
         self.msg = msg
 
