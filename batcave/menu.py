@@ -5,6 +5,15 @@ class MenuItem:
     """Class to represent a single menu item."""
 
     def __init__(self, key, desc):
+        """
+        Args:
+            key: The key input for the menu selection.
+            desc: The text description for the menu selection.
+
+        Attributes:
+            desc: The value of the desc argument.
+            key: The value of the key argument.
+        """
         self.key = key
         self.desc = desc
 
@@ -24,6 +33,23 @@ class Menu:
     def __init__(self, items,
                  title=_DEFAULT_TITLE, prompt=_DEFAULT_PROMPT, invalidmsg=_DEFAULT_INVALID_MESSAGE,
                  multiselect=False, ignorecase=True):
+        """
+        Args:
+            items: The list of items for the menu.
+            title (optional, default=_DEFAULT_TITLE): The title for the menu.
+            prompt (optional, default=_DEFAULT_PROMPT): The prompt for the menu.
+            invalidmsg (optional, default=_DEFAULT_INVALID_MESSAGE): The invalid choice message.
+            multiselect (optional, default=False): If True, multiple options can be selected.
+            ignorecase (optional, default=True): If True, menu input will be case insensitive.
+
+        Attributes:
+            ignorecase: The value of the ignorecase argument.
+            invalidmsg: The value of the invalidmsg argument.
+            items: The value of the items argument.
+            multiselect: The value of the multiselect argument.
+            prompt: The value of the prompt argument.
+            title: The value of the title argument.
+        """
         self.items = items
         self.title = title
         self.prompt = prompt
@@ -63,6 +89,16 @@ class SimpleMenu(Menu):
     """A simplified version of the Menu class."""
 
     def __init__(self, itemlist, return_text=False, **args):
+        """
+        Args:
+            itemlist: The list of items for the menu to which an 'Exit' option will be appended.
+            return_text (optional, default=False): If True the text of the menu selection will be returned instead of the key.
+            args (optional): A dictionary of arguments to pass to the base Menu class.
+
+        Attributes:
+            itemlist: The value of the itemlist argument with ['Exit'] appended.
+            return_text: The value of the return_text argument.
+        """
         self.itemlist = list(itemlist) + ['Exit']
         self.return_text = return_text
         super().__init__([MenuItem(str(i), itemlist[i-1]) for i in range(1, len(itemlist)+1)] + [MenuItem('0', 'Exit')], **args)
