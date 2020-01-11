@@ -15,6 +15,17 @@ class QuickBuildObject:
     """Class to create a universal abstract interface for a QuickBuild object."""
 
     def __init__(self, console, object_id):
+        """
+        Args:
+            console: The QuickBuild console containing this object.
+            object_id: The object ID.
+
+        Attributes:
+            _console: The value of the console argument.
+            _object_id: The value of the object_id argument.
+            _object_path: The RESTful API path to the object.
+            _object_type: The object type.
+        """
         self._console = console
         self._object_id = int(object_id)
         object_name = self.__class__.__name__.lower().replace('quickbuild', '')
@@ -138,6 +149,18 @@ class QuickBuildConsole:
     """Class to create a universal abstract interface for a QuickBuild console."""
 
     def __init__(self, host, user, password):
+        """
+        Args:
+            host: The server hosting the QuickBuild console.
+            user: The QuickBuild user for API access.
+            password: The password user for API access.
+
+        Attributes:
+            _host: The value of the host argument.
+            _password: The value of the password argument.
+            _update: When True, the internal values need to be refreshed from the API.
+            _user: The value of the user argument.
+        """
         self._host = host
         self._user = user
         self._password = password
