@@ -153,7 +153,7 @@ class QuickBuildConsole:
         Args:
             host: The server hosting the QuickBuild console.
             user: The QuickBuild user for API access.
-            password: The password user for API access.
+            password: The QuickBuild password for API access.
 
         Attributes:
             _host: The value of the host argument.

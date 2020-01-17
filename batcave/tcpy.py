@@ -26,6 +26,16 @@ class TCBuildConfig:
     """Class to create a universal abstract interface for a TeamCity build configuration."""
 
     def __init__(self, server, config_id):
+        """
+        Args:
+            server: The Teamcity console containing this object.
+            config_id: The configuration ID.
+
+        Attributes:
+            config_id: The value of the config_id argument.
+            info: The configuration info returned from the Teamcity API.
+            _server: The value of the server argument.
+        """
         self._server = server
         self.config_id = config_id
         fail = False
@@ -51,6 +61,17 @@ class TeamCityServer:
     _CA_CERT = (BATCAVE_HOME / 'cacert.pem') if FROZEN else Path(certs.where())
 
     def __init__(self, host, user, passwd, port='80'):
+        """
+        Args:
+            host: The server hosting the Teamcity instance.
+            user: The Teamcity user for API access.
+            password: The Teamcity password for API access.
+            port (optional, default='80'): The port on which the instance is hosted.
+
+        Attributes:
+            url: The URL to the Teamcity RESTful API.
+            auth: The authorization credentials for the Teamcity server.
+        """
         self.url = f'http://{host}:{port}/httpAuth/app/rest/'
         self.auth = HTTPBasicAuth(user, passwd)
 
