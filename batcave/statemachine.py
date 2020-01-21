@@ -49,6 +49,27 @@ class StateMachine:
     _DEFAULT_LOCKFILE = Path('lock')
 
     def __init__(self, states, statefile=_DEFAULT_STATEFILE, logfile=_DEFAULT_LOGFILE, lockfile=_DEFAULT_LOCKFILE, logger_args=None, autostart=True):
+        """
+        Args:
+            states: The list of states for the state machine.
+            statefile (optional, default=_DEFAULT_STATEFILE): The value of the file in which to store the state machine state.
+            logfile (optional, default=_DEFAULT_LOGFILE): The log file to use for logging.
+            lockfile (optional, default=_DEFAULT_LOCKFILE): The file to use to lock the state machine.
+            logger_args (optional, default=None): The arguments to pass to the Logger instance.
+            autostart (optional, default=True): If True, start the state machine when the instance is created.
+
+        Attributes:
+            locker: The value of the lockfile argument.
+            logger: The logging instance created from the logfile and logger_args arguments.
+            started: Indicates if the state machine is running.
+            state: Indicates the current state of the state machine.
+            statefile: The value of the statefile argument.
+            states: The value of the states argument prepended by 'None.'
+            status: Indicates the current status of the state machine.
+
+        Raises:
+            StateMachineError.BAD_STATUS: if the value of self.status is not in STATE_STATUSES
+        """
         self.statefile = Path(statefile)
         self.locker = LockFile(lockfile)
         self.logger = Logger(logfile, **(logger_args if logger_args else dict()))

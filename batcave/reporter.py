@@ -92,6 +92,15 @@ class SimpleAttribute:
     """Class to create a universal abstract interface for a report attribute which has a default value and a list of valid values."""
 
     def __init__(self, default, *other):
+        """
+        Args:
+            default: The default value of the attribute.
+            other (optional): a list of other allowed values.
+
+        Attributes:
+            _valid: The value of the other argument with default appended to the list.
+            _value: The value of the default argument.
+        """
         self._value = default
         self._valid = list(other)
         self._valid.append(default)
@@ -118,6 +127,15 @@ class MetaAttribute:
     """Class to create a universal abstract interface for a report attribute which returns a value based on the value of a SimpleAttribute."""
 
     def __init__(self, attr, **valmap):
+        """
+        Args:
+            attr: The attribute.
+            valmap (optional): a dictionary of other allowed values.
+
+        Attributes:
+            _attr: The value of the attr argument.
+            _valuemap: The value of the valmap argument.
+        """
         self._attr = attr
         self._valuemap = valmap
 
@@ -208,9 +226,18 @@ _ATTRIBUTES = {OUTPUT_ATTR: SimpleAttribute('html', 'text'),
 class ReportObject:
     """Class to create a universal abstract interface for a report object."""
 
-    def __init__(self, cont=None, **attrs):
+    def __init__(self, cont=None, **attr):
+        """
+        Args:
+            cont: The container for this object.
+            attr (optional): A dictionary of attributes for the object.
+
+        Attributes:
+            container: The value of the cont argument.
+            _attributes: A dictionary of attributes for this object as initialized by the attr argument.
+        """
         self._attributes = dict()
-        for (attr, val) in attrs.items():
+        for (attr, val) in attr.items():
             self._set_attribute(attr, val)
         self.container = cont
 
@@ -289,6 +316,18 @@ class Section(ReportObject):
     """Class to create a universal abstract interface for a report section."""
 
     def __init__(self, header='', footer='', cont=None, **attr):
+        """
+        Args:
+            header (optional, default=''): The section header.
+            footer (optional, default=''): The section footer.
+            cont: The container for this section.
+            attr (optional): A dictionary of attributes for the section.
+
+        Attributes:
+            footer: The value of the footer argument.
+            header: The value of the header argument.
+            _members: A list of objects contained in this section.
+        """
         super().__init__(cont, **attr)
         self.header = header
         self.footer = footer
@@ -342,6 +381,15 @@ class Cell(ReportObject):
     """Class to create a universal abstract interface for a cell in a table in a report."""
 
     def __init__(self, data, cont=None, **attr):
+        """
+        Args:
+            data: The cell data.
+            cont (optional, default=None): The container for this cell.
+            attr (optional): A dictionary of attributes for the cell.
+
+        Attributes:
+            _data: The value of the data argument.
+        """
         super().__init__(cont, **attr)
         self._data = data
 
@@ -357,6 +405,18 @@ class Table(ReportObject):
     """Class to create a universal abstract interface for a report section table."""
 
     def __init__(self, data, header='', footer='', **attr):
+        """
+        Args:
+            data: The table data.
+            header (optional, default=''): The table header.
+            footer (optional, default=''): The table footer.
+            attr (optional): A dictionary of attributes for the table.
+
+        Attributes:
+            footer: The value of the footer argument.
+            header: The value of the header argument.
+            _data: The value of the data argument.
+        """
         super().__init__(**attr)
         self.header = header
         self.footer = footer
@@ -400,6 +460,15 @@ class Line(ReportObject):
     """Class to create a universal abstract interface for a report section line."""
 
     def __init__(self, text, cont=None, **attr):
+        """
+        Args:
+            text: The line text.
+            cont (optional, default=None): The container for this line.
+            attr (optional): A dictionary of attributes for the line.
+
+        Attributes:
+            _text: The value of the text argument.
+        """
         super().__init__(cont, **attr)
         self._text = text
 
@@ -407,12 +476,21 @@ class Line(ReportObject):
         return self.lin_ldr + self._text + self.lin_trm
 
 
-class Link(ReportObject):
+class Link(Line):
     """Class to create a universal abstract interface for a report hyperlink."""
 
     def __init__(self, text, url=None, cont=None, **attr):
-        super().__init__(cont, **attr)
-        self._text = text
+        """
+        Args:
+            text: The link text.
+            url (optional, default=None): The link URL.
+            cont (optional, default=None): The container for this link.
+            attr (optional): A dictionary of attributes for the link.
+
+        Attributes:
+            _url: The value of the url argument.
+        """
+        super().__init__(text, cont, **attr)
         self._url = url
 
     def __str__(self):
@@ -429,6 +507,15 @@ class LinkList(Section):
     """Class to create a universal abstract interface for a list of hyperlinks in a report."""
 
     def __init__(self, urls, cont=None, **attr):
+        """
+        Args:
+            urls: The list of URLs the section.
+            cont (optional, default=None): The container for this section.
+            attr (optional): A dictionary of attributes for the section.
+
+        Attributes:
+            _list: The value of the urls argument converted into links.
+        """
         super().__init__(cont, **attr)
         self._list = list()
         for key in sorted(urls.keys()):

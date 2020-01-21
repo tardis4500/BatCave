@@ -91,6 +91,21 @@ class LockFile:
     """Class to create a universal abstract interface for an OS lock file."""
 
     def __init__(self, filename, handle=None, cleanup=True):
+        """
+        Args:
+            filename: The file name for the lock file.
+            handle (optional, default=None): The value of the file handle if the file is already open, otherwise the file specified in the filename will be opened.
+            cleanup (optional, default=True): If True, the lock file will be removed when the lock is released.
+
+        Attributes:
+            _cleanup: The value of the cleanup argument.
+            _fd: The fileno for the _fh attribute.
+            _fh: The value of the handle argument if not None, otherwise the value of the handle for the opened filename argument.
+            _filename: The value of the filename argument.
+            _lock: The value to pass to the _locker method to lock the file.
+            _locker: The method used to lock the file.
+            _unlock: The value to pass to the _locker method to unlock the file.
+        """
         self._filename = Path(filename)
         self._cleanup = cleanup
         self._fh = handle if handle else open(filename, 'w')
@@ -137,6 +152,19 @@ class SysCmdRunner:
     """This class provides a simplified interface to sysutil.syscmd()."""
 
     def __init__(self, command, *default_args, logger=None, **default_keys):
+        """
+        Args:
+            command: The command to run.
+            default_args (optional): A list of default arguments to use each time the command is run.
+            logger (optional, default=None): A logging instance to use when the command is run.
+            default_keys (optional): A list of default keys to use each time the command is run.
+
+        Attributes:
+            command: The value of the command argument.
+            default_args: The value of the default_args argument.
+            default_keys: The value of the default_keys argument.
+            writer: The value of the logger argument if not None, otherwise the standard 'print' method.
+        """
         self.command = command
         self.writer = logger.loginfo if logger else print
         self.default_args = list(default_args)
