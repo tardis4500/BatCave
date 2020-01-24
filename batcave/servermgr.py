@@ -112,24 +112,41 @@ class LoadBalancer:
     LB_VIP_TYPES = Enum('lb_vip_types', ('HTTP', 'SSL', 'SSL_OFFLOAD'))
 
     def __init__(self, lb_type, ip, user, password):
+        """
+        Args:
+            lb_type: The load balancer type.
+            ip: The hostname or IP address of the load balancer.
+            user: The load balancer user for API access.
+            password: The load balancer password for API access.
+
+        Attributes:
+            ip: The value of the ip argument.
+            password: The value of the password argument.
+            type: The value of the lb_type argument.
+            user: The value of the user argument.
+            _api: The API object for the load balancer
+
+        Raises:
+            StateMachineError.BAD_STATUS: if the value of self.status is not in STATE_STATUSES
+        """
         self.type = lb_type
         self.ip = ip
         self.user = user
         self.password = password
-        self.ns_session = NetScalerService(self.ip)
-        self.ns_session.login(self.user, self.password, 3600)
+        self._api = NetScalerService(self.ip)
+        self._api.login(self.user, self.password, 3600)
 
     def __enter__(self):
         return self
 
     def __exit__(self, *exc_info):
-        self.ns_session.logout()
+        self._api.logout()
         return False
 
     def get_cache_content_group(self, group_name):
         'Get the NetScaler cache content group'
         try:
-            group_ref = NetScalerCacheContentGroup.get(self.ns_session, group_name)
+            group_ref = NetScalerCacheContentGroup.get(self._api, group_name)
             group_ref.query = group_ref.host = group_ref.selectorvalue = ''
             return group_ref
         except NetScalerError as err:
@@ -140,7 +157,7 @@ class LoadBalancer:
     def flush_cache_content(self, group_name):
         'Flush the NetScaler cache content for the specified group'
         group_ref = self.get_cache_content_group(group_name)
-        return NetScalerCacheContentGroup.flush(self.ns_session, group_ref)
+        return NetScalerCacheContentGroup.flush(self._api, group_ref)
 
     def has_server(self, server_info):
         'Determine if the load balancer server exists'
@@ -159,14 +176,14 @@ class LoadBalancer:
         ns_server = NetScalerServer()
         ns_server.name = server_object.hostname
         ns_server.ipaddress = server_object.ip
-        NetScalerServer.add(self.ns_session, ns_server)
+        NetScalerServer.add(self._api, ns_server)
         return self.get_server(server_info)
 
     def get_server(self, server_info):
         'Get a handle to the load balancer server'
         server_hostname = _get_server_object(server_info).hostname
         try:
-            return LoadBalancerServer(self, NetScalerServer.get(self.ns_session, server_hostname))
+            return LoadBalancerServer(self, NetScalerServer.get(self._api, server_hostname))
         except NetScalerError as err:
             if err.errorcode == 258:
                 raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='server', name=server_hostname)
@@ -194,7 +211,7 @@ class LoadBalancer:
         ns_virtual_server.servicetype = 'HTTP' if (service_type == self.LB_VIP_TYPES.SSL_OFFLOAD) else service_type.name
         ns_virtual_server.ipv46 = server_object.ip
         ns_virtual_server.port = port_value
-        NetScalerVirtualServer.add(self.ns_session, ns_virtual_server)
+        NetScalerVirtualServer.add(self._api, ns_virtual_server)
         virtual_server = self.get_virtual_server(server_info)
         offload_server = None
 
@@ -221,7 +238,7 @@ class LoadBalancer:
         'Get a handle to a virtual load balancer server'
         server_hostname = _get_server_object(server_name).hostname
         try:
-            return LoadBalancerVirtualServer(self, NetScalerVirtualServer.get(self.ns_session, server_hostname))
+            return LoadBalancerVirtualServer(self, NetScalerVirtualServer.get(self._api, server_hostname))
         except NetScalerError as err:
             if err.errorcode == 258:
                 raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='virtual server', name=server_hostname)
@@ -236,7 +253,7 @@ class LoadBalancer:
             servers = [servers]
 
         for server in [_get_server_object(s) for s in servers]:
-            getattr(NetScalerServer, signal.name)(self.ns_session, server.hostname)
+            getattr(NetScalerServer, signal.name)(self._api, server.hostname)
             while validate and (self.get_server(server).state.lower() != (signal.name + 'd')):
                 sleep(_STATUS_CHECK_INTERVAL)
 
@@ -245,6 +262,15 @@ class LoadBalancerObject:
     """Class to create a universal abstract interface for an object in a load balancer."""
 
     def __init__(self, load_balancer_ref, lb_object_ref):
+        """
+        Args:
+            load_balancer_ref: The load balancer object containing this object.
+            lb_object_ref: The load balancer API object reference.
+
+        Attributes:
+            load_balancer_ref: The value of the load_balancer_ref argument.
+            lb_object_ref: The value of the lb_object_ref argument.
+        """
         self.load_balancer_ref = load_balancer_ref
         self.lb_object_ref = lb_object_ref
 
