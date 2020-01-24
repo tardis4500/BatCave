@@ -6,9 +6,9 @@
 # Step2: Add module level function docstrings.
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
-# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises. Next: servermgr.Server
+# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises. Next: servermgr.COMObject
 
-# Added docstrings for class init methods for the servermgr module load balancer objects. (GitLab #29)
+# Added docstrings for class init methods for servermgr module objects. (GitLab #29)
 
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings.

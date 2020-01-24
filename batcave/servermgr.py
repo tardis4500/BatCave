@@ -375,6 +375,28 @@ class Server:
                                   24: 'The service is currently paused in the system.'}
 
     def __init__(self, hostname=None, domain=None, auth=None, defer_wmi=True, ip=None, os_type=OS_TYPES.windows if WIN32 else OS_TYPES.linux):
+        """
+        Args:
+            hostname (optional): The server hostname. If not specified, will default to the name of the localhost.
+            domain (optional): The server domain. If not specified, will default to the domain of the localhost.
+            auth (optional, default=None): A tuple of (username, password) for access to the host if remote.
+            defer_wmi (optional, default=True): Only valid for Windows servers. If True, defers initializing the WMI interface until first use.
+            ip (optional): The server IP address. If not specified, will default to the IP of the localhost.
+            os_type (optional): The server type. If not specified, will default to the type of the localhost.
+
+        Attributes:
+            auth: The value of the auth argument.
+            domain: The derived value of the domain argument.
+            hostname: The derived value of the hostname argument.
+            ip: The derived value of the ip argument.
+            is_local: True if the server is localhost, False otherwise.
+            os_type: The value of the os_type argument.
+            _os_manager: The remote management interface for remote servers, None otherwise.
+            _wmi_manager: The WMI object.
+
+        Raises:
+            ServerObjectManagementError.SERVER_NOT_FOUND: If the remote server IP is not found.
+        """
         self.hostname = (hostname if hostname else node().split('.')[0]).lower()
         try:
             self.domain = (domain if domain else getfqdn().split('.', 1)[1]).lower()
@@ -616,6 +638,15 @@ class OSManager:
     """Class to make non WMI OS management look like WMI management."""
 
     def __init__(self, computer=None, auth=None):
+        """
+        Args:
+            computer (optional, default=None): The remote computer.
+            auth (optional, default=None): A (username, password) tuple for remote server access.
+
+        Attributes:
+            auth: The value of the auth argument.
+            computer: The value of the computer argument.
+        """
         self.computer = computer
         self.auth = auth
 
@@ -660,6 +691,17 @@ class NamedOSObject:
     """Class to allow management of all OS objects using a similar interface."""
 
     def __init__(self, Name, computer, auth):
+        """
+        Args:
+            Name: The name of the object.
+            computer: The remote computer.
+            auth: A (username, password) tuple for remote server access.
+
+        Attributes:
+            auth: The value of the auth argument.
+            computer: The value of the computer argument.
+            Name: The value of the Name argument.
+        """
         self.Name = Name
         self.computer = computer
         self.auth = auth
@@ -670,6 +712,16 @@ class LinuxService(NamedOSObject):
     """Class to create a universal abstract interface for a Linux daemon service."""
 
     def __init__(self, Name, computer, auth, service_type):
+        """
+        Args:
+            Name: The name of the object.
+            computer: The remote computer.
+            auth: A (username, password) tuple for remote server access.
+            service_type: The type of the Linux service
+
+        Attributes:
+            type: The value of the service_type argument.
+        """
         self.type = service_type
         super().__init__(Name, computer, auth)
 
@@ -734,6 +786,14 @@ class LinuxProcess:
     """Class to create a universal abstract interface for a Linux process."""
 
     def __init__(self, ProcessId):
+        """
+        Args:
+            ProcessId: The process ID of the process.
+
+        Attributes:
+            process_obj: The API object representing the process.
+            ProcessId: The value of the ProcessId argument.
+        """
         self.ProcessId = ProcessId
         self.process_obj = _LinuxProcess(self.ProcessId)
 
