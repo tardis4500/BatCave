@@ -878,6 +878,18 @@ class COMObject:
     """Class to create a universal abstract interface for a Windows COM object."""
 
     def __init__(self, ref, hostname=None):
+        """
+        Args:
+            ref: The Windows COM object.
+            hostname (optional): The server hostname. If not specified, will default to the name of the localhost.
+
+        Attributes:
+            _connection: The value of the ref argument.
+            _hostname: The derived value of the hostname argument.
+
+        Raises:
+            ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was a failure making a connection to the COM object.
+        """
         self._hostname = hostname
         raise_error = False
         try:
