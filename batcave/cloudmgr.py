@@ -43,6 +43,7 @@ class Cloud:
 
     Attributes:
         CLOUD_TYPES: The cloud providers currently supported by this class.
+        containers: A read-only property that calls the get_containers() method with no filters.
     """
     CLOUD_TYPES: Enum = _CLOUD_TYPES
 
@@ -143,7 +144,12 @@ class Cloud:
 
 
 class Image:
-    """Class to create a universal abstract interface to a container image."""
+    """Class to create a universal abstract interface to a container image.
+
+    Attributes:
+        containers: A read-only property that will return all the containers for this image.
+        tags: A read-only property that will return all the tags for this image.
+    """
 
     def __init__(self, cloud, name):
         """

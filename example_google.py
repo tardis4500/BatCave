@@ -7,7 +7,9 @@
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
-# Step6: Add class property docstrings.
+# Step6: Add class property docstrings. Next: cms module
+
+# Added class property docstrings for the cloudmgr module. (GitLab #29)
 
 # Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.
