@@ -6,11 +6,9 @@
 # Step2: Add module level function docstrings.
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
-# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises. Next: servermgr.ManagementObject
-
-# Added docstrings for class init methods for servermgr module objects. (GitLab #29)
-
+# Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
+
 # Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.

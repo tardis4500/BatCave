@@ -933,6 +933,22 @@ class ManagementObject:
     OBJECT_PREFIX = 'Win32_' if WIN32 else 'Linux'
 
     def __init__(self, object_ref, manager, key, value, **key_values):
+        """
+        Args:
+            object_ref: A reference to the management object.
+            manager: A reference to the manager of the object.
+            key: The unique key used to identify the object to the manager.
+            value: The unique value used to identify the object to the manager.
+            key_values (optional): A additional dictionary of key/value pairs to apply when referencing the object in the manager.
+
+        Attributes:
+            key: The value of the key argument.
+            key_values: The value of the key_values argument.
+            manager: The value of the manager argument.
+            object_ref: The value of the object_ref argument.
+            type: The object type.
+            value: The value of the value argument.
+        """
         self.type = self.OBJECT_PREFIX + type(self).__name__
         self.object_ref = object_ref
         self.manager = manager
@@ -1111,6 +1127,17 @@ class ServerPath:
                                 Server.OS_TYPES.linux: ['-r', '-batch']}
 
     def __init__(self, server, the_path):
+        """
+        Args:
+            server: The server for with the file path is a reference.
+            the_path: The file path on the server.
+
+        Attributes:
+            is_win: True if the server is a Windows server.
+            local: The value of the the_path argument when referenced locally on the server.
+            server: The value of the server argument.
+            win_to_win: True if the both the local and remote systems are Windows servers.
+        """
         self.server = server
         self.is_win = (self.server.os_type == Server.OS_TYPES.windows)
         path_type = PureWindowsPath if self.is_win else PurePosixPath
