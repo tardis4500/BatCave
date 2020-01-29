@@ -43,7 +43,6 @@ class Cloud:
 
     Attributes:
         CLOUD_TYPES: The cloud providers currently supported by this class.
-        containers: A read-only property that calls the get_containers() method with no filters.
     """
     CLOUD_TYPES: Enum = _CLOUD_TYPES
 
@@ -132,7 +131,7 @@ class Cloud:
                 return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
-    containers = property(get_containers)
+    containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
     def exec(self, *args, **opts):
         'Execute a command against the cloud API'
@@ -144,12 +143,7 @@ class Cloud:
 
 
 class Image:
-    """Class to create a universal abstract interface to a container image.
-
-    Attributes:
-        containers: A read-only property that will return all the containers for this image.
-        tags: A read-only property that will return all the tags for this image.
-    """
+    """Class to create a universal abstract interface to a container image."""
 
     def __init__(self, cloud, name):
         """
@@ -197,8 +191,9 @@ class Image:
                 return sorted([t for i in json_read(self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)) for t in i['tags']])
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
-    tags = property(get_tags)
-    containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}))
+    tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
+    containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
+                          doc='A read-only property which returns all the containers for this image.')
 
     def manage(self, action):
         'Manage an image in the cloud registry'
