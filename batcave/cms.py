@@ -145,10 +145,10 @@ class Label:
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
-    description = property(lambda s: s._get_info('Description'))
-    name = property(lambda s: s._name)
-    type = property(lambda s: s._client.type)
-    root = property(lambda s: s._client.root)
+    description = property(lambda s: s._get_info('Description'), doc='A read-only property which returns the description of the label.')
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the label.')
+    type = property(lambda s: s._client.type, doc='A read-only property which returns the CMS type.')
+    root = property(lambda s: s._client.root, doc='A read-only property which returns the root for the label.')
 
     def _refresh(self):
         for case in switch(self._client.type):
