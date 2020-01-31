@@ -436,12 +436,12 @@ class Client:
                 infostr = self.name
         return f'{self.type} {infostr}'
 
-    type = property(lambda s: s._type)
-    name = property(lambda s: s._name)
+    type = property(lambda s: s._type, doc='A read-only property which returns the CMS type.')
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the client.')
 
     @property
     def root(self):
-        'Return the root of the changelist'
+        """A read-only property which returns the root of the client."""
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 return Path(self._connectinfo)
@@ -454,7 +454,7 @@ class Client:
 
     @property
     def mapping(self):
-        'Return the changelist mapping'
+        """A read-write property which returns and sets the client mapping."""
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4fetch('client')['View']
@@ -463,7 +463,6 @@ class Client:
 
     @mapping.setter
     def mapping(self, newmap):
-        'Set the changelist mapping'
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 self._mapping = newmap
@@ -476,7 +475,7 @@ class Client:
 
     @property
     def cms_info(self):
-        'Returns the CMS info'
+        """A read-only property which returns the CMS info."""
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 return 'CMS type is: file'
@@ -490,7 +489,7 @@ class Client:
 
     @property
     def branches(self):
-        'Returns the branches'
+        """A read-only property which returns the client branch list."""
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
                 return self._client.heads + self._client.remotes.origin.refs
@@ -499,7 +498,7 @@ class Client:
 
     @property
     def streams(self):
-        'Returns the streams'
+        """A read-only property which returns the client stream list."""
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('streams', ['-T', 'Stream'])
@@ -1129,7 +1128,7 @@ class FileChangeRecord:
         self.type = mod_type
         self.changelist = changelist
 
-    fullname = property(lambda s: f'{s.filename}#{s.revision}')
+    fullname = property(lambda s: f'{s.filename}#{s.revision}', doc='A read-only property which returns the full name of the changed file.')
 
     def __str__(self):
         for case in switch(self._client.type):
@@ -1179,14 +1178,14 @@ class ChangeList:
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
-    name = property(lambda s: s._id)
+    name = property(lambda s: s._id, doc='A read-only property which returns the name of the change list.')
 
     def __str__(self):
         return 'Changelist ' + self.name
 
     @property
     def user(self):
-        'Returns the user'
+        """A read-write property which returns and sets the change list user."""
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 return self._changelist['User' if self._editable else 'user']
@@ -1195,7 +1194,6 @@ class ChangeList:
 
     @user.setter
     def user(self, newuser):
-        'Sets the user'
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1207,7 +1205,7 @@ class ChangeList:
 
     @property
     def time(self):
-        'returns the time'
+        """A read-write property which returns and sets the change list time."""
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 if self._editable:
@@ -1219,7 +1217,6 @@ class ChangeList:
 
     @time.setter
     def time(self, newtime):
-        'sets the time'
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1231,7 +1228,7 @@ class ChangeList:
 
     @property
     def desc(self):
-        'returns the description'
+        """A read-write property which returns and sets the change list description."""
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 return self._changelist['Description' if self._editable else 'desc']
@@ -1240,7 +1237,6 @@ class ChangeList:
 
     @desc.setter
     def desc(self, newdesc):
-        'sets the description'
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1252,7 +1248,7 @@ class ChangeList:
 
     @property
     def files(self):
-        'Returns the file list'
+        """A read-only property which returns the list of files in the change list."""
         if self._files is None:
             desc = self._client._p4run('describe', '-s', self.name)[0]  # pylint: disable=W0212
             self._files = [FileChangeRecord(self._client, f, r, a, self.name)

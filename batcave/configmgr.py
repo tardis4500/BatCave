@@ -150,7 +150,7 @@ class Configuration:
         self._parent = parent
         self._include = include
 
-    name = property(lambda s: s._name)
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')
 
     def __getattr__(self, attr):
         # First check this configuration to see if it has the requested attribute
