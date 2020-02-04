@@ -167,7 +167,7 @@ class DataSource:
             else:
                 raise DataError(DataError.FILE_OPEN, errmsg=str(ioe))
 
-    filename = property(lambda s: s._connectinfo)
+    filename = property(lambda s: s._connectinfo, doc='A read-only property which returns the file name of the data source.')
 
     def __enter__(self):
         return self
@@ -177,8 +177,17 @@ class DataSource:
         return False
 
     @property
+    def dict_repr(self):
+        """A read-only property which returns a the data source as a dictionary."""
+        dictrepr = dict()
+        for table in self.gettables():
+            with table.getrows()[0] as row:
+                dictrepr[table.name] = {c: row.getvalue(c) for c in row.getcolumns()}
+        return dictrepr
+
+    @property
     def schema(self):
-        'Get the schema value'
+        """A read-only property which returns the schema value of the data source."""
         try:
             return int(self.gettable(self.INFO_TABLE).getrows(col=self._SCHEMA_DATA)[0].getvalue(self._SCHEMA_DATA))
         except IndexError:
@@ -414,15 +423,6 @@ class DataSource:
             self._closer.close()
             self._connectinfo = self._closer = self._source = self._connection = None
 
-    @property
-    def dict_repr(self):
-        'Gets a dictionary representation'
-        dictrepr = dict()
-        for table in self.gettables():
-            with table.getrows()[0] as row:
-                dictrepr[table.name] = {c: row.getvalue(c) for c in row.getcolumns()}
-        return dictrepr
-
 
 class DataRow:
     """Class to create a universal abstract interface for a data row."""
@@ -443,7 +443,7 @@ class DataRow:
         self._row = raw
         self._parent = parent
 
-    raw = property(lambda s: s._row)
+    raw = property(lambda s: s._row, doc='A read-only property which returns the raw contents of the data row.')
 
     def __getattr__(self, attr):
         return self.getvalue(attr)
@@ -612,7 +612,7 @@ class DataTable:
         self._parent = parent
         self._table = raw
 
-    raw = property(lambda s: s._table)
+    raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
 
     def __enter__(self):
         return self

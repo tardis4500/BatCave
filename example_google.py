@@ -7,13 +7,14 @@
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
-# Step6: Add class property docstrings. Next: data
+# Step6: Add class property docstrings. Next: expander
 
-# Added class property docstrings for the cms and configmgr modules. (GitLab #29)
+# Added class property docstrings for the data module. (GitLab #29)
 
 # Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
+# Step10: Reorder Classes: private, protects, properties, methods.
 
 # -*- coding: utf-8 -*-
 """Example Google style docstrings.
