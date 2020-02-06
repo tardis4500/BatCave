@@ -48,12 +48,11 @@ class Logger:
 
     @property
     def level(self):
-        'Return the current logging level'
+        """A read-write property which returns and sets the current logging level."""
         return self._logger.getEffectiveLevel()
 
     @level.setter
     def level(self, level):
-        'Changes the logging level'
         self._logger.setLevel(level)
 
     def __enter__(self):

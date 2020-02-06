@@ -90,7 +90,7 @@ class BatCaveException(Exception, MsgStr):
         self._errobj = errobj
         self.vars = variables
 
-    code = property(lambda s: s._errobj.code)
+    code = property(lambda s: s._errobj.code, doc='A read-only property which returns the error code from the error object.')
 
     def __str__(self):
         return MsgStr.__str__(self)

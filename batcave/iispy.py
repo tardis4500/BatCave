@@ -162,7 +162,7 @@ class IISInstance:
     def get_advanced_logger(self, path=None, logtype='server', set_location='apphost'):
         'Get the advanced logger object from the IIS instance'
         return IISAdvancedLogger(path=path, logtype=logtype, set_location=set_location, hostname=self.hostname)
-    advanced_logger = property(get_advanced_logger)
+    advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
     def has_item(self, item_type, item_name):
         'Generic method to look for a specific item'

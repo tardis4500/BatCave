@@ -69,7 +69,7 @@ class Cluster:
         self._core_api = CoreV1Api()
         self._batch_api = BatchV1Api()
 
-    pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec)
+    pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
 
     def __getattr__(self, attr):
         if '_' in attr:
@@ -173,7 +173,7 @@ class ClusterObject:
 class Pod(ClusterObject):
     """Class to create a universal abstract interface for a Kubernetes pod."""
 
-    logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name))
+    logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name), doc='A read-only property which returns the pod logs.')
 
     def exec(self, *command):
         'Execute a command on the specified pod'

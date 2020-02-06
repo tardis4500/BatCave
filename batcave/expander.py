@@ -133,7 +133,7 @@ class Formatter:
 
     @property
     def bol(self):
-        'Gets the beginning of line formatting'
+        """A read-only property which returns the beginning of line formatting."""
         if self.level == 0:
             sep = ',' if (self.format == self.OUTPUT_FORMATS.csv) else '. '
             for case in switch(self.format):
