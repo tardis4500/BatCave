@@ -7,9 +7,9 @@
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
-# Step6: Add class property docstrings. Next: qbpy
+# Step6: Add class property docstrings. Next: reporter
 
-# Added class property docstrings for the expander, iispy, k8s, and logger modules. (GitLab #29)
+# Added class property docstrings for the qbpy module. (GitLab #29)
 
 # Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.

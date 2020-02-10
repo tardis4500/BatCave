@@ -59,7 +59,7 @@ class QuickBuildObject:
         object_xml.find(attr).text = value
         self._console.qb_runner(f'{self._object_type}s', object_xml)
 
-    id = property(lambda s: s._object_id)
+    id = property(lambda s: s._object_id, doc='A read-only property which returns the QuickBuild object ID.')
 
 
 class QuickBuildBuild(QuickBuildObject):
@@ -89,7 +89,7 @@ class QuickBuildCfg(QuickBuildObject):
 
     @property
     def latest_build(self):
-        'Returns the latest build for this configuration'
+        """A read-only property which returns the latest build for this configuration."""
         return QuickBuildBuild(self._console, fromstring(self._console.qb_runner(f'latest_builds/{self._object_id}').text).find('id').text)
 
     def enable(self):
@@ -171,7 +171,7 @@ class QuickBuildConsole:
 
     @property
     def update(self):
-        'Return the update status'
+        """A read-write property which returns and sets the update state for the console."""
         return self._update
 
     @update.setter
