@@ -85,7 +85,8 @@ class QuickBuildCfg(QuickBuildObject):
         'Return the child configurations as a list'
         ans = self._console.qb_runner(f'configurations?parent_id={self._object_id}&recursive=' + bool_to_str(recurse))
         return [QuickBuildCfg(self._console, c.find('id').text) for c in fromstring(ans.text).findall('com.pmease.quickbuild.model.Configuration')]
-    children = property(get_children)
+
+    children = property(get_children, doc='A read-only property which returns a list of children for the object.')
 
     @property
     def latest_build(self):

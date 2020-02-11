@@ -107,16 +107,16 @@ class SimpleAttribute:
 
     @property
     def value(self):
-        'Returns the attribute value'
+        """A read-write property which returns and sets the value of the attribute."""
         return self._value
 
     @value.setter
     def value(self, val):
-        'Sets the attribute value'
         if not self.is_valid(val):
             raise ValueError('invalid value for SimpleAttribute: ' + val)
         self._value = val
-    count = property(lambda s: len(s._valid))
+
+    count = property(lambda s: len(s._valid), doc='A read-only property which returns the number of valid attribute values.')
 
     def is_valid(self, val):
         'Determines if the specified attribute is valid'
@@ -145,8 +145,9 @@ class MetaAttribute:
 
     def _set_values(self, valmap):
         self._valuemap = valmap
-    values = property(fset=_set_values)
-    simple_attr_name = property(lambda s: s._attr)
+
+    values = property(fset=_set_values, doc='A read-only property which returns the values of the attribute as a dictionary.')
+    simple_attr_name = property(lambda s: s._attr, doc='A read-only property which returns the simple attribute name.')
 
 
 OUTPUT_ATTR = 'output'
@@ -243,7 +244,7 @@ class ReportObject:
 
     @property
     def depth(self):
-        'Get the depth of this report object'
+        """A read-only property which returns the report depth of this object."""
         if self.container:
             return self.container.depth + 1
         return 1
@@ -274,42 +275,42 @@ class ReportObject:
             else:
                 self._attributes[attr].value = val
 
-    output = property(lambda s: s._get_attribute(OUTPUT_ATTR), lambda s, v: s._set_attribute(OUTPUT_ATTR, v))
-    rpt_ldr = property(lambda s: s._get_attribute(RPT_LDR_ATTR), lambda s, v: s._set_attribute(RPT_LDR_ATTR, v))
-    rpt_trm = property(lambda s: s._get_attribute(RPT_TRM_ATTR), lambda s, v: s._set_attribute(RPT_TRM_ATTR, v))
-    rpt_hdr_ldr = property(lambda s: s._get_attribute(RPT_HDR_LDR_ATTR), lambda s, v: s._set_attribute(RPT_HDR_LDR_ATTR, v))
-    rpt_hdr_trm = property(lambda s: s._get_attribute(RPT_HDR_TRM_ATTR), lambda s, v: s._set_attribute(RPT_HDR_TRM_ATTR, v))
-    rpt_bdy_ldr = property(lambda s: s._get_attribute(RPT_BDY_LDR_ATTR), lambda s, v: s._set_attribute(RPT_BDY_LDR_ATTR, v))
-    rpt_bdy_trm = property(lambda s: s._get_attribute(RPT_BDY_TRM_ATTR), lambda s, v: s._set_attribute(RPT_BDY_TRM_ATTR, v))
-    rpt_ftr_ldr = property(lambda s: s._get_attribute(RPT_FTR_LDR_ATTR), lambda s, v: s._set_attribute(RPT_FTR_LDR_ATTR, v))
-    rpt_ftr_trm = property(lambda s: s._get_attribute(RPT_FTR_TRM_ATTR), lambda s, v: s._set_attribute(RPT_FTR_TRM_ATTR, v))
-    sec_ldr = property(lambda s: s._get_attribute(SEC_LDR_ATTR), lambda s, v: s._set_attribute(SEC_LDR_ATTR, v))
-    sec_trm = property(lambda s: s._get_attribute(SEC_TRM_ATTR), lambda s, v: s._set_attribute(SEC_TRM_ATTR, v))
-    sec_hdr_ldr = property(lambda s: s._get_attribute(SEC_HDR_LDR_ATTR), lambda s, v: s._set_attribute(SEC_HDR_LDR_ATTR, v))
-    sec_hdr_trm = property(lambda s: s._get_attribute(SEC_HDR_TRM_ATTR), lambda s, v: s._set_attribute(SEC_HDR_TRM_ATTR, v))
-    sec_bdy_ldr = property(lambda s: s._get_attribute(SEC_BDY_LDR_ATTR), lambda s, v: s._set_attribute(SEC_BDY_LDR_ATTR, v))
-    sec_bdy_trm = property(lambda s: s._get_attribute(SEC_BDY_TRM_ATTR), lambda s, v: s._set_attribute(SEC_BDY_TRM_ATTR, v))
-    sec_ftr_ldr = property(lambda s: s._get_attribute(SEC_FTR_LDR_ATTR), lambda s, v: s._set_attribute(SEC_FTR_LDR_ATTR, v))
-    sec_ftr_trm = property(lambda s: s._get_attribute(SEC_FTR_TRM_ATTR), lambda s, v: s._set_attribute(SEC_FTR_TRM_ATTR, v))
-    tbl_ldr = property(lambda s: s._get_attribute(TBL_LDR_ATTR), lambda s, v: s._set_attribute(TBL_LDR_ATTR, v))
-    tbl_trm = property(lambda s: s._get_attribute(TBL_TRM_ATTR), lambda s, v: s._set_attribute(TBL_TRM_ATTR, v))
-    tbl_hdr_ldr = property(lambda s: s._get_attribute(TBL_HDR_LDR_ATTR), lambda s, v: s._set_attribute(TBL_HDR_LDR_ATTR, v))
-    tbl_hdr_trm = property(lambda s: s._get_attribute(TBL_HDR_TRM_ATTR), lambda s, v: s._set_attribute(TBL_HDR_TRM_ATTR, v))
-    tbl_bdy_ldr = property(lambda s: s._get_attribute(TBL_BDY_LDR_ATTR), lambda s, v: s._set_attribute(TBL_BDY_LDR_ATTR, v))
-    tbl_bdy_trm = property(lambda s: s._get_attribute(TBL_BDY_TRM_ATTR), lambda s, v: s._set_attribute(TBL_BDY_TRM_ATTR, v))
-    tbl_row_ldr = property(lambda s: s._get_attribute(TBL_ROW_LDR_ATTR), lambda s, v: s._set_attribute(TBL_ROW_LDR_ATTR, v))
-    tbl_row_trm = property(lambda s: s._get_attribute(TBL_ROW_TRM_ATTR), lambda s, v: s._set_attribute(TBL_ROW_TRM_ATTR, v))
-    tbl_cel_ldr = property(lambda s: s._get_attribute(TBL_CEL_LDR_ATTR), lambda s, v: s._set_attribute(TBL_CEL_LDR_ATTR, v))
-    tbl_cel_trm = property(lambda s: s._get_attribute(TBL_CEL_TRM_ATTR), lambda s, v: s._set_attribute(TBL_CEL_TRM_ATTR, v))
-    tbl_ftr_ldr = property(lambda s: s._get_attribute(TBL_FTR_LDR_ATTR), lambda s, v: s._set_attribute(TBL_FTR_LDR_ATTR, v))
-    tbl_ftr_trm = property(lambda s: s._get_attribute(TBL_FTR_TRM_ATTR), lambda s, v: s._set_attribute(TBL_FTR_TRM_ATTR, v))
-    lin_ldr = property(lambda s: s._get_attribute(LIN_LDR_ATTR), lambda s, v: s._set_attribute(LIN_LDR_ATTR, v))
-    lin_trm = property(lambda s: s._get_attribute(LIN_TRM_ATTR), lambda s, v: s._set_attribute(LIN_TRM_ATTR, v))
-    lnk_ldr = property(lambda s: s._get_attribute(LNK_LDR_ATTR), lambda s, v: s._set_attribute(LNK_LDR_ATTR, v))
-    lnk_trm = property(lambda s: s._get_attribute(LNK_TRM_ATTR), lambda s, v: s._set_attribute(LNK_TRM_ATTR, v))
-    lst_ldr = property(lambda s: s._get_attribute(LST_LDR_ATTR), lambda s, v: s._set_attribute(LST_LDR_ATTR, v))
-    lst_int = property(lambda s: s._get_attribute(LST_INT_ATTR), lambda s, v: s._set_attribute(LST_INT_ATTR, v))
-    lst_trm = property(lambda s: s._get_attribute(LST_TRM_ATTR), lambda s, v: s._set_attribute(LST_TRM_ATTR, v))
+    output = property(lambda s: s._get_attribute(OUTPUT_ATTR), lambda s, v: s._set_attribute(OUTPUT_ATTR, v), doc='A read-write property for the output attribute.')
+    rpt_ldr = property(lambda s: s._get_attribute(RPT_LDR_ATTR), lambda s, v: s._set_attribute(RPT_LDR_ATTR, v), doc='A read-write property for the report leader attribute.')
+    rpt_trm = property(lambda s: s._get_attribute(RPT_TRM_ATTR), lambda s, v: s._set_attribute(RPT_TRM_ATTR, v), doc='A read-write property for the report terminator attribute.')
+    rpt_hdr_ldr = property(lambda s: s._get_attribute(RPT_HDR_LDR_ATTR), lambda s, v: s._set_attribute(RPT_HDR_LDR_ATTR, v), doc='A read-write property for the report header leader attribute.')
+    rpt_hdr_trm = property(lambda s: s._get_attribute(RPT_HDR_TRM_ATTR), lambda s, v: s._set_attribute(RPT_HDR_TRM_ATTR, v), doc='A read-write property for the report header terminator attribute.')
+    rpt_bdy_ldr = property(lambda s: s._get_attribute(RPT_BDY_LDR_ATTR), lambda s, v: s._set_attribute(RPT_BDY_LDR_ATTR, v), doc='A read-write property for the report body leader attribute.')
+    rpt_bdy_trm = property(lambda s: s._get_attribute(RPT_BDY_TRM_ATTR), lambda s, v: s._set_attribute(RPT_BDY_TRM_ATTR, v), doc='A read-write property for the report body terminator attribute.')
+    rpt_ftr_ldr = property(lambda s: s._get_attribute(RPT_FTR_LDR_ATTR), lambda s, v: s._set_attribute(RPT_FTR_LDR_ATTR, v), doc='A read-write property for the report footer leader attribute.')
+    rpt_ftr_trm = property(lambda s: s._get_attribute(RPT_FTR_TRM_ATTR), lambda s, v: s._set_attribute(RPT_FTR_TRM_ATTR, v), doc='A read-write property for the report footer terminator attribute.')
+    sec_ldr = property(lambda s: s._get_attribute(SEC_LDR_ATTR), lambda s, v: s._set_attribute(SEC_LDR_ATTR, v), doc='A read-write property for the section leader attribute.')
+    sec_trm = property(lambda s: s._get_attribute(SEC_TRM_ATTR), lambda s, v: s._set_attribute(SEC_TRM_ATTR, v), doc='A read-write property for the section terminator attribute.')
+    sec_hdr_ldr = property(lambda s: s._get_attribute(SEC_HDR_LDR_ATTR), lambda s, v: s._set_attribute(SEC_HDR_LDR_ATTR, v), doc='A read-write property for the section header leader attribute.')
+    sec_hdr_trm = property(lambda s: s._get_attribute(SEC_HDR_TRM_ATTR), lambda s, v: s._set_attribute(SEC_HDR_TRM_ATTR, v), doc='A read-write property for the section header terminator attribute.')
+    sec_bdy_ldr = property(lambda s: s._get_attribute(SEC_BDY_LDR_ATTR), lambda s, v: s._set_attribute(SEC_BDY_LDR_ATTR, v), doc='A read-write property for the section body leader attribute.')
+    sec_bdy_trm = property(lambda s: s._get_attribute(SEC_BDY_TRM_ATTR), lambda s, v: s._set_attribute(SEC_BDY_TRM_ATTR, v), doc='A read-write property for the section body terminator attribute.')
+    sec_ftr_ldr = property(lambda s: s._get_attribute(SEC_FTR_LDR_ATTR), lambda s, v: s._set_attribute(SEC_FTR_LDR_ATTR, v), doc='A read-write property for the section footer leader attribute.')
+    sec_ftr_trm = property(lambda s: s._get_attribute(SEC_FTR_TRM_ATTR), lambda s, v: s._set_attribute(SEC_FTR_TRM_ATTR, v), doc='A read-write property for the section footer terminator attribute.')
+    tbl_ldr = property(lambda s: s._get_attribute(TBL_LDR_ATTR), lambda s, v: s._set_attribute(TBL_LDR_ATTR, v), doc='A read-write property for the table leader attribute.')
+    tbl_trm = property(lambda s: s._get_attribute(TBL_TRM_ATTR), lambda s, v: s._set_attribute(TBL_TRM_ATTR, v), doc='A read-write property for the table terminator attribute.')
+    tbl_hdr_ldr = property(lambda s: s._get_attribute(TBL_HDR_LDR_ATTR), lambda s, v: s._set_attribute(TBL_HDR_LDR_ATTR, v), doc='A read-write property for the table header leader attribute.')
+    tbl_hdr_trm = property(lambda s: s._get_attribute(TBL_HDR_TRM_ATTR), lambda s, v: s._set_attribute(TBL_HDR_TRM_ATTR, v), doc='A read-write property for the table header terminator attribute.')
+    tbl_bdy_ldr = property(lambda s: s._get_attribute(TBL_BDY_LDR_ATTR), lambda s, v: s._set_attribute(TBL_BDY_LDR_ATTR, v), doc='A read-write property for the table body leader attribute.')
+    tbl_bdy_trm = property(lambda s: s._get_attribute(TBL_BDY_TRM_ATTR), lambda s, v: s._set_attribute(TBL_BDY_TRM_ATTR, v), doc='A read-write property for the table body terminator attribute.')
+    tbl_row_ldr = property(lambda s: s._get_attribute(TBL_ROW_LDR_ATTR), lambda s, v: s._set_attribute(TBL_ROW_LDR_ATTR, v), doc='A read-write property for the table row leader attribute.')
+    tbl_row_trm = property(lambda s: s._get_attribute(TBL_ROW_TRM_ATTR), lambda s, v: s._set_attribute(TBL_ROW_TRM_ATTR, v), doc='A read-write property for the table row terminator attribute.')
+    tbl_cel_ldr = property(lambda s: s._get_attribute(TBL_CEL_LDR_ATTR), lambda s, v: s._set_attribute(TBL_CEL_LDR_ATTR, v), doc='A read-write property for the table cell leader attribute.')
+    tbl_cel_trm = property(lambda s: s._get_attribute(TBL_CEL_TRM_ATTR), lambda s, v: s._set_attribute(TBL_CEL_TRM_ATTR, v), doc='A read-write property for the table cell terminator attribute.')
+    tbl_ftr_ldr = property(lambda s: s._get_attribute(TBL_FTR_LDR_ATTR), lambda s, v: s._set_attribute(TBL_FTR_LDR_ATTR, v), doc='A read-write property for the table footer leader attribute.')
+    tbl_ftr_trm = property(lambda s: s._get_attribute(TBL_FTR_TRM_ATTR), lambda s, v: s._set_attribute(TBL_FTR_TRM_ATTR, v), doc='A read-write property for the table footer terminator attribute.')
+    lin_ldr = property(lambda s: s._get_attribute(LIN_LDR_ATTR), lambda s, v: s._set_attribute(LIN_LDR_ATTR, v), doc='A read-write property for the line leader attribute.')
+    lin_trm = property(lambda s: s._get_attribute(LIN_TRM_ATTR), lambda s, v: s._set_attribute(LIN_TRM_ATTR, v), doc='A read-write property for the line terminator attribute.')
+    lnk_ldr = property(lambda s: s._get_attribute(LNK_LDR_ATTR), lambda s, v: s._set_attribute(LNK_LDR_ATTR, v), doc='A read-write property for the link leader attribute.')
+    lnk_trm = property(lambda s: s._get_attribute(LNK_TRM_ATTR), lambda s, v: s._set_attribute(LNK_TRM_ATTR, v), doc='A read-write property for the link terminator attribute.')
+    lst_ldr = property(lambda s: s._get_attribute(LST_LDR_ATTR), lambda s, v: s._set_attribute(LST_LDR_ATTR, v), doc='A read-write property for the list leader attribute.')
+    lst_int = property(lambda s: s._get_attribute(LST_INT_ATTR), lambda s, v: s._set_attribute(LST_INT_ATTR, v), doc='A read-write property for the list separator attribute.')
+    lst_trm = property(lambda s: s._get_attribute(LST_TRM_ATTR), lambda s, v: s._set_attribute(LST_TRM_ATTR, v), doc='A read-write property for the list terminator attribute.')
 
 
 class Section(ReportObject):
