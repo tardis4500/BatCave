@@ -424,8 +424,8 @@ class Server:
         if not defer_wmi:
             self._connect_wmi()
 
-    fqdn = property(lambda s: f'{s.hostname}.{s.domain}' if s.domain else s.hostname)
-    is_local = property(lambda s: getfqdn().lower() == s.fqdn)
+    fqdn = property(lambda s: f'{s.hostname}.{s.domain}' if s.domain else s.hostname, doc='A read-only property which returns the full-qualified domain name of the server.')
+    is_local = property(lambda s: getfqdn().lower() == s.fqdn, doc='A read-only property which returns True if the server is the local host.')
 
     def __enter__(self):
         return self
@@ -727,7 +727,7 @@ class LinuxService(NamedOSObject):
 
     @property
     def state(self):
-        'Returns the state value of the service'
+        """A read-only property which returns the state value of the service."""
         result = self._manage('status')
         if result and isinstance(result, list) and ('stop' in result[0]):
             return 'Stopped'
@@ -797,9 +797,9 @@ class LinuxProcess:
         self.ProcessId = ProcessId
         self.process_obj = _LinuxProcess(self.ProcessId)
 
-    CommandLine = property(lambda s: s.process_obj.cmdline())
-    ExecutablePath = property(lambda s: s.process_obj.exe())
-    Name = property(lambda s: s.process_obj.name())
+    CommandLine = property(lambda s: s.process_obj.cmdline(), doc='A read-only property which returns the command line for the process.')
+    ExecutablePath = property(lambda s: s.process_obj.exe(), doc='A read-only property which returns the executable path for the process.')
+    Name = property(lambda s: s.process_obj.name(), doc='A read-only property which returns the name of the process.')
 
     def Kill(self):
         'Kills the process'
@@ -1152,13 +1152,13 @@ class ServerPath:
 
     @property
     def remote(self):
-        'Returns the name of this remote server'
+        """A read-only property which returns the name of this remote server which hosts the path."""
         if self.server.is_local:
             return self.local
         if self.win_to_win:
             return WindowsPath(f'//{self.server.fqdn}/{self.local}'.replace(':', '$'))
         return f'{self.server.fqdn}:{self.local}'
-    parent = property(lambda s: ServerPath(s.server, s.local.parent))
+    parent = property(lambda s: ServerPath(s.server, s.local.parent), doc='A read-only property which returns the parent of the path.')
 
     def exists(self):
         'Implementation of pathlib.Path.exists() adding remote server support'

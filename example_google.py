@@ -7,11 +7,11 @@
 # Step3: Add class docstrings.
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
-# Step6: Add class property docstrings. Next: servermgr
+# Step6: Add class property docstrings.
+# Step7: Add class method docstrings. Next: automation
 
-# Added class property docstrings for the reporter module. (GitLab #29)
+# Added class property docstrings for the servermgr and tcpy modules. (GitLab #29)
 
-# Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
 # Step10: Reorder Classes: private, protects, properties, methods.

@@ -75,9 +75,9 @@ class TeamCityServer:
         self.url = f'http://{host}:{port}/httpAuth/app/rest/'
         self.auth = HTTPBasicAuth(user, passwd)
 
-    users = property(lambda s: s.api_call('get', 'users')['user'])
-    groups = property(lambda s: s.api_call('get', 'userGroups')['group'])
-    build_configs = property(lambda s: s.api_call('get', 'buildTypes')['buildType'])
+    users = property(lambda s: s.api_call('get', 'users')['user'], doc='A read-only property which returns a list of the TeamCity users.')
+    groups = property(lambda s: s.api_call('get', 'userGroups')['group'], doc='A read-only property which returns a list of the TeamCity groups.')
+    build_configs = property(lambda s: s.api_call('get', 'buildTypes')['buildType'], doc='A read-only property which returns a list of the build configurations.')
 
     def __enter__(self):
         return self
