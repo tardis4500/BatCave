@@ -31,11 +31,11 @@ class ActionCommandRunner(SysCmdRunner):
 
         Args:
             message: The message passed to SysCmdRunner.
-            *args: The list of args passed to SysCmdRunner.
-            **kwargs: The list of named args passed to SysCmdRunner.
+            args (optional): The list of args passed to SysCmdRunner.
+            kwargs (optional): The list of named args passed to SysCmdRunner.
 
         Returns:
-            Returns whatever is returned by SysCmdRunner
+            Returns whatever is returned by SysCmdRunner.
         """
         if self.guard:
             self.writer(self.guard)
