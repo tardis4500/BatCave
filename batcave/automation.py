@@ -62,7 +62,7 @@ class Action:
     def __init__(self, **_unused_kwargs):
         """
         Args:
-            **_unused_kwargs: All arguments passed are ignored by the time they reach this initializer
+            **_unused_kwargs: All arguments passed are ignored by the time they reach this initializer.
 
         Attributes:
             project_root: The parent directory from where the current action is run.
@@ -76,17 +76,33 @@ class Action:
         return False
 
     def pre(self):
-        """Executed before _execute()."""
+        """Executed before _execute().
+
+        Returns:
+            Nothing
+        """
 
     def post(self):
-        """Executed after _execute()."""
+        """Executed after _execute().
+
+        Returns:
+            Nothing
+        """
 
     def always_post(self):
-        """Executed after _execute() like finally in try/catch/finally."""
+        """Executed after _execute() like finally in try/catch/finally.
+
+        Returns:
+            Nothing
+        """
         popd()
 
     def execute(self):
-        """Runs the _execute() method from the child class."""
+        """Runs the _execute() method from the child class.
+
+        Returns:
+            Nothing
+        """
         try:
             self.pre()
             self._execute()  # pylint: disable=E1101

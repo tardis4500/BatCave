@@ -49,9 +49,9 @@ class Cloud:
     def __init__(self, ctype: CLOUD_TYPES, auth: Any = None, login: bool = True):
         """
         Args:
-            ctype: The cloud provider for this instance. Must be a member of _CLOUD_TYPES
+            ctype: The cloud provider for this instance. Must be a member of _CLOUD_TYPES.
             auth (optional, default=None): For local or Docker Hub this is a (username, password) tuple.
-                For Google Cloud it is a service account keyfile found at ~/.ssh/{value}.json
+                For Google Cloud it is a service account keyfile found at ~/.ssh/{value}.json.
             login (optional, default=True): Whether or not to login to the cloud provider at instance initialization.
 
         Attributes:
@@ -79,7 +79,7 @@ class Cloud:
             Nothing
 
         Raises:
-            CloudError.INVALID_OPERATION: if the value of self.ctype is not in CLOUD_TYPES
+            CloudError.INVALID_OPERATION: If the value of self.ctype is not in CLOUD_TYPES.
         """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
@@ -99,10 +99,10 @@ class Cloud:
         """Get an image from the cloud container registry.
 
         Args:
-            tag: the container image tag to retrive
+            tag: The container image tag to retrive.
 
         Returns:
-            The image object
+            The image object.
         """
         return Image(self, tag)
 
@@ -110,10 +110,10 @@ class Cloud:
         """Get a container from the cloud.
 
         Args:
-            name: the container name to retrive
+            name: The container name to retrive.
 
         Returns:
-            The container object
+            The container object.
         """
         return Container(self, name)
 
@@ -121,10 +121,13 @@ class Cloud:
         """Get a possibly filtered list of containers.
 
         Args:
-            filter (optional): the container name to retrive
+            filter (optional, default=None): the container name to retrive.
 
         Returns:
-            The container object
+            The container object.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support login.
         """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
@@ -134,7 +137,18 @@ class Cloud:
     containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
     def exec(self, *args, **opts):
-        'Execute a command against the cloud API'
+        """Execute a command against the cloud API.
+
+        Args:
+            args (optional): A list of arguments to pass to the API.
+            opts (optional): A dictionary to pass to the API.
+
+        Returns:
+            The result of the API call.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support an API call.
+        """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.gcloud):
                 return gcloud(None, *args, **opts)
@@ -180,7 +194,17 @@ class Image:
         return False
 
     def get_tags(self, image_filter=None):
-        'Get a list of tags applied to the image'
+        """Get a list of tags applied to the image.
+
+        Args:
+            image_filter (optional, default=None): A filter to apply to the image list.
+
+        Returns:
+            The sorted list of tags applied to the image.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support image tags.
+        """
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self._ref.tags
@@ -196,7 +220,17 @@ class Image:
                           doc='A read-only property which returns all the containers for this image.')
 
     def manage(self, action):
-        'Manage an image in the cloud registry'
+        """Manage an image in the cloud registry.
+
+        Args:
+            action: The management action to perform on the image.
+
+        Returns:
+            The log message of the management action.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support image management.
+        """
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub, Cloud.CLOUD_TYPES.gcloud):
                 docker_log = [literal_eval(l.strip()) for l in getattr(self._docker_client.images, action)(self.name).split('\n') if l]
@@ -208,15 +242,30 @@ class Image:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def push(self):
-        'Push an image to the cloud registry'
+        """Push the image to the registry.
+
+        Returns:
+            The result of the self.manage() call.
+        """
         return self.manage('push')
 
     def pull(self):
-        'Pull an image from the cloud registry'
+        """Pull the image from the registry.
+
+        Returns:
+            The result of the self.manage() call.
+        """
         return self.manage('pull')
 
     def tag(self, new_tag):
-        'Tag an image in the cloud registry'
+        """Tag an image in the registry.
+
+        Returns:
+            The new tag.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support image tagging.
+        """
         new_ref = None
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
@@ -234,7 +283,19 @@ class Image:
         return new_ref
 
     def run(self, detach=True, update=True, **args):
-        'Run an image to create an active container'
+        """Run an image to create an active container.
+
+        Args:
+            detach (optional, default=True): If True, do not wait for the container to complete.
+            update (optional, default=True): If True, perform a pull of the image from the registry before running.
+            args (optional): A dictionary of arguments to pass to the run command.
+
+        Returns:
+            A reference to the active container.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support running an image.
+        """
         if update:
             self.pull()
         for case in switch(self.cloud.type):
@@ -277,7 +338,14 @@ class Container:
         return False
 
     def stop(self):
-        'Stop a running container'
+        """Stop a running container.
+
+        Returns:
+            A reference to the stopped container.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support stopping an container.
+        """
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self._ref.stop()
