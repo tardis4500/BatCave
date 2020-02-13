@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [38.0.1] - 2020-02-13
+
+- Changed
+  - Fixed str_to_pythonval when ~ in value. (GitLab #42)
+
+
+## Release History
+
 ### [38.0.0] - 2019-10-30
 
 - Added
@@ -17,8 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Renamed hallog to logger. (GitLab #25)
   - Converted README and CHANGELOG from restructuredText to Markdown.
-
-## Release History
 
 ### [37.1.2] - 2019-10-29
 
