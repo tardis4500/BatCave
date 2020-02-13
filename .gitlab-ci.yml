@@ -64,7 +64,7 @@ install_test:
   extends: .builder
   only:
     - master
-    - /^release\/*$/
+    - /^release\/.*$/
   when: manual
   allow_failure: false
 
