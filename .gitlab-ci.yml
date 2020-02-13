@@ -62,9 +62,6 @@ install_test:
 
 .publisher:
   extends: .builder
-  only:
-    - master
-    - release/v*
   when: manual
   allow_failure: false
 
@@ -72,6 +69,9 @@ publish_test:
   stage: publish_test
   environment: Staging
   extends: .publisher
+  only:
+    - master
+    - release/v*
   variables:
     BUILD_ARGS: test $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
 
@@ -80,5 +80,8 @@ publish:
   image: python:3.7
   environment: Production
   extends: .publisher
+  only:
+    - master
+    - release/v*
   variables:
     BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_PRODUCTION_TOKEN
