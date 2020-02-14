@@ -15,7 +15,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstrings. (GitLab #29)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
 
+
 ## Release History
+
+### [38.0.1] - 2020-02-13
+
+- Changed
+  - Fixed str_to_pythonval when ~ in value. (GitLab #42)
 
 ### [38.0.0] - 2019-10-30
 

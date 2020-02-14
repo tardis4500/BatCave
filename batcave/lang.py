@@ -269,6 +269,11 @@ def str_to_pythonval(the_string, parse_python=False):
         (data_type, val) = the_string.split('~', 1)
         the_string = eval(f'{data_type}({val})')  # pylint: disable=eval-used
 
+
+    if parse_python and '~' in the_string:
+        (data_type, val) = the_string.split('~', 1)
+        the_string = eval(f'{data_type}({val})')  # pylint: disable=W0123
+
     return the_string
 
 
