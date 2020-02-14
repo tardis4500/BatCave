@@ -37,9 +37,10 @@ class PodError(HALException):
 
 class Cluster:
     'Class to represent a kubernetes cluster'
-    def __init__(self, cluster_config=None):
+    def __init__(self, cluster_config=None, context=None):
         self.config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
-        k8s_config.load_kube_config(self.config)
+        self._context = context
+        k8s_config.load_kube_config(self.config, self._context)
         self._core_api = CoreV1Api()
         self._batch_api = BatchV1Api()
 
@@ -119,7 +120,12 @@ class Cluster:
 
     def kubectl(self, *args):
         'Provide kubectl for things that are not implemented directly in the API'
-        return kubectl(None, f'--kubeconfig={self.config}', *args)
+        config_args = list()
+        if self.config:
+            config_args.append(f'--kubeconfig={self.config}')
+        if self._context:
+            config_args.append(f'--context={self._context}')
+        return kubectl(None, *config_args, *args)
 
 
 class ClusterObject:

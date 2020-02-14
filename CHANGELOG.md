@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [38.1.0] - 2020-02-14
+
+- Added
+  - Added context parameter to k8s.Cluster initializer. (GitLab #43)
+
+
+## Release History
+
 ### [38.0.1] - 2020-02-13
 
 - Changed
   - Fixed str_to_pythonval when ~ in value. (GitLab #42)
-
-
-## Release History
 
 ### [38.0.0] - 2019-10-30
 
