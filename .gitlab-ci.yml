@@ -21,7 +21,9 @@ variables:
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
 
 before_script:
+  - apk add build-base
   - python -V
+  - pip install -U pip
   - pip install -r requirements-frozen.txt
   - cd $BUILD_DIR
 
@@ -34,7 +36,6 @@ cache:
     - tags
   script:
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
-
 
 unit_tests:
   stage: unit_tests
