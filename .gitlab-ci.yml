@@ -69,7 +69,7 @@ install_test:
   when: manual
   allow_failure: false
   before_script:
-    - echo Publishing
+    - cd $BUILD_DIR
 
 publish_test:
   stage: publish_test
