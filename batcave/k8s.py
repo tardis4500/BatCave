@@ -54,7 +54,19 @@ class PodError(BatCaveException):
 class Cluster:
     """Class to create a universal abstract interface for a Kubernetes cluster."""
 
-    def __init__(self, cluster_config=None):
+    def __init__(self, cluster_config=None, context=None):
+        """
+        Args:
+            cluster_config (optional, default=None): The cluster configuration file to use.
+            context (optional, default=None): The cluster configuration file context to use.
+
+        Attributes:
+            config: The value of the cluster_config argument.
+            _batch_api: A reference to the BatchV1Api object.
+            _context: The value of the context argument.
+            _core_api: A reference to the CoreV1Api object.
+        """
+    def __init__(self, cluster_config=None, context=None):
         """
         Args:
             cluster_config (optional, default=None): The cluster configuration file to use.
@@ -65,7 +77,8 @@ class Cluster:
             _core_api: A reference to the CoreV1Api object.
         """
         self.config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
-        k8s_config.load_kube_config(self.config)
+        self._context = context
+        k8s_config.load_kube_config(self.config, self._context)
         self._core_api = CoreV1Api()
         self._batch_api = BatchV1Api()
 
@@ -145,7 +158,12 @@ class Cluster:
 
     def kubectl(self, *args):
         'Provide kubectl for things that are not implemented directly in the API'
-        return kubectl(None, f'--kubeconfig={self.config}', *args)
+        config_args = list()
+        if self.config:
+            config_args.append(f'--kubeconfig={self.config}')
+        if self._context:
+            config_args.append(f'--context={self._context}')
+        return kubectl(None, *config_args, *args)
 
 
 class ClusterObject:

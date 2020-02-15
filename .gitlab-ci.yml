@@ -20,11 +20,6 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
 
-before_script:
-  - python -V
-  - pip install -r requirements-frozen.txt
-  - cd $BUILD_DIR
-
 cache:
   paths:
     - .local/share/virtualenvs
@@ -32,9 +27,14 @@ cache:
 .builder:
   except:
     - tags
+  before_script:
+    - apk add build-base libffi-dev openssl-dev
+    - python -V
+    - pip install -U pip
+    - pip install -r requirements-frozen.txt
+    - cd $BUILD_DIR
   script:
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
-
 
 unit_tests:
   stage: unit_tests
@@ -64,11 +64,15 @@ install_test:
 
 .publisher:
   extends: .builder
+  image: python:3.7
   only:
     - master
     - /^release\/.*$/
   when: manual
   allow_failure: false
+  before_script:
+    - pip install -r requirements-frozen.txt
+    - cd $BUILD_DIR
 
 publish_test:
   stage: publish_test
@@ -79,7 +83,6 @@ publish_test:
 
 publish:
   stage: publish
-  image: python:3.7
   environment: Production
   extends: .publisher
   variables:
