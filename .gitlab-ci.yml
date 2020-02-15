@@ -69,6 +69,7 @@ install_test:
   when: manual
   allow_failure: false
   before_script:
+    - pip install -r requirements-frozen.txt
     - cd $BUILD_DIR
 
 publish_test:
