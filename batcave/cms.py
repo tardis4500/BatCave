@@ -151,6 +151,14 @@ class Label:
     root = property(lambda s: s._client.root, doc='A read-only property which returns the root for the label.')
 
     def _refresh(self):
+        """Refresh the label information from the central repository.
+
+        Returns:
+            Nothing
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 self._label = self._client._p4fetch('label', self._name)  # pylint: disable=W0212
@@ -159,6 +167,14 @@ class Label:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def _save(self):
+        """Save the label to the central repository.
+
+        Returns:
+            Nothing
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 self._client._p4save('label', self._label)  # pylint: disable=W0212
@@ -167,10 +183,22 @@ class Label:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def _get_info(self, field):
+        """Return the info for the specified field.
+
+        Returns:
+            The contents of the specified field.
+        """
         return self._label[field]
 
     def lock(self):
-        'Make the label read-only'
+        """Set the label to read-only.
+
+        Returns:
+            Nothing
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         self._refresh()
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
@@ -183,7 +211,14 @@ class Label:
         self._save()
 
     def unlock(self):
-        'Make the label changeable'
+        """Set the label to read-write.
+
+        Returns:
+            Nothing
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         self._refresh()
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
@@ -196,7 +231,18 @@ class Label:
         self._save()
 
     def apply(self, *files, no_execute=False):
-        'Apply the label to a list of files'
+        """Apply the label to a list of files.
+
+        Args:
+            files: The list of files to which to apply the label.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the command from the CMS API.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._client.type):
             if case(Client.CLIENT_TYPES.perforce):
                 if self._type == self.LABEL_TYPES.project:
@@ -210,8 +256,19 @@ class Label:
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
-    def remove(self, *files):
-        'Remove the label from a list of files'
+    def remove(self, *files, no_execute=False):
+        """Remove the label from the list of files.
+
+        Args:
+            files: The list of files to which to apply the label.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the command from the CMS API.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._client.type):
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
