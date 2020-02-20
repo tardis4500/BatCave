@@ -563,11 +563,29 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def _validatetype(self):
-        'determines if the specified CMS type is valid'
+        """Determines if the specified CMS type is valid.
+
+        Returns:
+            Nothing
+        """
         validatetype(self._type)
 
     def _p4run(self, method, *args):
-        'runs a Perforce command'
+        """Runs a Perforce command using the API if possible.
+
+        Args:
+            method: The command to run.
+            args (optional): The arguments to pass to the command.
+
+        Returns:
+            The result of the command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+            P4.P4Exception: If the command generates errors
+            TypeError: If the requested command is invalid.
+            AttributeError: If the requested command is not found.
+        """
         if self._type != self.CLIENT_TYPES.perforce:
             raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         if is_debug('P4'):
@@ -592,13 +610,45 @@ class Client:
                 raise
 
     def _p4fetch(self, what, *args):
+        """Runs the Perforce fetch command.
+
+        Args:
+            what: The item to fetch.
+            args (optional): The arguments to pass to the command.
+
+        Returns:
+            The result of the command.
+        """
         return self._p4run('fetch_'+what, *args)
 
     def _p4save(self, what, *args):
+        """Runs the Perforce save command.
+
+        Args:
+            what: The item to save.
+            args (optional): The arguments to pass to the command.
+
+        Returns:
+            The result of the command.
+        """
         return self._p4run('save_'+what, *args)
 
     def update(self, *files, limiters=None, force=False, parallel=False, no_execute=False):
-        'Updates the local client and returns the list of files that were updated if provided by the underlying client'
+        """Updates the local client files.
+
+        Args:
+            files (optional): The files to update, otherwise all will be updated.
+            limiters (optional, default=None): Arguments to limit the updated files.
+            force (optional, default=False): If True update files that are already up-to-date.
+            parallel (optional, default=False): If True update files in parallel.
+            no_execute (optional, default=False): If True don't run the command.
+
+        Returns:
+            The list of files that were updated if provided by the underlying API.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 break
@@ -628,7 +678,14 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def list(self):
-        'returns a list of all the files in the current client'
+        """Get the local client files.
+
+        Returns:
+            The list of files on the current client.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 pushd(self.root)
@@ -646,7 +703,17 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def find(self, file_regex=''):
-        'returns a list of files matching the specifications'
+        """Search for files on the current client.
+
+        Args:
+            files_regex (optional, default=''): The regular expression to use to search for files.
+
+        Returns:
+            The list of files that were found.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file, self.CLIENT_TYPES.git):
                 regex = re_compile(file_regex)
