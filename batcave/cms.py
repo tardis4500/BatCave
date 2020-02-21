@@ -641,7 +641,7 @@ class Client:
             limiters (optional, default=None): Arguments to limit the updated files.
             force (optional, default=False): If True update files that are already up-to-date.
             parallel (optional, default=False): If True update files in parallel.
-            no_execute (optional, default=False): If True don't run the command.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
             The list of files that were updated if provided by the underlying API.
@@ -729,7 +729,19 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def integrate(self, source, target, no_execute=False):
-        'integrates the source into the target'
+        """Integrate branches.
+
+        Args:
+            source: The source branch of the integration.
+            target: The target branch of the integration.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the integration command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 args = ['integrate', source, target]
@@ -740,7 +752,18 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def reconcile(self, *files, no_execute=False):
-        'reconciles the workspace against the server and creates a changelist for the changes'
+        """Reconciles the workspace against the server and creates a changelist for the changes.
+
+        Args:
+            files (optional): The files to reconcile, otherwise all will be reconciled.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the reconcile command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         files = files if files else ['//...']
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
@@ -754,7 +777,18 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def add_files(self, *files, no_execute=False):
-        'adds files to the client'
+        """Adds files to the client.
+
+        Args:
+            files: The files to add.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the add files command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 break
@@ -770,7 +804,18 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def remove_files(self, *files, no_execute=False):
-        'removes files from the client'
+        """Remove files from the client.
+
+        Args:
+            files: The files to remove.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the remove files command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
                 if not no_execute:
@@ -789,7 +834,19 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def chmod_files(self, *files, mode, no_execute=False):
-        'chmod the file list'
+        """Perform a chmod of the files.
+
+        Args:
+            files: The files to chmod.
+            mode: The new mode to apply.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the chmod command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
                 for cms_file in files:
@@ -800,7 +857,18 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def lock_files(self, *files, no_execute=False):
-        'places a lock on the files to prevent edits by other users'
+        """Places a lock on the files to prevent edits by other users.
+
+        Args:
+            files: The files to lock.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the lock files command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 args = ['-n'] if no_execute else []
@@ -810,7 +878,18 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def unlock_files(self, *files, no_execute=False):
-        'removes a lock on the files to allow edits by other users'
+        """Removes a lock on the files to allow edits by other users.
+
+        Args:
+            files: The files to unlock.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the unlock files command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 args = ['-n'] if no_execute else []
@@ -820,7 +899,18 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def checkout_files(self, *files, no_execute=False):
-        'opens files for editting on the client'
+        """Opens files for editing on the client.
+
+        Args:
+            files: The files to unlock.
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the checkout command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 for file_name in files:
