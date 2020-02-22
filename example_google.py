@@ -8,7 +8,7 @@
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
-# Step7: Add class method docstrings. Next: cms.Client.checkin_files
+# Step7: Add class method docstrings. Next: cms.Client.get_filepath
 
 # Continued adding class method docstrings for cms.Client. (GitLab #29)
 
