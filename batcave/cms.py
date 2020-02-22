@@ -827,7 +827,6 @@ class Client:
                     for filename in files:
                         (self.root / filename).unlink()
                 return result
-                break
             if case(self.CLIENT_TYPES.perforce):
                 args = ['-n'] if no_execute else []
                 args += files
@@ -920,7 +919,6 @@ class Client:
                     if not no_execute:
                         file_path.chmod(file_path.stat().st_mode | S_IWUSR)
                 return None
-                break
             if case(self.CLIENT_TYPES.git):
                 if not no_execute:
                     return self._client.index.add([str(f) for f in files])
@@ -936,26 +934,24 @@ class Client:
 
         Args:
             description: A description of the changes.
-            files (optional): If provided, a subset of the files to commit, otherwise all will be submitted.            
+            files (optional): If provided, a subset of the files to commit, otherwise all will be submitted.
             all_branches (optional, default=False): If True, commit all branches, otherwise only the current branch.
             fail_on_empty (optional, default=False): If True, raise an error if there are no files to commit, otherwise just return.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
-            extra_args (optional): Any extra API specific argumentsf or the commit. 
+            extra_args (optional): Any extra API specific arguments or the commit.
 
         Returns:
             The result of the checkin command.
 
         Raises:
-            CMSError.GIT_FAILURE: If there is a Git failure. 
+            CMSError.GIT_FAILURE: If there is a Git failure.
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        for case in switch(self._type):
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 if not no_execute:
                     return self.unco_files(files, no_execute=no_execute)
                 return None
-                break
             if case(self.CLIENT_TYPES.git):
                 if not no_execute:
                     self._client.index.commit(description)
@@ -966,8 +962,7 @@ class Client:
                     if progress.error_lines:
                         raise CMSError(CMSError.GIT_FAILURE, msg=''.join(progress.error_lines).replace('error: ', ''))
                     return result
-                return None                  
-                break
+                return None
             if case(self.CLIENT_TYPES.perforce):
                 changelist = self._p4fetch('change')
                 changelist['Description'] = description
@@ -984,7 +979,7 @@ class Client:
         """Revert open files for editing on the client.
 
         Args:
-            files (optional): If provided, a subset of the files to revert, otherwise all will be reverted.            
+            files (optional): If provided, a subset of the files to revert, otherwise all will be reverted.
             unchanged_only (optional, default=False): If True, only revert unchanged files, otherwise all will be reverted.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
@@ -1000,8 +995,7 @@ class Client:
                     file_path = self.root / file_name
                     if not no_execute:
                         file_path.chmod(file_path.stat().st_mode & S_IWUSR)
-                return None 
-                break
+                return None
             if case(self.CLIENT_TYPES.git):
                 if not no_execute:
                     return self._client.index.checkout(paths=files, force=True)
@@ -1024,8 +1018,8 @@ class Client:
         """Create the specified repository.
 
         Args:
-            repository: The name of the repository to create.            
-            repo_type (optional, default=None): If None, use the default repository type, otherwise use the type specified.          
+            repository: The name of the repository to create.
+            repo_type (optional, default=None): If None, use the default repository type, otherwise use the type specified.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
         Returns:
@@ -1042,7 +1036,6 @@ class Client:
                 if not no_execute:
                     return self._p4save('depot', depotspec)
                 return None
-                break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1050,11 +1043,11 @@ class Client:
         """Create the specified branch.
 
         Args:
-            name: The name of the branch to create.            
-            branch_from (optional, default=None): If None, use the current branch, otherwise use the branch specified.          
-            repo (optional, default=None): If None, use the current repo, otherwise use the repo specified.          
-            branch_type (optional, default=None): If None, use the default branch type, otherwise use the branch type specified.          
-            options (optional, default=None): Any API specific options to use when creating the branch.          
+            name: The name of the branch to create.
+            branch_from (optional, default=None): If None, use the current branch, otherwise use the branch specified.
+            repo (optional, default=None): If None, use the current repo, otherwise use the repo specified.
+            branch_type (optional, default=None): If None, use the default branch type, otherwise use the branch type specified.
+            options (optional, default=None): Any API specific options to use when creating the branch.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
         Returns:
@@ -1079,7 +1072,6 @@ class Client:
                     if not no_execute:
                         return self._p4save('stream', streamspec)
                 return None
-                break
             if case(self.CLIENT_TYPES.git):
                 args = [name]
                 if branch_from:
@@ -1089,7 +1081,6 @@ class Client:
                 if not no_execute:
                     return self._client.git.push('origin', name, set_upstream=True)
                 return None
-                break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1097,8 +1088,8 @@ class Client:
         """Populate the target branch from the source.
 
         Args:
-            source: The name of the source branch to use.            
-            target: The name of the target branch to use.            
+            source: The name of the source branch to use.
+            target: The name of the target branch to use.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
         Returns:
@@ -1112,7 +1103,6 @@ class Client:
                 if not no_execute:
                     return self._p4run('populate', [source, target])
                 return None
-                break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1120,8 +1110,8 @@ class Client:
         """Add a remote reference for a DVCS client.
 
         Args:
-            name: The name of the remote reference to add.            
-            url: The URL of the remote reference to add.            
+            name: The name of the remote reference to add.
+            url: The URL of the remote reference to add.
             exists_ok (optional, default=False): If False, attempt to add the remote reference if it already exists, otherwise just return.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
@@ -1145,8 +1135,8 @@ class Client:
         """Rename a remote reference for a DVCS client.
 
         Args:
-            old_name: The name of the remote reference to rename.            
-            new_name: The new name of the remote.            
+            old_name: The name of the remote reference to rename.
+            new_name: The new name of the remote.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
         Returns:
@@ -1158,9 +1148,8 @@ class Client:
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
                 if not no_execute:
-                    return self._client.remotes[oldname].rename(newname)
+                    return self._client.remotes[old_name].rename(new_name)
                 return None
-                break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1168,7 +1157,7 @@ class Client:
         """Perform a merge from the specified branch.
 
         Args:
-            source_branch: The source branch to use for the merge.            
+            source_branch: The source branch to use for the merge.
             checkin (optional, default=True): If True, checkin the changed files after the merge.
             checkin_message (optional, default=None): If None, generate a message for the merge.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
@@ -1187,7 +1176,6 @@ class Client:
                     checkin_message = checkin_message if (checkin_message is not None) else f'Merging code from {source_branch} to {self._client.active_branch}'
                     self.checkin_files(checkin_message, all_branches=True, no_execute=no_execute)
                 return result
-                break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1195,7 +1183,7 @@ class Client:
         """Switch to the specified branch.
 
         Args:
-            branch: The branch to which to switch.            
+            branch: The branch to which to switch.
 
         Returns:
             The result of the switch command.
@@ -1231,7 +1219,7 @@ class Client:
 
         Args:
             filename: The name of the file for which to return the contents.
-            checkout (optional, default=False): If True, update and checkout the files before retrieving the contents.            
+            checkout (optional, default=False): If True, update and checkout the files before retrieving the contents.
 
         Returns:
             The contents of the specified file.
