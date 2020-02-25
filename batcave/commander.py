@@ -103,7 +103,19 @@ class Commander:
             self.parser.add_argument('extra_parser_args', nargs=REMAINDER, metavar='[[var1:val1] ...]')
 
     def parse_args(self, argv=None, err_msg='No command specified', raise_on_error=False):
-        'Parse the command line'
+        """Parse the command line.
+
+        Args:
+            argv (optional, default=None): The arguments to pass to the parser, otherwise sys.argv will be used.
+            err_msg (optional, default='No command specified'): The error message to use if a bad subcommand is requested.
+            raise_on_error (optional, default=False): If not False, use the value as the error to be raised on a failure.
+
+        Returns:
+            The parsed argument Namespace.
+
+        Raises:
+            The value of raise_on_error if not False.
+        """
         (args, self._pass_on) = self.parser.parse_known_args(argv) if self.subparser_common_parser else (self.parser.parse_args(argv), None)
         if self._subparsers and not args.command and not self._default:
             if raise_on_error:
@@ -117,7 +129,15 @@ class Commander:
         return args
 
     def execute(self, argv=None, use_args=None):
-        'Parse the command line and call the command_runner'
+        """Parse the command line and call the command_runner.
+
+        Args:
+            argv (optional, default=None): The arguments to pass to the parser if use_args is None, otherwise sys.argv will be used.
+            use_args (optional, default=None): The arguments to pass to the parser, otherwise argv will be used.
+
+        Returns:
+            The result of the called command_runner.
+        """
         args = use_args if use_args else self.parse_args(argv)
         caller = self._default if (self._subparsers and not args.command and self._default) else args.command
         caller_args = (self.subparser_common_parser, self._pass_on) if self.subparser_common_parser else (args,)

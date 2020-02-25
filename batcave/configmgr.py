@@ -120,7 +120,14 @@ class ConfigCollection:
         return self._configs[self._current-1]
 
     def add(self, name):
-        'Adds an item to the configuration collection'
+        """Adds an item to the configuration collection.
+
+        Args:
+            name: The name of the item to add.
+
+        Returns:
+            The value of the added item.
+        """
         self._data_source.addtable(name).addrow()
         self._data_source.commit()
         return getattr(self, name)
