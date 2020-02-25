@@ -1241,7 +1241,17 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_filepath(self, file_name):
-        'returns the full local OS path to the file'
+        """Get the full local OS path to the file.
+
+        Args:
+            file_name: The name of the file for which to return the path.
+
+        Returns:
+            The full local OS path to the file.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file, self.CLIENT_TYPES.git):
                 return self.root / file_name
@@ -1252,7 +1262,19 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_changelists(self, *names, forfiles=None, count=None):
-        'returns a list of changelist objects for the specified changelist names'
+        """Get a list of changelist objects for the specified changelist names.
+
+        Args:
+            names: The list of changelist names.
+            forfiles (optional, default=None): If not none, restrict the list based on the list of files.
+            count (optional, default=None): If not None, the number of objects to return, otherwise return all.
+
+        Returns:
+            The changelist objects.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 arglist = ['-l', '-s', 'submitted']
@@ -1267,26 +1289,57 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_changelist(self, name, *files, edit=False):
-        'returns a list of changelist objects for the specified changelist names'
+        """Get a ChangeList objects for the specified changelist.
+
+        Args:
+            name: The name of the changelist.
+            files (optional): Restrict the list based on the list of files.
+            edit (optional, default=False): If True, return and editable ChangeList object.
+
+        Returns:
+            The changelist object.
+        """
         if edit:
             return ChangeList(self, name, editable=True)
         else:
             return self.get_changelists(name, forfiles=files)[0]
 
     def add_label(self, tag_name, exists_ok=False, no_execute=False):
-        'returns the labels in the cms system'
+        """Add a label.
+
+        Args:
+            tag_name: The name of the label to add.
+            exists_ok (optional, default=False): If True and the label already exists, delete the label before adding it.
+            no_execute (optional, default=False): If True, run the command but don't revert the files.
+
+        Returns:
+            The result of the add label command.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.git):
                 if not no_execute:
                     if exists_ok and tag_name in self._client.tags:
                         self._client.delete_tag(tag_name)
-                    self._client.create_tag(tag_name)
-                break
+                    return self._client.create_tag(tag_name)
+                return None
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_labels(self, *args):
-        'returns the labels in the cms system'
+        """Gets the labels in the CMS system.
+
+        Args:
+            args (optional): Any API specific arguments to use.
+
+        Returns:
+            The list of labels.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('labels', *args)
@@ -1294,7 +1347,17 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_clients(self, *args):
-        'returns the clients in the cms system'
+        """Gets the clients in the CMS system.
+
+        Args:
+            args (optional): Any API specific arguments to use.
+
+        Returns:
+            The list of clients.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('clients', *args)
@@ -1302,7 +1365,17 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_repos(self, *args):
-        'returns the repositories in the cms system'
+        """Gets the repositories in the CMS system.
+
+        Args:
+            args (optional): Any API specific arguments to use.
+
+        Returns:
+            The list of repositories.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4run('depots', *args)
@@ -1310,7 +1383,17 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_max_changelist(self, label=''):
-        'Return the highest changelist number'
+        """Gets the highest changelist number.
+
+        Args:
+            label (optional, default=''): If not empty, limit the number by the specified label.
+
+        Returns:
+            The highest changelist number.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 if label:
@@ -1320,7 +1403,17 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_user_record(self, username):
-        'returns the cms system information about the specified username'
+        """Gets the CMS system information about the specified username.
+
+        Args:
+            username: The user for which to find the information.
+
+        Returns:
+            The information about the specified user.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.perforce):
                 return self._p4fetch('user', username)
@@ -1328,7 +1421,14 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_server_connection(self):
-        'returns the cms system name of the server'
+        """Gets the name of the CMS server.
+
+        Returns:
+            The name of the CMS server.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         for case in switch(self._type):
             if case(self.CLIENT_TYPES.file):
                 return 'CMS type: file'
@@ -1339,7 +1439,11 @@ class Client:
     server_name = property(lambda s: s.get_server_connection()[0])
 
     def close(self):
-        'Closes any persistent connections to the SCM system'
+        """Closes any persistent connections to the CMS system.
+
+        Returns:
+            Nothing.
+        """
         if self._connected and self._type == self.CLIENT_TYPES.git:
             self._client.__del__()
             self._connected = False
@@ -1352,7 +1456,18 @@ class Client:
             self._connected = False
 
     def remove(self, clean=CLEAN_TYPES.none):
-        'delete the CMS client object from the CMS system'
+        """Delete the client object from the CMS system.
+
+        Args:
+            clean (optional, default=CLEAN_TYPES.none): Specifies the amount of cleaning of the local file system.
+
+        Returns:
+            The result of the client removal command.
+
+        Raises:
+            CMSError.CLIENT_NOT_FOUND: If the client is not found.
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         client_root = self.root
         results = []
         for case in switch(self._type):
@@ -1379,7 +1494,17 @@ class Client:
         return results
 
     def get_cms_sys_value(self, var):
-        'Get a configuration value from the CMS system'
+        """Get a configuration value from the CMS system.
+
+        Args:
+            var: The configuration value to return.
+
+        Returns:
+            The value of the specified configuration item.
+
+        Raises:
+            CMSError.INVALID_OPERATION: If the client CMS type is not supported.
+        """
         if var in environ:
             return environ[var]
         for case in switch(self._type):
@@ -1605,9 +1730,17 @@ class ChangeList:
         return self._files
 
     def store(self, no_execute=False):
-        'Saves the changelist'
+        """Save the ChangeList to the CMS server.
+
+        Args:
+            no_execute (optional, default=False): If True, run the command but don't commit the results.
+
+        Returns:
+            The result of the changelist save command.
+        """
         if not no_execute:
-            self._client._p4save('change', self._changelist, '-f')  # pylint: disable=W0212
+            return self._client._p4save('change', self._changelist, '-f')  # pylint: disable=W0212
+        return None
 
 
 def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
