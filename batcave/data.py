@@ -198,16 +198,35 @@ class DataSource:
             return 0
 
     def _validate_type(self):
-        'determines if the specified data source type is valid'
+        """Determines if the specified data source type is valid.
+
+        Returns:
+            Nothing
+            
+        Raises:
+            DataError.INVALID_TYPE: If the data source type is invalid.
+        """
         if self.type not in self.SOURCE_TYPES:
             raise DataError(DataError.INVALID_TYPE)
 
     def _validate_schema(self):
-        'determines if the specified data source type is valid'
+        """Determines if the data source schema is valid.
+
+        Returns:
+            Nothing
+            
+        Raises:
+            DataError.BAD_SCHEMA: If the data source schema is invalid.
+        """
         if self._schema != self.schema:
             raise DataError(DataError.BAD_SCHEMA, schema=self._schema, found=self.schema)
 
     def _create(self):
+        """Creates the data source.
+
+        Returns:
+            Nothing
+        """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 pass
@@ -231,6 +250,16 @@ class DataSource:
         self.commit()
 
     def _load(self):
+        """Loads the data source.
+
+        Returns:
+            Nothing
+            
+        Raises:
+            DataError.BAD_COLUMN: If a text type data source has a column with no value.
+            DataError.BAD_ROOT: If the root of the data source does not match the name.
+            DataError.BAD_URL: If the data source is specified as a malformed URL.
+        """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 self._source = dict()

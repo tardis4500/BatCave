@@ -10,7 +10,7 @@
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings. Next: data
 
-# Added class method docstrings for the commander and configmgr modules. (GitLab #29)
+# Started adding class method docstrings for the data module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
