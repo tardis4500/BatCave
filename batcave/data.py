@@ -316,7 +316,11 @@ class DataSource:
                 break
 
     def gettables(self):
-        'Get all the tables from the data source.'
+        """Get all the tables from the data source.
+
+        Returns:
+            The list of table in the data source.
+        """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 pass
@@ -338,7 +342,17 @@ class DataSource:
         return [self.gettable(t) for t in table_names]
 
     def gettable(self, name):
-        'return the requested data table'
+        """Get the requested data table.
+
+        Args:
+            name: The name of the table to return.
+
+        Returns:
+            The requested data table.
+            
+        Raises:
+            DataError.BAD_TABLE: If the requested table is not found.
+        """
         table = None
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
@@ -370,7 +384,14 @@ class DataSource:
         return DataTable(self.type, name, table, self._source)
 
     def hastable(self, name):
-        'return the requested data table'
+        """Determine if the named table exists in the data source.
+
+        Args:
+            name: The name of the table to search for.
+
+        Returns:
+            Returns True if the named table exists in the data source, False otherwise.
+        """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 pass
@@ -396,7 +417,17 @@ class DataSource:
         return False
 
     def addtable(self, name):
-        'creates a new table with the specified name'
+        """Creates a new table with the specified name.
+
+        Args:
+            name: The name of the table to add.
+            
+        Returns:
+            The created table.
+            
+        Raises:
+            DataError.INVALID_OPERATION: If the data source type does not support adding a table.
+        """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 pass
@@ -418,7 +449,11 @@ class DataSource:
         return self.gettable(name)
 
     def commit(self):
-        'commit any changes to the source'
+        """Commit any changes in memory to the source.
+
+        Returns:
+            Nothing
+        """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 self._connection = open(self._connectinfo, 'w')
@@ -447,7 +482,11 @@ class DataSource:
                 break
 
     def close(self):
-        'Closes the data source.'
+        """Closes the data source.
+
+        Returns:
+            Nothing
+        """
         if self._closer:
             self._closer.close()
             self._connectinfo = self._closer = self._source = self._connection = None
@@ -484,7 +523,7 @@ class DataRow:
         return False
 
     def delete(self):
-        'Delete the data row'
+        'TODO: Delete the data row'
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.ini):
                 self._parent.remove_section(self._row)
