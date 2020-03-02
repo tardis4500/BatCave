@@ -183,7 +183,7 @@ class SysCmdRunner:
 def create_group(group_name, exists_ok=True):
     """Create the system group at the OS level.
 
-    Arguments:
+    Args:
         group_name: The group to create.
         exists_ok (optional, default=True): Do not raise an error if the group exists.
 
@@ -210,7 +210,7 @@ def create_group(group_name, exists_ok=True):
 def create_user(username, groups=tuple(), exists_ok=True):
     """Create the user account at the OS level.
 
-    Arguments:
+    Args:
         username: The user account to create.
         exists_ok (optional, default=True): Do not raise an error if the user exists.
 
@@ -239,7 +239,7 @@ def create_user(username, groups=tuple(), exists_ok=True):
 def is_user_administrator():
     """Determines if the current user is an OS administrator.
 
-    Arguments:
+    Args:
         None
 
     Returns:
@@ -260,7 +260,7 @@ def is_user_administrator():
 def chown(pathname, user=None, group=None, recursive=False):
     """Perform chown and chgrp together, recursively if requested.
 
-    Arguments:
+    Args:
         user (optional, default=None): The user to set as the owner, if specified.
         group (optional, default=None): The group to set as the owner, if specified.
         recursive (optional, default=False): Also perform the user/owner settings recursively on all children.
@@ -279,7 +279,7 @@ def chown(pathname, user=None, group=None, recursive=False):
 def chmod(dirname, mode, recursive=False, files_only=False):
     """Perform chmod recursively if requested.
 
-    Arguments:
+    Args:
         dirname: The directory for which to set the mode.
         mode: The mode to set as would be specified for os.chmod().
         recursive (optional, default=False): Also perform setting recursively on all children.
@@ -300,7 +300,7 @@ def chmod(dirname, mode, recursive=False, files_only=False):
 def rmpath(path_name):
     """Remove the specified path object. If a directory, remove recursively.
 
-    Arguments:
+    Args:
         path_name: The name of the path object to remove.
 
     Returns:
@@ -316,7 +316,7 @@ def rmpath(path_name):
 def rmtree_hard(tree):
     """Recursively, remove a directory and try to avoid non-fatal errors.
 
-    Arguments:
+    Args:
         tree: The directory tree to remove.
 
     Returns:
@@ -328,7 +328,7 @@ def rmtree_hard(tree):
 def _rmtree_onerror(caller, pathstr, excinfo):
     """The exception handler used by rmtree_hard to try to remove read-only attributes.
 
-    Arguments:
+    Args:
         caller: The calling function.
         pathstr: The path to change.
         excinfo: The run stack to use if the caller is not remove or unlink.
@@ -353,7 +353,7 @@ _DIRECTORY_STACK = list()
 def pushd(dirname):
     """Implements the push function for a directory stack.
 
-    Arguments:
+    Args:
         dirname: The directory to which to change.
 
     Returns:
@@ -369,7 +369,7 @@ def pushd(dirname):
 def popd():
     """Implements the pop function for a directory stack.
 
-    Arguments:
+    Args:
         None.
 
     Returns:
@@ -391,7 +391,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
            flatten_output=False, remote=False, remote_is_windows=None, copy_for_remote=False, remote_auth=None, remote_powershell=False):
     """Wrapper to provide a better interface to subprocess.Popen().
 
-    Arguments:
+    Args:
         command
         *cmd_args
         input_lines=None

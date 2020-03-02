@@ -13,7 +13,7 @@ from .lang import is_debug
 def download(url, target=None, auth=None):
     """Download a file from a URL target.
 
-    Arguments:
+    Args:
         url: The URL to download from.
         target (optional, default=None): The file to which to download.
             If None, the last part of the URL will be used.
@@ -34,7 +34,7 @@ def download(url, target=None, auth=None):
 def send_email(smtp_server, receiver, sender, subject, body, content_type='text/plain'):
     """Send an SMTP email message.
 
-    Arguments:
+    Args:
         smtp_server: The SMTP server to send the email through.
         receiver: The email address to which to send.
         sender: The return address for the email.

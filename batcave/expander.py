@@ -155,11 +155,19 @@ class Formatter:
             return f'{self._bol}{space}{self.prefix}{self.count}{sep}'
 
     def increment(self):
-        'Increment the current indentation counter'
+        """Increment the counter at the current indentation level.
+
+        Returns:
+            Nothing.
+        """
         self.count += 1
 
     def indent(self):
-        'Increment the indentation level'
+        """Increment the indentation level.
+
+        Returns:
+            Nothing.
+        """
         self.keeper.append((self.count, self.prefix))
         if self.level > 0:
             self.prefix = f'{self.keeper[-1][1]}{self.count}.'
@@ -170,7 +178,11 @@ class Formatter:
         self.count = 1
 
     def outdent(self):
-        'Decrement the indentation level'
+        """Decrement the indentation level.
+
+        Returns:
+            Nothing.
+        """
         self.level -= 1
         (self.count, self.prefix) = self.keeper.pop()
         if self.level > 0:
@@ -180,7 +192,17 @@ class Formatter:
             self.eol = '</li></h2>'
 
     def format_hyperlinks(self, line):
-        'Formats hyperlinks in the output'
+        """Format the hyperlinks in a line.
+
+        Args:
+            line: The line for which to format hyperlinks.
+
+        Returns:
+            The formatted line.
+
+        Raises:
+            ProcedureError.BAD_FORMAT: If the requested format is not valid.
+        """
         if not line or (self._LINK_PRELIM not in line):
             return line
 
@@ -241,7 +263,18 @@ class Expander:
         self.re_var = re_compile(f'{prelim_re}([.a-zA-Z0-9_:]+){postlim_re}')
 
     def expand(self, thing):
-        'Performs an expansion on a Python object'
+        """Performs an expansion on a Python object.
+
+        Args:
+            thing: The object on which to perform an expansion.
+
+        Returns:
+            The object with expansions performed.
+
+        Raises:
+            ExpanderError.NO_POST_DELIMITER: If the closing delimiter was not found.
+            ExpanderError.NO_REPLACEMENT: If no replacement was found for the requested expansion variable.
+        """
         if isinstance(thing, tuple):
             return {self.expand(i) for i in thing}
 
@@ -283,7 +316,15 @@ class Expander:
         return thing
 
     def expand_file(self, in_file, out_file):
-        'Expands an entire file'
+        """Performs an expansion on an entire file.
+
+        Args:
+            in_file: The name of the file on which to perform the expansions.
+            out_file: The name of the output file for the expansion results.
+
+        Returns:
+            Nothing.
+        """
         with open(in_file) as instream:
             Path(out_file).parent.mkdir(parents=True, exist_ok=True)
             with open(out_file, 'w') as outstream:
@@ -292,14 +333,26 @@ class Expander:
                     outstream.write(line)
 
     def expand_directory(self, source_dir, target_dir=None, ignore_files=tuple(), no_expand_files=tuple(), err_if_exists=True):
-        'Recursively expands files in a directory tree'
+        """Performs an expansion on an entire directory tree.
+
+        Args:
+            source_dir: The name of the directory on which to perform the expansions.
+            target_dir (optional, default=None): The name of the output directory for the expansion results if not None,
+                otherwise the current directory is used.
+            ignore_files (optional, default=None): A list of files for which should be ignored and will not be in the output directory.
+            no_expand_files (optional, default=None): A list of files which expansion should not be performed but which will be copied to the output directory.
+            err_if_exists (optional, default=True): If True, raise an error if the output directory exists.
+
+        Returns:
+            Nothing.
+        """
         source_dir = Path(source_dir).resolve()
         target_dir = Path(target_dir).resolve() if target_dir else Path.cwd()
         if is_debug('EXPANDER'):
             print('Using source directory:', source_dir)
             print('Using target directory:', target_dir)
         target_dir.mkdir(parents=True, exist_ok=(not err_if_exists))
-        for (root, dirs, files) in walk(source_dir):  # pylint: disable=W0612
+        for (root, _unused_dirs, files) in walk(source_dir):
             for file_name in files:
                 if is_debug('EXPANDER'):
                     print('Checking', file_name, 'against', ignore_files)
@@ -317,7 +370,17 @@ class Expander:
                     self.expand_file(source_file, target_file)
 
     def evaluate_expression(self, expression):
-        'Evaluates an expression in the expansion'
+        """Evaluates an expression in the expansion.
+
+        Args:
+            expression: The expression to evaluate.
+
+        Returns:
+            The evaluated expression.
+
+        Raises:
+            ExpanderError.NO_REPLACEMENT: If no replacement was found for the requested expansion variable.
+        """
         if is_debug('EXPANDER'):
             print(f'Expanding (raw expression) "{expression}"')
 
@@ -352,7 +415,7 @@ class Expander:
 def file_expander(in_file, out_file, vardict=None, varprops=None):
     """Quick function for one-time file expansion.
 
-    Arguments:
+    Args:
         in_file: The input file.
         out_file: The output file.
         vardict (optional, default=None): If not None, provides a dictionary of expansion values.

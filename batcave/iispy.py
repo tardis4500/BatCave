@@ -397,7 +397,7 @@ class IISAdvancedLogger(IISConfigurationSection):
 def dict2expat(py_dict):
     """Converts Python dictionaries to the syntax understood by the IIS appcmd command-line tool.
 
-    Arguments:
+    Args:
         py_dict: The Python dictionary to convert.
 
     Returns:
@@ -409,7 +409,7 @@ def dict2expat(py_dict):
 def appcmd(*cmd_args, hostname, **sys_cmd_args):
     """Interface to run the standard IIS appcmd command-line tool.
 
-    Arguments:
+    Args:
         *cmd_args: The arguments to pass to appcmd.
         hostname: The hostname to pass to appcmd.
         **sys_cmd_args: The arguments to pass to syscmd when running appcmd.

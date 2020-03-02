@@ -165,7 +165,7 @@ class switch:  # pylint: disable=C0103
 def bool_to_str(expr):
     """Converts an expression to a lowercase boolean string value.
 
-    Arguments:
+    Args:
         expr: The expression to convert.
 
     Returns:
@@ -177,7 +177,7 @@ def bool_to_str(expr):
 def flatten(thing, recursive=True):
     """Flatten an iterable of iterables.
 
-    Arguments:
+    Args:
         thing: The thing to be flattened.
         recursive (optional, default=True): Whether or not to recursively flatten the item.
 
@@ -202,7 +202,7 @@ def flatten(thing, recursive=True):
 def flatten_string_list(iter_of_string, remove_newlines=True):
     """Flatten an iterable of strings to a single string.
 
-    Arguments:
+    Args:
         iter_of_string: The list of strings to be flattened to be flattened.
         remove_newlines (optional, default=True): Whether or not to remove newlines from the final list.
 
@@ -218,7 +218,7 @@ def flatten_string_list(iter_of_string, remove_newlines=True):
 def is_debug(test_value=None):
     """Determine if the BATCAVE_DEBUG environment variable is set.
 
-    Arguments:
+    Args:
         test_value (optional, default=None): If set, only return true if the value of test_value is in BATCAVE_DEBUG.
 
     Return:
@@ -237,7 +237,7 @@ def is_debug(test_value=None):
 def str_to_pythonval(the_string, parse_python=False):
     """Converts a string to the closest Python object.
 
-    Arguments:
+    Args:
         the_string: The string to evaluate.
         parse_python (optional, default=False): If the string contains a '~' character, try to convert it to a more complex python object.
 
@@ -280,7 +280,7 @@ def str_to_pythonval(the_string, parse_python=False):
 def validate_python(test_against=(3, 6)):
     """Checks to make sure that a minimum version of Python is used.
 
-    Arguments:
+    Args:
         test_against (optional, default=(3,7)): The value of Python to check.
 
     Raises:
@@ -295,7 +295,7 @@ def validate_python(test_against=(3, 6)):
 def xor(value1, value2):
     """Perform a logical exclusive-or evaluation.
 
-    Arguments:
+    Args:
         value1, value2: The values on which to perform the operation.
 
     Returns:

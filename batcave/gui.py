@@ -243,7 +243,7 @@ class MessageBox(QMessageBox):
 def find_image(name):
     """Locates the image based on whether the application has been frozen.
 
-    Arguments:
+    Args:
         name: The name of the image to locate.
 
     Returns:

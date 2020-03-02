@@ -28,7 +28,7 @@ else:
 def get_version_info(style=VERSION_STYLES.full, plattype='batcave_run', extra_info=''):
     """Get the version information about the currently running application.
 
-    Arguments:
+    Args:
         style (optional, default=full): The format for the version string to be returned.
         plattype (optional, default='batcave_run'): The platform type for the architecture information in the version string.
         extra_info (optional, default=''): A line to append after the version info but before the copyright.

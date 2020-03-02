@@ -229,7 +229,7 @@ def unpack(arcfile, dest=None, arctype=None):
 def slurp(filename):
     """Returns all the lines of a file as a list.
 
-    Arguments:
+    Args:
         filename: The filename to return the lines from.
 
     Returns:
@@ -241,7 +241,7 @@ def slurp(filename):
 def spew(filename, outlines):
     """Writes the list of lines to a file.
 
-    Arguments:
+    Args:
         filename: The filename to which to write the lines.
         outlines: The lines to write.
 

@@ -1274,7 +1274,7 @@ class ServerPath:
 def _get_server_object(server):
     """Get a server object for the specific fqdn.
 
-    Arguments:
+    Args:
         server: The fqdn string for the server
 
     Return:
@@ -1290,7 +1290,7 @@ def _get_server_object(server):
 def _run_task_scheduler(*cmd_args, **sys_cmd_args):
     """Interface to run the standard Windows schtasks command-line tool.
 
-    Arguments:
+    Args:
         *cmd_args: The arguments to pass to schtasks.
         **sys_cmd_args: The arguments to pass to syscmd when running schtasks.
 

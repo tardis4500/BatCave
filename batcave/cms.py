@@ -1769,7 +1769,7 @@ def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
 def validatetype(ctype):
     """Determines if the specified CMS type is valid.
 
-    Arguments:
+    Args:
         ctype: The CMS type.
 
     Returns:

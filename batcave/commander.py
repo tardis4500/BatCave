@@ -147,7 +147,7 @@ class Commander:
 def _add_arguments_to_parser(parser, arglist):
     """Adds arguments to the specified parser.
 
-    Arguments:
+    Args:
         parser: The parser to which to add the arguments.
         arglist: The arguments to add to the parser.
 
