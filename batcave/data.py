@@ -202,7 +202,7 @@ class DataSource:
 
         Returns:
             Nothing
-            
+
         Raises:
             DataError.INVALID_TYPE: If the data source type is invalid.
         """
@@ -214,7 +214,7 @@ class DataSource:
 
         Returns:
             Nothing
-            
+
         Raises:
             DataError.BAD_SCHEMA: If the data source schema is invalid.
         """
@@ -254,7 +254,7 @@ class DataSource:
 
         Returns:
             Nothing
-            
+
         Raises:
             DataError.BAD_COLUMN: If a text type data source has a column with no value.
             DataError.BAD_ROOT: If the root of the data source does not match the name.
@@ -349,7 +349,7 @@ class DataSource:
 
         Returns:
             The requested data table.
-            
+
         Raises:
             DataError.BAD_TABLE: If the requested table is not found.
         """
@@ -421,10 +421,10 @@ class DataSource:
 
         Args:
             name: The name of the table to add.
-            
+
         Returns:
             The created table.
-            
+
         Raises:
             DataError.INVALID_OPERATION: If the data source type does not support adding a table.
         """
@@ -523,7 +523,11 @@ class DataRow:
         return False
 
     def delete(self):
-        'TODO: Delete the data row'
+        """Delete this data row.
+
+        Returns:
+            Nothing.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.ini):
                 self._parent.remove_section(self._row)
@@ -532,7 +536,14 @@ class DataRow:
                 self._parent.remove(self._row)
 
     def hascol(self, col):
-        'Checks if the row has the specified column.'
+        """Determine if the named column exists in the row.
+
+        Args:
+            col: The name of the column to search for.
+
+        Returns:
+            Returns True if the named column exists in the data source, False otherwise.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.text):
                 pass
@@ -551,7 +562,11 @@ class DataRow:
                 return bool(self._row.get(col))
 
     def getcolumns(self):
-        'Returns all the columns from the row.'
+        """Get all the columns from the row.
+
+        Returns:
+            The list of columns in the data row.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.text):
                 pass
@@ -571,7 +586,14 @@ class DataRow:
         return None
 
     def delcolumn(self, col):
-        'Deletes the named column from the row.'
+        """Deletes the named column from the row.
+
+        Args:
+            col: The name of the column to delete.
+
+        Returns:
+            Nothing.
+        """
         if not self.hascol(col):
             return
 
@@ -596,7 +618,14 @@ class DataRow:
                 break
 
     def getvalue(self, col):
-        'Gets the value of the specified column.'
+        """Gets the value of the specified column.
+
+        Args:
+            col: The name of the column from which to retrieve the value.
+
+        Returns:
+            The value of the column.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.text):
                 pass
@@ -619,7 +648,15 @@ class DataRow:
         return None
 
     def setvalue(self, col, value):
-        'Sets the value of the specified column.'
+        """Sets the value of the specified column.
+
+        Args:
+            col: The name of the column for which to set the value.
+            value: The value to set for the column.
+
+        Returns:
+            Nothing.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.text):
                 pass
@@ -704,7 +741,15 @@ class DataTable:
                 return self._parent
 
     def getrows(self, col=None, value=None):
-        'return the data rows matching the specified selector'
+        """Get all the rows matching the specified selector.
+
+        Args:
+            col (optional, default=None): The column to select for if not None.
+            value (optional, default=None): The column value to select for if not None.
+
+        Returns:
+            The list of rows matching the specified selector.
+        """
         rowlist = self._table if self.type != DataSource.SOURCE_TYPES.ini else [self._INI_ROW_FORMAT % (self.name, r) for r in self._table]
         allrows = [DataRow(self.type, r, self._get_row_parent()) for r in rowlist]
         if (col is None) and (value is None):
@@ -714,7 +759,14 @@ class DataTable:
         return [r for r in allrows if r.getvalue(col) == value]
 
     def addrow(self, **values):
-        'creates a new data row with the specified values'
+        """Creates a new row with the specified values.
+
+        Args:
+            values: A dictionary of the value to add.
+
+        Returns:
+            Nothing.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.text):
                 pass
@@ -742,6 +794,14 @@ class DataTable:
         return row
 
     def delrow(self, col, value):
-        'deletes the rows with the specified column value'
+        """Deletes the rows with the specified column value.
+
+        Args:
+            col: The column to select for.
+            value: The column value to select for.
+
+        Returns:
+            Nothing.
+        """
         for row in self.getrows(col, value):
             row.delete()
