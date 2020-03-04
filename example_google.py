@@ -8,9 +8,9 @@
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
-# Step7: Add class method docstrings. Next: expander.Procedure
+# Step7: Add class method docstrings. Next: gui
 
-# Started adding class method docstrings for the expander module. (GitLab #29)
+# Added class method docstrings for the expander module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.

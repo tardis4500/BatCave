@@ -526,7 +526,11 @@ class Procedure:
         return False
 
     def dump(self):
-        'Dump out the procedure contents'
+        """Dump out the procedure contents.
+        
+        Returns:
+            The contents of the procedure as an ordered dictionary.
+        """
         result = odict()
         result[self._HEADER_TAG] = self.header
         result[self._DIRECTORIES_TAG] = self.directories
@@ -536,13 +540,33 @@ class Procedure:
         return result
 
     def setup_expander(self, environment):
-        'Setup the Expander for the requested environment'
+        """Setup the Expander for the requested environment.
+        
+        Args:
+            environment: The environment for which to setup the expander.
+            
+        Returns:
+            Nothing.
+            
+        Raises:
+            ProcedureError.BAD_ENVIRONMENT: If the requested environment is not defined.
+        """
         if environment not in self.environments:
             ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
         self.expander = Expander(self.environments[environment])
 
     def expand(self, text):
-        'Expand the Procedure'
+        """Expand the Procedure.
+        
+        Args:
+            text: The text of the procedure.
+            
+        Returns:
+            The expanded procedure.
+            
+        Raises:
+            ProcedureError.EXPANSION_ERROR: If there is an missing value expansion error.
+        """        
         try:
             return self.expander.expand(text)
         except ExpanderError as err:
@@ -551,11 +575,28 @@ class Procedure:
             raise
 
     def format(self, text):
-        'Format an output line including hyperlinks'
+        """Format an output line including hyperlinks.
+        
+        Args:
+            text: The line of text to format.
+            
+        Returns:
+            The formatted output line.            
+        """
         return self.formatter.format_hyperlinks(self.expand(text))
 
     def realize(self, env):
-        'Realize the procedure for the specified environments based on the variables'
+        """Realize the procedure for the specified environments based on the variables.
+        
+        Args:
+            env: The environment for which to realize the procedure.
+            
+        Returns:
+            The realized procedure.
+            
+        Raises:
+            ProcedureError.BAD_FORMAT: If the format type is not defined.            
+        """
         self.formatter = Formatter(self.output_format)
         self.setup_expander(env)
         for case in switch(self.output_format):
@@ -584,7 +625,17 @@ class Procedure:
         return self.format(header) + content + footer
 
     def realize_step(self, step):
-        'Expand a step in the procedure'
+        """Realize a step in the procedure.
+        
+        Args:
+            step: The step to realize.
+            
+        Returns:
+            The realized step.
+            
+        Raises:
+            ProcedureError.BAD_LIBRARY: If the step specifies a library that is not defined.
+        """
         if not self.expander.evaluate_expression(step.condition):
             return ''
 
@@ -633,7 +684,17 @@ class Procedure:
         return output
 
     def expand_directories(self, env, destination_root, source_root=None, err_if_exists=True):
-        'Performs variable expansion on the directories'
+        """Perform variable expansion on the directories defined in the procedure.
+        
+        Args:
+            env: The environment for which to expand the directories.
+            destination_root: That destination directory for the expansion.
+            source_root (optional, default=None): Defined for recursion.
+            err_if_exists (optional, default=True): If True, raise an error if destination_root exists.
+        
+        Returns:
+            Nothing.
+        """            
         self.setup_expander(env)
         for dirname in self.directories:
             dirpath = Path(dirname)
@@ -642,7 +703,17 @@ class Procedure:
             self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
 
     def parse_flag(self, flag):
-        'Evaluate a parsing flag'
+        """Evaluate a parsing flag.
+        
+        Args:
+            flag: The flag to evaluate.
+            
+        Return:
+            The evaluated value for the flag.
+            
+        Raises:
+            ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
+        """
         value = str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False'))
         if not isinstance(value, bool):
             raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
@@ -690,7 +761,11 @@ class Step:
         self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if var else dict()
 
     def dump(self):
-        'Dump out the step content'
+        """Dump out the step contents.
+        
+        Returns:
+            The contents of the step as an list.
+        """
         return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [s.dump() for s in self.substeps]
 
 # cSpell:ignore odict
