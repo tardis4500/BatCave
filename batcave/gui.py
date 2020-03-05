@@ -108,7 +108,14 @@ class BatCaveGUIOutput:
         self.widget = widget
 
     def write(self, output):
-        'Writes to the widget.'
+        """Write to the widget.
+        
+        Args:
+            output: The text to write to the widget.
+            
+        Returns:
+            Nothing.
+        """ 
         self.widget.append(output)
 
 
@@ -138,7 +145,11 @@ class BatCaveBaseGUI:
             self.setWindowIcon(QIcon(str(find_image(icon))))  # pylint: disable=E1101
 
     def validate(self):
-        'Runs the validators for the window'
+        """Run the validators for the object.
+        
+        Returns:
+            True if all the validators are True, False otherwise.
+        """
         for validator in self.validators:
             if validator.callback() == validator.falseval:
                 MessageBox(self, Message(how=validator.how, what=validator.what).MISSING_INFO, MessageBox.MESSAGE_TYPES.error).exec()
@@ -146,12 +157,21 @@ class BatCaveBaseGUI:
         return True
 
     def redirect_output(self, widget):
-        'Redirects stdout and stderr to the specified widget'
+        """Redirect stdout and stderr to the specified widget.
+        
+        Returns:
+            Nothing.
+        """
         self._saved_output_streams = (sys.stdout, sys.stderr)
         sys.stdout = sys.stderr = BatCaveGUIOutput(widget)
 
     def closeEvent(self, event):
         'Standard method'
+        """Overload of standard Qt method called when the object is closed.
+        
+        Returns:
+            Nothing.
+        """
         if event.type() == QEvent.Close:
             if self._saved_output_streams:
                 (sys.stdout, sys.stderr) = self._saved_output_streams
@@ -171,7 +191,11 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
         self.actionAbout.triggered.connect(self.OnAbout)
 
     def OnAbout(self):
-        'Shows the about box'
+        """Show the about box.
+        
+        Returns:
+            Nothing.
+        """
         MessageBox(self, get_version_info(VERSION_STYLES.aboutbox), MessageBox.MESSAGE_TYPES.about).exec()
 
 
@@ -186,18 +210,33 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
         super().__init__(**args)
 
     def accept(self):
-        'Standard dialog method.'
+        """Overload of standard Qt method called when the dialog is accepted.
+        
+        Returns:
+            The result of the validate method.
+        """
         return self.validate()
 
     def onGetFile(self, file_filter=None):
-        'Simplified file dialog method.'
+        """Show a simplified file dialog.
+        
+        Args:
+            file_filter (optional, default=None): The file filter to pass to the standard Qt file dialog.
+            
+        Returns:
+            Nothing.
+        """
         edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
         filepath = Path(QFileDialog.getOpenFileName(self, filter=file_filter)[0])
         if filepath:
             edit_control.setText(filepath)
 
     def onGetDirectory(self):
-        'Simplified directory dialog method.'
+        """Show a simplified directory dialog.
+        
+        Returns:
+            Nothing.
+        """
         edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
         dirpath = Path(QFileDialog.getExistingDirectory(self))
         if dirpath:
