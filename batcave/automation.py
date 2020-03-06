@@ -27,12 +27,12 @@ class ActionCommandRunner(SysCmdRunner):
         self.guard = guard
 
     def run(self, message: str, *args, **kwargs):
-        """Runs the action.
+        """Run the action.
 
         Args:
             message: The message passed to SysCmdRunner.
-            args (optional): The list of args passed to SysCmdRunner.
-            kwargs (optional): The list of named args passed to SysCmdRunner.
+            *args (optional, default=[]): The list of args passed to SysCmdRunner.
+            **kwargs (optional, default={}): The list of named args passed to SysCmdRunner.
 
         Returns:
             Returns whatever is returned by SysCmdRunner.
@@ -79,29 +79,29 @@ class Action:
         """Executed before _execute().
 
         Returns:
-            Nothing
+            Nothing.
         """
 
     def post(self):
         """Executed after _execute().
 
         Returns:
-            Nothing
+            Nothing.
         """
 
     def always_post(self):
-        """Executed after _execute() like finally in try/catch/finally.
+        """Always executed after _execute() as in finally in try/catch/finally.
 
         Returns:
-            Nothing
+            Nothing.
         """
         popd()
 
     def execute(self):
-        """Runs the _execute() method from the child class.
+        """Run the _execute() method from the child class.
 
         Returns:
-            Nothing
+            Nothing.
         """
         try:
             self.pre()
@@ -111,7 +111,7 @@ class Action:
             self.always_post()
 
     def log_message(self, message: str, guard: bool = False, leader: str = 'INFO'):
-        """Logs a message to stdout and flushes the stream.
+        """Log a message to stdout and flushes the stream.
 
         Args:
             message: The message to be printed.
@@ -120,7 +120,7 @@ class Action:
                 line, including the guard.
 
         Returns:
-            Nothing
+            Nothing.
         """
         guard = self.MESSAGE_GUARD if (guard is True) else ''
         leader = f'{leader} ' if leader else ''

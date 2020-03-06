@@ -263,7 +263,7 @@ class Expander:
         self.re_var = re_compile(f'{prelim_re}([.a-zA-Z0-9_:]+){postlim_re}')
 
     def expand(self, thing):
-        """Performs an expansion on a Python object.
+        """Perform an expansion on a Python object.
 
         Args:
             thing: The object on which to perform an expansion.
@@ -316,7 +316,7 @@ class Expander:
         return thing
 
     def expand_file(self, in_file, out_file):
-        """Performs an expansion on an entire file.
+        """Perform an expansion on an entire file.
 
         Args:
             in_file: The name of the file on which to perform the expansions.
@@ -333,7 +333,7 @@ class Expander:
                     outstream.write(line)
 
     def expand_directory(self, source_dir, target_dir=None, ignore_files=tuple(), no_expand_files=tuple(), err_if_exists=True):
-        """Performs an expansion on an entire directory tree.
+        """Perform an expansion on an entire directory tree.
 
         Args:
             source_dir: The name of the directory on which to perform the expansions.
@@ -370,7 +370,7 @@ class Expander:
                     self.expand_file(source_file, target_file)
 
     def evaluate_expression(self, expression):
-        """Evaluates an expression in the expansion.
+        """Evaluate an expression in the expansion.
 
         Args:
             expression: The expression to evaluate.
@@ -422,7 +422,7 @@ def file_expander(in_file, out_file, vardict=None, varprops=None):
         varprops (optional, default=None): If not None, provides an object with properties to be used as expansion values.
 
     Returns:
-        Nothing
+        Nothing.
     """
     Expander(vardict, varprops).expand_file(in_file, out_file)
 
@@ -527,7 +527,7 @@ class Procedure:
 
     def dump(self):
         """Dump out the procedure contents.
-        
+
         Returns:
             The contents of the procedure as an ordered dictionary.
         """
@@ -541,13 +541,13 @@ class Procedure:
 
     def setup_expander(self, environment):
         """Setup the Expander for the requested environment.
-        
+
         Args:
             environment: The environment for which to setup the expander.
-            
+
         Returns:
             Nothing.
-            
+
         Raises:
             ProcedureError.BAD_ENVIRONMENT: If the requested environment is not defined.
         """
@@ -557,16 +557,16 @@ class Procedure:
 
     def expand(self, text):
         """Expand the Procedure.
-        
+
         Args:
             text: The text of the procedure.
-            
+
         Returns:
             The expanded procedure.
-            
+
         Raises:
             ProcedureError.EXPANSION_ERROR: If there is an missing value expansion error.
-        """        
+        """
         try:
             return self.expander.expand(text)
         except ExpanderError as err:
@@ -576,26 +576,26 @@ class Procedure:
 
     def format(self, text):
         """Format an output line including hyperlinks.
-        
+
         Args:
             text: The line of text to format.
-            
+
         Returns:
-            The formatted output line.            
+            The formatted output line.
         """
         return self.formatter.format_hyperlinks(self.expand(text))
 
     def realize(self, env):
         """Realize the procedure for the specified environments based on the variables.
-        
+
         Args:
             env: The environment for which to realize the procedure.
-            
+
         Returns:
             The realized procedure.
-            
+
         Raises:
-            ProcedureError.BAD_FORMAT: If the format type is not defined.            
+            ProcedureError.BAD_FORMAT: If the format type is not defined.
         """
         self.formatter = Formatter(self.output_format)
         self.setup_expander(env)
@@ -626,13 +626,13 @@ class Procedure:
 
     def realize_step(self, step):
         """Realize a step in the procedure.
-        
+
         Args:
             step: The step to realize.
-            
+
         Returns:
             The realized step.
-            
+
         Raises:
             ProcedureError.BAD_LIBRARY: If the step specifies a library that is not defined.
         """
@@ -685,16 +685,16 @@ class Procedure:
 
     def expand_directories(self, env, destination_root, source_root=None, err_if_exists=True):
         """Perform variable expansion on the directories defined in the procedure.
-        
+
         Args:
             env: The environment for which to expand the directories.
             destination_root: That destination directory for the expansion.
             source_root (optional, default=None): Defined for recursion.
             err_if_exists (optional, default=True): If True, raise an error if destination_root exists.
-        
+
         Returns:
             Nothing.
-        """            
+        """
         self.setup_expander(env)
         for dirname in self.directories:
             dirpath = Path(dirname)
@@ -704,13 +704,13 @@ class Procedure:
 
     def parse_flag(self, flag):
         """Evaluate a parsing flag.
-        
+
         Args:
             flag: The flag to evaluate.
-            
+
         Return:
             The evaluated value for the flag.
-            
+
         Raises:
             ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
         """
@@ -762,7 +762,7 @@ class Step:
 
     def dump(self):
         """Dump out the step contents.
-        
+
         Returns:
             The contents of the step as an list.
         """

@@ -154,7 +154,7 @@ class Label:
         """Refresh the label information from the central repository.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
@@ -170,7 +170,7 @@ class Label:
         """Save the label to the central repository.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
@@ -194,7 +194,7 @@ class Label:
         """Set the label to read-only.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
@@ -214,7 +214,7 @@ class Label:
         """Set the label to read-write.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
@@ -563,19 +563,19 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def _validatetype(self):
-        """Determines if the specified CMS type is valid.
+        """Determine if the specified CMS type is valid.
 
         Returns:
-            Nothing
+            Nothing.
         """
         validatetype(self._type)
 
     def _p4run(self, method, *args):
-        """Runs a Perforce command using the API if possible.
+        """Run a Perforce command using the API if possible.
 
         Args:
             method: The command to run.
-            args (optional): The arguments to pass to the command.
+            *args (optional, default=[]): The arguments to pass to the command.
 
         Returns:
             The result of the command.
@@ -610,11 +610,11 @@ class Client:
                 raise
 
     def _p4fetch(self, what, *args):
-        """Runs the Perforce fetch command.
+        """Run the Perforce fetch command.
 
         Args:
             what: The item to fetch.
-            args (optional): The arguments to pass to the command.
+            *args (optional, default=[]): The arguments to pass to the command.
 
         Returns:
             The result of the command.
@@ -622,11 +622,11 @@ class Client:
         return self._p4run('fetch_'+what, *args)
 
     def _p4save(self, what, *args):
-        """Runs the Perforce save command.
+        """Run the Perforce save command.
 
         Args:
             what: The item to save.
-            args (optional): The arguments to pass to the command.
+            *args (optional, default=[]): The arguments to pass to the command.
 
         Returns:
             The result of the command.
@@ -634,10 +634,10 @@ class Client:
         return self._p4run('save_'+what, *args)
 
     def update(self, *files, limiters=None, force=False, parallel=False, no_execute=False):
-        """Updates the local client files.
+        """Update the local client files.
 
         Args:
-            files (optional): The files to update, otherwise all will be updated.
+            *files (optional, default=[]): The files to update, otherwise all will be updated.
             limiters (optional, default=None): Arguments to limit the updated files.
             force (optional, default=False): If True update files that are already up-to-date.
             parallel (optional, default=False): If True update files in parallel.
@@ -752,10 +752,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def reconcile(self, *files, no_execute=False):
-        """Reconciles the workspace against the server and creates a changelist for the changes.
+        """Reconcile the workspace against the server and creates a changelist for the changes.
 
         Args:
-            files (optional): The files to reconcile, otherwise all will be reconciled.
+            *files (optional, default=[]): The files to reconcile, otherwise all will be reconciled.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
@@ -777,10 +777,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def add_files(self, *files, no_execute=False):
-        """Adds files to the client.
+        """Add files to the client.
 
         Args:
-            files: The files to add.
+            *files: The files to add.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
@@ -807,7 +807,7 @@ class Client:
         """Remove files from the client.
 
         Args:
-            files: The files to remove.
+            *files: The files to remove.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
@@ -838,7 +838,7 @@ class Client:
         """Perform a chmod of the files.
 
         Args:
-            files: The files to chmod.
+            *files: The files to chmod.
             mode: The new mode to apply.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
@@ -858,10 +858,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def lock_files(self, *files, no_execute=False):
-        """Places a lock on the files to prevent edits by other users.
+        """Place a lock on the files to prevent edits by other users.
 
         Args:
-            files: The files to lock.
+            *files: The files to lock.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
@@ -879,10 +879,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def unlock_files(self, *files, no_execute=False):
-        """Removes a lock on the files to allow edits by other users.
+        """Remove a lock on the files to allow edits by other users.
 
         Args:
-            files: The files to unlock.
+            *files: The files to unlock.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
@@ -900,10 +900,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def checkout_files(self, *files, no_execute=False):
-        """Opens files for editing on the client.
+        """Open files for editing on the client.
 
         Args:
-            files: The files to unlock.
+            *files: The files to unlock.
             no_execute (optional, default=False): If True, run the command but don't checkout the files.
 
         Returns:
@@ -930,15 +930,15 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def checkin_files(self, description, *files, all_branches=False, remote='origin', fail_on_empty=False, no_execute=False, **extra_args):
-        """Commit opens files on the client.
+        """Commit open files on the client.
 
         Args:
             description: A description of the changes.
-            files (optional): If provided, a subset of the files to commit, otherwise all will be submitted.
+            *files (optional, default=[]): If provided, a subset of the files to commit, otherwise all will be submitted.
             all_branches (optional, default=False): If True, commit all branches, otherwise only the current branch.
             fail_on_empty (optional, default=False): If True, raise an error if there are no files to commit, otherwise just return.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
-            extra_args (optional): Any extra API specific arguments or the commit.
+            **extra_args (optional, default={}): Any extra API specific arguments or the commit.
 
         Returns:
             The result of the checkin command.
@@ -979,7 +979,7 @@ class Client:
         """Revert open files for editing on the client.
 
         Args:
-            files (optional): If provided, a subset of the files to revert, otherwise all will be reverted.
+            *files (optional, default=[]): If provided, a subset of the files to revert, otherwise all will be reverted.
             unchanged_only (optional, default=False): If True, only revert unchanged files, otherwise all will be reverted.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
@@ -1265,7 +1265,7 @@ class Client:
         """Get a list of changelist objects for the specified changelist names.
 
         Args:
-            names: The list of changelist names.
+            *names: The list of changelist names.
             forfiles (optional, default=None): If not none, restrict the list based on the list of files.
             count (optional, default=None): If not None, the number of objects to return, otherwise return all.
 
@@ -1293,7 +1293,7 @@ class Client:
 
         Args:
             name: The name of the changelist.
-            files (optional): Restrict the list based on the list of files.
+            *files (optional, default=[]): Restrict the list based on the list of files.
             edit (optional, default=False): If True, return and editable ChangeList object.
 
         Returns:
@@ -1329,10 +1329,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_labels(self, *args):
-        """Gets the labels in the CMS system.
+        """Get the labels in the CMS system.
 
         Args:
-            args (optional): Any API specific arguments to use.
+            *args (optional, default=[]): Any API specific arguments to use.
 
         Returns:
             The list of labels.
@@ -1347,10 +1347,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_clients(self, *args):
-        """Gets the clients in the CMS system.
+        """Get the clients in the CMS system.
 
         Args:
-            args (optional): Any API specific arguments to use.
+            *args (optional, default=[]): Any API specific arguments to use.
 
         Returns:
             The list of clients.
@@ -1365,10 +1365,10 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_repos(self, *args):
-        """Gets the repositories in the CMS system.
+        """Get the repositories in the CMS system.
 
         Args:
-            args (optional): Any API specific arguments to use.
+            *args (optional, default=[]): Any API specific arguments to use.
 
         Returns:
             The list of repositories.
@@ -1383,7 +1383,7 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_max_changelist(self, label=''):
-        """Gets the highest changelist number.
+        """Get the highest changelist number.
 
         Args:
             label (optional, default=''): If not empty, limit the number by the specified label.
@@ -1403,7 +1403,7 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_user_record(self, username):
-        """Gets the CMS system information about the specified username.
+        """Get the CMS system information about the specified username.
 
         Args:
             username: The user for which to find the information.
@@ -1421,7 +1421,7 @@ class Client:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_server_connection(self):
-        """Gets the name of the CMS server.
+        """Get the name of the CMS server.
 
         Returns:
             The name of the CMS server.
@@ -1439,7 +1439,7 @@ class Client:
     server_name = property(lambda s: s.get_server_connection()[0])
 
     def close(self):
-        """Closes any persistent connections to the CMS system.
+        """Close any persistent connections to the CMS system.
 
         Returns:
             Nothing.
@@ -1534,7 +1534,7 @@ class Client:
 
 
 def walk_git_tree(tree, parent=None):
-    """Walks the git tree similar to os.walk().
+    """Walk the git tree similar to os.walk().
 
     Attributes:
         tree: The git tree to walk.
@@ -1744,7 +1744,7 @@ class ChangeList:
 
 
 def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
-    """Automatically creates a client name from the user and hostname.
+    """Automatically create a client name from the user and hostname.
 
     Attributes:
         prefix (optional, default=None): If not None, the prefix for the client.
@@ -1767,7 +1767,7 @@ def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
 
 
 def validatetype(ctype):
-    """Determines if the specified CMS type is valid.
+    """Determine if the specified CMS type is valid.
 
     Args:
         ctype: The CMS type.

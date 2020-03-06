@@ -47,7 +47,7 @@ CONVERSION_MODES = Enum('conversion_modes', ('to_unix', 'to_dos'))
 
 
 def eol_convert(filename, mode, backup=True):
-    """Performs end-of-line conversions from Windows to UNIX or vice versa.
+    """Perform end-of-line conversions from Windows to UNIX or vice versa.
 
     Attributes:
         filename: The file to convert.
@@ -82,7 +82,7 @@ class CompressedFile:
         """
         Args:
             filename: The name of the compressed file.
-            attr: The list of attributes to pass to the base class.
+            **attr: The list of attributes to pass to the base class.
 
         Attributes:
             _filename: The value of the filename argument.
@@ -91,7 +91,11 @@ class CompressedFile:
         self._filename = Path(filename)
 
     def namelist(self):
-        'Returns the name of the file as the first item in a tuple.'
+        """Return the name of the file as the first item in a tuple.
+
+        Returns:
+            The name of the file.
+        """
         return (self._filename.stem,)
 
 
@@ -110,7 +114,7 @@ COMPRESSION_TYPE = {'gz': 'gz', 'tgz': 'gz',
 
 
 def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
-    """Creates a compressed archive.
+    """Create a compressed archive.
 
     Attributes:
         arcfile: The name of the archive file to create.
@@ -173,7 +177,7 @@ def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
 
 
 def unpack(arcfile, dest=None, arctype=None):
-    """Extracts the contents of a compressed file.
+    """Extract the contents of a compressed file.
 
     Attributes:
         arcfile: The name of the archive file
@@ -227,7 +231,7 @@ def unpack(arcfile, dest=None, arctype=None):
 
 
 def slurp(filename):
-    """Returns all the lines of a file as a list.
+    """Return all the lines of a file as a list.
 
     Args:
         filename: The filename to return the lines from.
@@ -239,7 +243,7 @@ def slurp(filename):
 
 
 def spew(filename, outlines):
-    """Writes the list of lines to a file.
+    """Write the list of lines to a file.
 
     Args:
         filename: The filename to which to write the lines.

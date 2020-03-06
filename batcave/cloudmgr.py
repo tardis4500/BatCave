@@ -76,7 +76,7 @@ class Cloud:
         """Perform a login to the cloud provider.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             CloudError.INVALID_OPERATION: If the value of self.ctype is not in CLOUD_TYPES.
@@ -136,12 +136,12 @@ class Cloud:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
     containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
-    def exec(self, *args, **opts):
+    def exec(self, *args, **kwargs):
         """Execute a command against the cloud API.
 
         Args:
-            args (optional): A list of arguments to pass to the API.
-            opts (optional): A dictionary to pass to the API.
+            *args (optional, default=[]): A list of arguments to pass to the API.
+            **kwargs (optional, default={}): A dictionary to pass to the API.
 
         Returns:
             The result of the API call.
@@ -151,7 +151,7 @@ class Cloud:
         """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.gcloud):
-                return gcloud(None, *args, **opts)
+                return gcloud(None, *args, **kwargs)
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
@@ -282,13 +282,13 @@ class Image:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
         return new_ref
 
-    def run(self, detach=True, update=True, **args):
+    def run(self, detach=True, update=True, **kwargs):
         """Run an image to create an active container.
 
         Args:
             detach (optional, default=True): If True, do not wait for the container to complete.
             update (optional, default=True): If True, perform a pull of the image from the registry before running.
-            args (optional): A dictionary of arguments to pass to the run command.
+            **kwargs (optional, default={}): A dictionary of arguments to pass to the run command.
 
         Returns:
             A reference to the active container.
@@ -300,7 +300,7 @@ class Image:
             self.pull()
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
-                return self.cloud.client.containers.run(self.name, detach=detach, **args)
+                return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
@@ -354,7 +354,7 @@ class Container:
 
 
 def validatetype(ctype):
-    """Determines if the specified Cloud type is valid.
+    """Determine if the specified Cloud type is valid.
 
     Args:
         ctype: The Cloud type.

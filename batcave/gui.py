@@ -39,12 +39,12 @@ class Title(MsgStr):
                  'error': __title__ + ' ERROR',
                  'results': 'Search Results'}
 
-    def __init__(self, **args):
+    def __init__(self, **kwargs):
         """
         Args:
-            args: The list of arguments to pass to the base class.
+            **kwargs (optional, default={}): The list of arguments to pass to the base class.
         """
-        super().__init__(transform='title', **args)
+        super().__init__(transform='title', **kwargs)
 
 
 class Brief(MsgStr):
@@ -109,13 +109,13 @@ class BatCaveGUIOutput:
 
     def write(self, output):
         """Write to the widget.
-        
+
         Args:
             output: The text to write to the widget.
-            
+
         Returns:
             Nothing.
-        """ 
+        """
         self.widget.append(output)
 
 
@@ -146,7 +146,7 @@ class BatCaveBaseGUI:
 
     def validate(self):
         """Run the validators for the object.
-        
+
         Returns:
             True if all the validators are True, False otherwise.
         """
@@ -158,7 +158,7 @@ class BatCaveBaseGUI:
 
     def redirect_output(self, widget):
         """Redirect stdout and stderr to the specified widget.
-        
+
         Returns:
             Nothing.
         """
@@ -166,9 +166,8 @@ class BatCaveBaseGUI:
         sys.stdout = sys.stderr = BatCaveGUIOutput(widget)
 
     def closeEvent(self, event):
-        'Standard method'
         """Overload of standard Qt method called when the object is closed.
-        
+
         Returns:
             Nothing.
         """
@@ -192,7 +191,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
 
     def OnAbout(self):
         """Show the about box.
-        
+
         Returns:
             Nothing.
         """
@@ -202,16 +201,16 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
     """This class provides functionality for a dialog box window."""
 
-    def __init__(self, **args):
+    def __init__(self, **kwargs):
         """
         Args:
-            args: The list of arguments to pass to the base class.
+            **kwargs (optional, default={}): The list of arguments to pass to the base class.
         """
-        super().__init__(**args)
+        super().__init__(**kwargs)
 
     def accept(self):
         """Overload of standard Qt method called when the dialog is accepted.
-        
+
         Returns:
             The result of the validate method.
         """
@@ -219,10 +218,10 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
 
     def onGetFile(self, file_filter=None):
         """Show a simplified file dialog.
-        
+
         Args:
             file_filter (optional, default=None): The file filter to pass to the standard Qt file dialog.
-            
+
         Returns:
             Nothing.
         """
@@ -233,7 +232,7 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
 
     def onGetDirectory(self):
         """Show a simplified directory dialog.
-        
+
         Returns:
             Nothing.
         """
@@ -280,7 +279,7 @@ class MessageBox(QMessageBox):
 
 
 def find_image(name):
-    """Locates the image based on whether the application has been frozen.
+    """Locate the image based on whether the application has been frozen.
 
     Args:
         name: The name of the image to locate.

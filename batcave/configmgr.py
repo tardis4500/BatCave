@@ -120,7 +120,7 @@ class ConfigCollection:
         return self._configs[self._current-1]
 
     def add(self, name):
-        """Adds an item to the configuration collection.
+        """Add an item to the configuration collection.
 
         Args:
             name: The name of the item to add.

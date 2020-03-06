@@ -14,8 +14,8 @@ class Argument:
     def __init__(self, *names, **options):
         """
         Args:
-            names: A list of the argument names.
-            options (optional): A dictionary of the argument options.
+            *names: A list of the argument names.
+            **options (optional, default={}): A dictionary of the argument options.
 
         Attributes:
             names: The value of the names argument.
@@ -145,14 +145,14 @@ class Commander:
 
 
 def _add_arguments_to_parser(parser, arglist):
-    """Adds arguments to the specified parser.
+    """Add arguments to the specified parser.
 
     Args:
         parser: The parser to which to add the arguments.
         arglist: The arguments to add to the parser.
 
     Returns:
-        Nothing
+        Nothing.
     """
     for arg in arglist:
         if isinstance(arg, dict):

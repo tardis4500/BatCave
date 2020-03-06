@@ -66,16 +66,6 @@ class Cluster:
             _context: The value of the context argument.
             _core_api: A reference to the CoreV1Api object.
         """
-    def __init__(self, cluster_config=None, context=None):
-        """
-        Args:
-            cluster_config (optional, default=None): The cluster configuration file to use.
-
-        Attributes:
-            config: The value of the cluster_config argument.
-            _batch_api: A reference to the BatchV1Api object.
-            _core_api: A reference to the CoreV1Api object.
-        """
         self.config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
         self._context = context
         k8s_config.load_kube_config(self.config, self._context)
@@ -97,7 +87,19 @@ class Cluster:
             return lambda *a, **k: method(item_class, *a, **k)
 
     def find_method(self, item_class, method, suffix=None):
-        'Search all the APIs for the specified method'
+        """Search all the APIs for the specified method.
+
+        Args:
+            item_class: The item class to search.
+            method: The method for which to search.
+            suffix(optional, default=None): If not None, append to the method name with an underscore when searching.
+
+        Returns:
+            A reference to method.
+
+        Raises:
+            AttributeError: If the method is not found.
+        """
         method_name = f'{method}_namespaced_{item_class.__name__.lower()}'
         if suffix:
             method_name += f'_{suffix}'
@@ -107,19 +109,56 @@ class Cluster:
         raise AttributeError(f'No method found: {method_name}')
 
     def has_item(self, item_class, item_name, namespace='default'):
-        'Return a boolean value for the existence of the specified item'
+        """Determine if the named items of the specified class exists.
+
+        Args:
+            item_class: The item class for which to search.
+            item_name: The name of the item to search for.
+            namespace (optional, default='default'): The Kubernetes namespace to search.
+
+        Returns:
+            Returns True if the named item exists, False otherwise.
+        """
         return bool([i for i in self.get_items(item_class, namespace) if i.name == item_name])
 
     def get_item(self, item_class, name, namespace='default'):
-        'Return a list of the specified items'
+        """Get the requested item.
+
+        Args:
+            item_class: The item class.
+            item_name: The name of the item to return.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+
+        Returns:
+            The requested item.
+        """
         return item_class(self, self.find_method(item_class, 'read')(name, namespace))
 
     def get_items(self, item_class, namespace='default', **keys):
-        'Return a list of the specified items'
+        """Get all the item of the requested type.
+
+        Args:
+            item_class: The item class.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+            keys (optional): A list of keys by which to filter the items.
+
+        Returns:
+            The requested item list.
+        """
         return [item_class(self, i) for i in self.find_method(item_class, 'list')(namespace, **keys).items]
 
     def create_item(self, item_class, item_spec, namespace='default', exists_ok=False):
-        'Create the specified item'
+        """Create a new item using the specified spec.
+
+        Args:
+            item_class: The class of the item to create.
+            item_spec: A file containing the Kubernetes specification.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+            exists_ok (optional, default=False): If True and the item already exists, delete before creating.
+
+        Returns:
+            The created item.
+        """
         with open(item_spec) as yaml_file:
             item_spec = yaml_load(yaml_file)
             item_name = item_spec['metadata']['name']
@@ -128,7 +167,16 @@ class Cluster:
             return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec))
 
     def delete_item(self, item_class, name, namespace='default'):
-        'Return a list of the specified items'
+        """Delete the named item.
+
+        Args:
+            item_class: The class of the item to create.
+            name: The name of the item to delete.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+
+        Returns:
+            Nothing.
+        """
         item_class(self, self.find_method(item_class, 'delete')(name, namespace))
 
     def create_job(self, job_spec, namespace='default', exists_ok=False, wait_for=False, check_every=2, timeout=False):

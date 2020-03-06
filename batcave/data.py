@@ -198,10 +198,10 @@ class DataSource:
             return 0
 
     def _validate_type(self):
-        """Determines if the specified data source type is valid.
+        """Determine if the specified data source type is valid.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             DataError.INVALID_TYPE: If the data source type is invalid.
@@ -210,10 +210,10 @@ class DataSource:
             raise DataError(DataError.INVALID_TYPE)
 
     def _validate_schema(self):
-        """Determines if the data source schema is valid.
+        """Determine if the data source schema is valid.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             DataError.BAD_SCHEMA: If the data source schema is invalid.
@@ -222,10 +222,10 @@ class DataSource:
             raise DataError(DataError.BAD_SCHEMA, schema=self._schema, found=self.schema)
 
     def _create(self):
-        """Creates the data source.
+        """Create the data source.
 
         Returns:
-            Nothing
+            Nothing.
         """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
@@ -250,10 +250,10 @@ class DataSource:
         self.commit()
 
     def _load(self):
-        """Loads the data source.
+        """Load the data source.
 
         Returns:
-            Nothing
+            Nothing.
 
         Raises:
             DataError.BAD_COLUMN: If a text type data source has a column with no value.
@@ -417,7 +417,7 @@ class DataSource:
         return False
 
     def addtable(self, name):
-        """Creates a new table with the specified name.
+        """Create a new table with the specified name.
 
         Args:
             name: The name of the table to add.
@@ -452,7 +452,7 @@ class DataSource:
         """Commit any changes in memory to the source.
 
         Returns:
-            Nothing
+            Nothing.
         """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
@@ -482,10 +482,10 @@ class DataSource:
                 break
 
     def close(self):
-        """Closes the data source.
+        """Close the data source.
 
         Returns:
-            Nothing
+            Nothing.
         """
         if self._closer:
             self._closer.close()
@@ -586,7 +586,7 @@ class DataRow:
         return None
 
     def delcolumn(self, col):
-        """Deletes the named column from the row.
+        """Delete the named column from the row.
 
         Args:
             col: The name of the column to delete.
@@ -618,7 +618,7 @@ class DataRow:
                 break
 
     def getvalue(self, col):
-        """Gets the value of the specified column.
+        """Get the value of the specified column.
 
         Args:
             col: The name of the column from which to retrieve the value.
@@ -648,7 +648,7 @@ class DataRow:
         return None
 
     def setvalue(self, col, value):
-        """Sets the value of the specified column.
+        """Set the value of the specified column.
 
         Args:
             col: The name of the column for which to set the value.
@@ -726,6 +726,11 @@ class DataTable:
         return False
 
     def _get_row_parent(self):
+        """Get the parent of a row in this table.
+
+        Returns:
+            The parent of a row in this table.
+        """
         for case in switch(self.type):
             if case(DataSource.SOURCE_TYPES.text):
                 pass
@@ -759,10 +764,10 @@ class DataTable:
         return [r for r in allrows if r.getvalue(col) == value]
 
     def addrow(self, **values):
-        """Creates a new row with the specified values.
+        """Create a new row with the specified values.
 
         Args:
-            values: A dictionary of the value to add.
+            **values: A dictionary of the value to add.
 
         Returns:
             Nothing.
@@ -794,7 +799,7 @@ class DataTable:
         return row
 
     def delrow(self, col, value):
-        """Deletes the rows with the specified column value.
+        """Delete the rows with the specified column value.
 
         Args:
             col: The column to select for.
