@@ -63,15 +63,30 @@ class IISObject:
         return False
 
     def manage_item(self, action):
-        'Generic method to manage this item'
+        """Perform action on this object.
+        
+        Args:
+            action: The action to perform on this object.
+        
+        Returns:
+            Nothing.    
+        """
         self.iis_ref.manage_item(action, type(self), self.name)
 
     def start(self):
-        'Performs the start action on an IISObject'
+        """Start this object.
+        
+        Returns:
+            Nothing.    
+        """
         self.manage_item('start')
 
     def stop(self):
-        'Performs the stop action on an IISObject'
+        """Stop this object.
+        
+        Returns:
+            Nothing.    
+        """
         try:
             self.manage_item('stop')
         except AppCmdError as err:
