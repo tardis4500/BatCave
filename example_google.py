@@ -8,9 +8,9 @@
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
-# Step7: Add class method docstrings. Next: iispy.IISInstance (then continue k8s)
+# Step7: Add class method docstrings. Next: iispy.IISConfigurtionSection (then continue k8s)
 
-# Started adding class method docstrings for the iispy module. (GitLab #29)
+# Continued adding class method docstrings for the iispy module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.

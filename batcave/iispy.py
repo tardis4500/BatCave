@@ -149,7 +149,11 @@ class IISInstance:
         return result
 
     def exists(self):
-        'Tests for existence of the IIS instance'
+        """Test for existence of the IIS instance.
+        
+        Returns:
+            True if the instance exists, False, otherwise.
+        """
         try:
             str(self.get_configuration_section('log'))
         except CMDError as err:
@@ -158,88 +162,240 @@ class IISInstance:
             raise
         return True
 
-    def start(self, verbose=True):
-        'Perform a reset on the IIS instance'
-        return syscmd('iisreset', '/start', remote=self.hostname, show_stdout=verbose)
+    def start(self, quiet=False):
+        """Start the IIS instance.
+        
+        Args:
+            quiet (optional, default=False): If True do not print result to standard output stream.
+            
+        Returns:
+            The result of the start command.
+        """
+        return syscmd('iisreset', '/start', remote=self.hostname, show_stdout=not quiet)
 
-    def stop(self, verbose=True):
-        'Perform a reset on the IIS instance'
-        return syscmd('iisreset', '/stop', remote=self.hostname, show_stdout=verbose)
+    def stop(self, quiet=False):
+        """Stop the IIS instance.
+        
+        Args:
+            quiet (optional, default=False): If True do not print result to standard output stream.
+            
+        Returns:
+            The result of the stop command.
+        """
+        return syscmd('iisreset', '/stop', remote=self.hostname, show_stdout=not quiet)
 
     def reset(self, verbose=True):
-        'Perform a reset on the IIS instance'
-        return syscmd('iisreset', remote=self.hostname, show_stdout=verbose)
+        """Reset the IIS instance.
+        
+        Args:
+            quiet (optional, default=False): If True do not print result to standard output stream.
+            
+        Returns:
+            The result of the reset command.
+        """
+        return syscmd('iisreset', remote=self.hostname, show_stdout=not quiet)
 
     def get_configuration_section(self, name, path=None, set_location='apphost'):
-        'Get the named configuration section from the IIS configuration files'
+        """Get the named configuration section from the IIS configuration files.
+        
+        Args:
+            name: The name of the configuration section to return.
+            path (optional, default=None): If not None, return the configuration section from the specified path.
+            set_location (optional, default='apphost'): Use the specified set location to search for the configuration section.
+            
+        Returns:
+            The specified configuration section.
+        """
         return IISConfigurationSection(name=name, path=path, set_location=set_location, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
     def get_advanced_logger(self, path=None, logtype='server', set_location='apphost'):
-        'Get the advanced logger object from the IIS instance'
+        """Get the advanced logger object from the IIS instance.
+        
+        Args:
+            path (optional, default=None): If not None, return the advanced logger from the specified path.
+            logtype (optional, default='server'): Use the specified set location to search for the advanced logger.
+            set_location (optional, default='apphost'): Use the specified set location to search for the advanced logger.
+            
+        Returns:
+            The specified advanced logger.
+        """
         return IISAdvancedLogger(path=path, logtype=logtype, set_location=set_location, hostname=self.hostname)
     advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
     def has_item(self, item_type, item_name):
-        'Generic method to look for a specific item'
+        """Determine if the specified item of the specified type exists in the IIS instance.
+        
+        Args:
+            item_type: The type of the item for which to search.
+            item_name: The name of the item for which to search.
+
+        Returns:
+            True if the item exists in the IIS instance, False otherwise.
+        """
         return item_name in getattr(self, f'{self._IIS_TYPE_MAP[item_type]}s')
 
     def manage_item(self, action, item_type, *args):
-        'Manage an IIS object using the standard IIS appcmd'
+        """Manage an IIS object using the standard IIS appcmd.
+        
+        Args:
+            action: The management action to perform.
+            item_type: The type of the item to manage.
+            *args (optional, default=[]): Any other appcmd arguments to pass to the management action.
+
+        Returns:
+            The result of the appcmd command.
+        """
         return appcmd(action, self._IIS_TYPE_MAP[item_type], *args, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
-    def has_virtual_dir(self, app_name):
-        'Determine if the IIS instance has a specific web application'
-        return self.has_item(VirtualDirectory, app_name)
+    def has_virtual_dir(self, vdir_name):
+        """Determine if the IIS instance has the specified virtual directory.
+        
+        Args:
+            vdir_name: The name of the virtual directory for which to search.
+
+        Returns:
+            True if the virtual directory exists in the IIS instance, False otherwise.
+        """
+        return self.has_item(VirtualDirectory, vdir_name)
 
     def get_virtual_dir(self, vdir_name):
-        'Return an object instance of the requested web application'
+        """Get the specified virtual directory from the IIS instance.
+        
+        Args:
+            vdir_name: The name of the virtual directory to return.
+
+        Returns:
+            The virtual directory from the IIS instance.
+        """
         return VirtualDirectory(vdir_name, self)
 
     def create_virtual_dir(self, vdir_name, vdir_location, website):
-        'Create the specific web application in the IIS instance'
+        """Create the specified virtual directory in the IIS instance.
+        
+        Args:
+            vdir_name: The name of the virtual directory to create.
+            vdir_location: The physical path for the virtual directory.
+            website: The website for which to create the virtual directory.
+
+        Returns:
+            The newly created virtual directory.
+        """
         self.manage_item('add', VirtualDirectory, f'/app.name:{website}/', f'/path:/{vdir_name}', f'/physicalPath:{vdir_location}')
         return self.get_virtual_dir(vdir_name)
 
     def has_webapp(self, app_name):
-        'Determine if the IIS instance has a specific web application'
+        """Determine if the IIS instance has the specified web application.
+        
+        Args:
+            app_name: The name of the web application for which to search.
+
+        Returns:
+            True if the web application exists in the IIS instance, False otherwise.
+        """
         return self.has_item(WebApplication, app_name)
 
     def get_webapp(self, app_name):
-        'Return an object instance of the requested web application'
+        """Get the specified web application from the IIS instance.
+        
+        Args:
+            app_name: The name of the web application to return.
+
+        Returns:
+            The web application from the IIS instance.
+        """
         return WebApplication(app_name, self)
 
     def create_webapp(self, app_name, appdir, website, pool=None):
-        'Create the specific web application in the IIS instance'
+        """Create the specified web application in the IIS instance.
+        
+        Args:
+            app_name: The name of the web application to create.
+            appdir: The physical path for the web application.
+            website: The website for which to create the virtual directory.
+            pool (optional, default=None): If not None, the application pool to which to assign the web application.
+
+        Returns:
+            The newly created web application.
+        """
         self.manage_item('add', WebApplication, f'/site.name:{website}', f'/path:/{app_name}/', f'/physicalPath:{appdir}', f'/applicationPool:{pool}' if pool else '')
         return self.get_webapp(app_name)
 
     def remove_webapp(self, appname):
-        'Remove the specific web application from the IIS instance'
+        """Remove the specified web application from the IIS instance.
+        
+        Args:
+            appname: The name of the web application to remove.
+
+        Returns:
+            Nothing.
+        """
         self.manage_item('delete', WebApplication, appname)
 
     def has_webapp_pool(self, pool_name):
-        'Determine if the IIS instance has a specific web application pool'
+        """Determine if the IIS instance has the specified web application pool.
+        
+        Args:
+            pool_name: The name of the web application pool for which to search.
+
+        Returns:
+            True if the web application pool exists in the IIS instance, False otherwise.
+        """
         return self.has_item(WebApplicationPool, pool_name)
 
     def get_webapp_pool(self, pool_name):
-        'Return an object instance of the requested web application'
+        """Get the specified web application pool from the IIS instance.
+        
+        Args:
+            pool_name: The name of the web application pool to return.
+
+        Returns:
+            The web application pool from the IIS instance.
+        """
         return WebApplicationPool(pool_name, self)
 
     def create_webapp_pool(self, pool_name):
-        'Create the specific web application pool in the IIS instance'
+        """Create the specified web application pool in the IIS instance.
+        
+        Args:
+            pool_name: The name of the web application to create.
+
+        Returns:
+            The newly created web application pool.
+        """
         self.manage_item('add', WebApplicationPool, f'/name:{pool_name}')
         return self.get_webapp_pool(pool_name)
 
     def remove_webapp_pool(self, pool_name):
-        'Remove the specific web application pool from the IIS instance'
+        """Remove the specified web application pool from the IIS instance.
+        
+        Args:
+            appname: The name of the web application pool to remove.
+
+        Returns:
+            Nothing.
+        """
         self.manage_item('delete', WebApplicationPool, pool_name)
 
     def has_website(self, site_name):
-        'Determine if the IIS instance has a specific website'
+        """Determine if the IIS instance has the specified website.
+        
+        Args:
+            site_name: The name of the web application for which to search.
+
+        Returns:
+            True if the website exists in the IIS instance, False otherwise.
+        """
         return self.has_item(WebSite, site_name)
 
     def get_website(self, site_name):
-        'Return an object instance of the requested website'
+        """Get the specified website from the IIS instance.
+        
+        Args:
+            site_name: The name of the website to return.
+
+        Returns:
+            The website from the IIS instance.
+        """
         return WebSite(site_name, self)
 
 
