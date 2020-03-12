@@ -457,29 +457,79 @@ class IISConfigurationSection:
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/{attr}:{value}')
 
     def add_property(self, propname, value):
-        'Adds a property with the specified value'
+        """Add a property with the specified value.
+        
+        Args:
+            propname: The name of the property to add.
+            value: The value of the property to add.
+            
+        Returns:
+            Nothing.
+        """
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/+{propname}.{value}')
 
     def rm_property(self, propname, value=None):
-        'Removes a property conditionally with the specified value'
+        """Remove a property conditionally with the specified value.
+        
+        Args:
+            propname: The name of the property to remove.
+            value (optional, default=None): If not None, only remove the property if it has the specified value.
+            
+        Returns:
+            Nothing.
+        """
         propspec = f'{propname}.{value}' if value else propname
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/-{propspec}')
 
     def has_collection_member(self, collection, filter_on, value):
-        'Determines if a collection has a specified member'
+        """Determine if a collection has a specified member.
+        
+        Args:
+            collection: The collection to search.
+            filter_on: Then member to filter on.
+            value: The value for which to search.
+
+        Returns:
+            True if the collection has the specified member, False otherwise.
+        """
         return bool([m for m in getattr(self, collection) if m.attrib[filter_on] == value])
 
     def add_collection_member(self, collection, properties, changes):
-        'Converts Python dictionaries to the syntax understood by appcmd'
+        """Add the specified properties to the collection.
+        
+        Args:
+            collection: The collection to which to add the properties.
+            properties: The properties to add to the collection.
+            changes: Changes to make to the properties before adding.
+            
+        Returns:
+            Nothing.
+        """
         if changes:
             properties.update(changes)
         self.add_property(collection, dict2expat(properties))
 
     def rm_collection_member(self, collection, selectors):
-        'Converts Python dictionaries to the syntax understood by appcmd'
+        """Remove the specified properties from the collection.
+        
+        Args:
+            collection: The collection from which to remove the properties.
+            selectors: The selectors to identify the properties.
+            
+        Returns:
+            Nothing.
+        """
         self.rm_property(collection, dict2expat(selectors))
 
     def _run_appcmd(self, *cmd_args):
+        """Run the IIS appcmd against this IIS configuration section.
+        
+        Args:
+            *cmd_args: The arguments to pass to appcmd.
+            
+        Returns:
+            The output from appcmd.
+        """
         if self._set_location:
             cmd_args += [f'/commit:{self._set_location}']
         return appcmd(*cmd_args, hostname=self._hostname, remote_powershell=self._remote_powershell)
@@ -501,7 +551,15 @@ class IISAdvancedLogger(IISConfigurationSection):
         super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
 
     def add_field(self, field_id, field_values=None):
-        'Adds a field to the advanced logger configuration'
+        """Add a field to the advanced logger configuration.
+        
+        Args:
+            field_id: The field ID to add.
+            field_values (optional, default=None): Any field values to add to override the default values.
+            
+        Returns:
+            Nothing.            
+        """
         default_values = {'id': field_id,
                           'sourceName': field_id,
                           'sourceType': 'RequestHeader',
@@ -515,15 +573,38 @@ class IISAdvancedLogger(IISConfigurationSection):
         self.add_collection_member('fields', default_values, field_values)
 
     def has_field(self, field_id):
-        'Determines if the advanced logger configuration has the specified field'
+        """Determine if the advanced logger configuration has the specified field.
+        
+        Args:
+            field_id: The field ID for which to search.
+
+        Returns:
+            True if the advanced logger configuration has the specified field, False otherwise.
+        """
         return self.has_collection_member('fields', 'id', field_id)
 
     def rm_field(self, field_id):
-        'Removed a field from the advanced logger configuration'
+        """Remove a field from the advanced logger configuration.
+        
+        Args:
+            field_id: The field ID to remove.
+            
+        Returns:
+            Nothing.            
+        """
         self.rm_collection_member('fields', {'id': field_id})
 
     def add_log(self, log_name, log_values=None, fields=None):
-        'Adds a log definition to the advanced logger configuration'
+        """Add a log definition to the advanced logger configuration.
+        
+        Args:
+            log_name: The name of the log to add.
+            log_values (optional, default=None): Any log values to add to override the default values.
+            fields (optional, default=None): Any fields to add to the log definition.
+
+        Returns:
+            Nothing.            
+        """
         self.add_collection_member('logDefinitions',
                                    {'baseFileName': log_name,
                                     'writeLogDataToDisk': 'true',
@@ -542,11 +623,28 @@ class IISAdvancedLogger(IISConfigurationSection):
             self.add_logfield(log_name, field, values)
 
     def rm_log(self, log_name):
-        'Removes a log definition from the advanced logger configuration'
+        """Remove a log definition to the advanced logger configuration.
+        
+        Args:
+            log_name: The name of the log to remove.
+
+        Returns:
+            Nothing.            
+        """
         self.rm_collection_member('logDefinitions', {'baseFileName': log_name})
 
     def add_logfield(self, log_name, field_name, field_values=None):
         'Adds a field to a log definition'
+        """Add a field to an advanced logger log definition.
+        
+        Args:
+            log_name: The name of the log to which to add the field.
+            field_name: The name of the field to add.
+            field_values (optional, default=None): Any fields values to add to the field.
+
+        Returns:
+            Nothing.            
+        """
         if not self.has_collection_member('fields', 'id', field_name):
             raise IISAdvancedLogError(IISAdvancedLogError.BAD_FIELD, field=field_name)
         self.add_collection_member(f"logDefinitions.[baseFileName='{log_name}'].selectedFields",
@@ -557,6 +655,14 @@ class IISAdvancedLogger(IISConfigurationSection):
                                    field_values)
 
     def _run_appcmd(self, *cmd_args):
+        """Run the IIS appcmd against this IIS advanced logger configuration.
+        
+        Args:
+            *cmd_args: The arguments to pass to appcmd.
+            
+        Returns:
+            The output from appcmd.
+        """
         try:
             return super()._run_appcmd(*cmd_args)
         except IISConfigurationError as err:
