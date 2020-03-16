@@ -139,7 +139,7 @@ class Cluster:
 
         Args:
             item_class: The item class.
-            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the items.
             keys (optional): A list of keys by which to filter the items.
 
         Returns:
@@ -153,7 +153,7 @@ class Cluster:
         Args:
             item_class: The class of the item to create.
             item_spec: A file containing the Kubernetes specification.
-            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+            namespace (optional, default='default'): The Kubernetes namespace in which to create the item.
             exists_ok (optional, default=False): If True and the item already exists, delete before creating.
 
         Returns:
@@ -180,7 +180,22 @@ class Cluster:
         item_class(self, self.find_method(item_class, 'delete')(name, namespace))
 
     def create_job(self, job_spec, namespace='default', exists_ok=False, wait_for=False, check_every=2, timeout=False):
-        'Create a job and wait for the specified condition'
+        """Create a job and wait for the specified condition.
+
+        Args:
+            job_spec: A file containing the Kubernetes job specification.
+            namespace (optional, default='default'): The Kubernetes namespace in which to create the job.
+            exists_ok (optional, default=False): If True and the item already exists, delete before creating.
+            wait_for (optional, default=False): If True, wait until the job completes before returning.
+            check_every (optional, default=2): The number of seconds to wait between every check to see if the job has completed. 
+            timeout (optional, default=False): If not False, this is the maximum number of seconds to wait for the job to complete.
+            
+        Raises:
+            ClusterError.TIMEOUT: If timeout is True and the maximum number of seconds is exceeded. 
+
+        Returns:
+            The created job.
+        """
         if wait_for not in (False, 'start', 'finish'):
             raise ClusterError(ClusterError.BAD_ARGS, error=f"wait_for must be one of (start, finish, False) not '{wait_for}'")
         job = self.create_item(Job, job_spec, namespace, exists_ok)
@@ -205,7 +220,14 @@ class Cluster:
         return job
 
     def kubectl(self, *args):
-        'Provide kubectl for things that are not implemented directly in the API'
+        """Run a kubectl command.
+        
+        Args:
+            *args: The arguments to pass to kubectl.
+            
+        Returns:
+            The result of the kubectl command.
+        """
         config_args = list()
         if self.config:
             config_args.append(f'--kubeconfig={self.config}')

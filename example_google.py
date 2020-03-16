@@ -10,7 +10,7 @@
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings. Next: k8s
 
-# Finished adding class method docstrings for the iispy module. (GitLab #29)
+# Continued adding class method docstrings for the k8s module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
