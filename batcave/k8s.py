@@ -264,7 +264,17 @@ class Pod(ClusterObject):
     logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name), doc='A read-only property which returns the pod logs.')
 
     def exec(self, *command):
-        'Execute a command on the specified pod'
+        """Execute a command in the pod.
+
+        Args:
+            *command: The command and arguments to execute.
+
+        Returns:
+            The output from the command.
+            
+        Raises:
+            PodError.EXEC_ERROR: If the word 'error' occurs in the output.
+        """
         output = k8s_process(self._cluster_obj.pod_exec, self.name, self.namespace,
                              command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True)
         if 'error' in output:
@@ -272,17 +282,49 @@ class Pod(ClusterObject):
         return output.split('\n')[0:-1]
 
     def has_file(self, filename):
-        'Find out if the pod has the specified file'
+        """Determine if the pod has the specified file.
+
+        Args:
+            filename: The name of the file for which to search.
+
+        Returns:
+            True if the specified file exists, False otherwise.
+        """
         return filename == self.exec('ls', filename)[0]
 
     def remove_file(self, filename, not_exists_ok=False):
-        'Remove the specified file from the pod'
+        """Remove the specified file from the pod.
+
+        Args:
+            filename: The name of the file to remove.
+            not_exists_ok (optional, default=False): If True, raise an exception if the file does not exist. 
+
+        Returns:
+            Nothing.
+            
+        Raises:
+            PodError.FILE_NOT_FOUND: If the file is not found.
+        """
         if not (not_exists_ok or self.has_file(filename)):
             raise PodError(PodError.FILE_NOT_FOUND, filename=filename)
         self.exec('rm', filename)
 
     def cp_file(self, mode, source, target):
-        'Copy a file in to or out of a pod'
+        """Copy a file into or out of the pod.
+
+        Args:
+            mode: Either 'in' or 'out' to indicate the direction of the copy.
+            source: The source for the copy.
+            target: The target of the copy.
+
+        Returns:
+            Nothing.
+            
+        Raises:
+            PodError.BAD_COPY_FILENAME: If the source or target name was not found.
+            PodError.COPY_ERROR: If there was an error when copying the file.
+            PodError.INVALID_COPY_MODE: If the specified mode is not known.
+        """
         if mode == 'in':
             source_path = Path(source)
             target_path = f'{self.namespace}/{self.name}:{target}'
@@ -299,12 +341,28 @@ class Pod(ClusterObject):
             raise PodError(PodError.BAD_COPY_FILENAME, mode=mode)
 
     def get_file(self, source, target=None):
-        'Copy a file from a pod'
+        """Copy a file out of the pod.
+
+        Args:
+            source: The source for the copy.
+            target (optional, default=None): If not None, the target for the copy.
+
+        Returns:
+            Nothing.
+        """
         target_path = Path(target) if target else Path(Path(source).name)
         self.cp_file('out', source, target_path)
 
     def put_file(self, source, target):
-        'Copy a file from a pod'
+        """Copy a file into the pod.
+
+        Args:
+            source: The source for the copy.
+            target: The target for the copy.
+
+        Returns:
+            Nothing.
+        """
         self.cp_file('in', source, target)
 
 
