@@ -63,7 +63,14 @@ class Logger:
         return False
 
     def logdebug(self, msg):
-        'Create a DEBUG level log message'
+        """Create a DEBUG level log message.
+
+        Args:
+            msg: The message to log.
+
+        Returns:
+            Nothing.
+        """
         self._logger.debug(msg)
         if self._pipe:
             self._pipe.send(msg)
@@ -71,7 +78,14 @@ class Logger:
             self._queue.put(msg)
 
     def loginfo(self, msg):
-        'Create an INFO level log message'
+        """Create an INFO level log message.
+
+        Args:
+            msg: The message to log.
+
+        Returns:
+            Nothing.
+        """
         self._logger.info(msg)
         if self._pipe:
             self._pipe.send(msg)
@@ -79,7 +93,14 @@ class Logger:
             self._queue.put(msg)
 
     def logwarn(self, msg):
-        'Create a WARNING level log message'
+        """Create a WARN level log message.
+
+        Args:
+            msg: The message to log.
+
+        Returns:
+            Nothing.
+        """
         self._logger.warning(msg)
         if self._pipe:
             self._pipe.send(msg)
@@ -87,7 +108,14 @@ class Logger:
             self._queue.put(msg)
 
     def logerror(self, msg):
-        'Create an ERROR level log message'
+        """Create an ERROR level log message.
+
+        Args:
+            msg: The message to log.
+
+        Returns:
+            Nothing.
+        """
         self._logger.error(msg)
         if self._pipe:
             self._pipe.send(msg)
@@ -95,5 +123,9 @@ class Logger:
             self._queue.put(msg)
 
     def shutdown(self):
-        'Close the log'
+        """Shutdown the logging subsystem.
+
+        Returns:
+            Nothing.
+        """
         shutdown()

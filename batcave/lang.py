@@ -60,6 +60,11 @@ class MsgStr:
         return self._self_to_str(self._str)
 
     def _self_to_str(self, _str):
+        """Convert this message to a string and apply any transforms.
+
+        Returns:
+            The string message.
+        """
         if isinstance(_str, Template):
             _str = _str.substitute(self._vars)
         if self._transform:
@@ -144,7 +149,6 @@ class switch:  # pylint: disable=C0103
         self.first = True
 
     def __iter__(self):
-        'Return the match method once, then stop'
         if self.first:
             self.first = False
             yield self.match
@@ -152,7 +156,7 @@ class switch:  # pylint: disable=C0103
             return
 
     def match(self, *args):
-        'Indicate whether or not to enter a case suite'
+        """Indicate whether or not to enter a case suite."""
         if self.fall or not args:
             return True
         elif self.value in args:
@@ -268,7 +272,6 @@ def str_to_pythonval(the_string, parse_python=False):
     if parse_python and '~' in the_string:
         (data_type, val) = the_string.split('~', 1)
         the_string = eval(f'{data_type}({val})')  # pylint: disable=eval-used
-
 
     if parse_python and '~' in the_string:
         (data_type, val) = the_string.split('~', 1)

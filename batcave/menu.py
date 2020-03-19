@@ -58,7 +58,11 @@ class Menu:
         self.ignorecase = ignorecase
 
     def show(self):
-        'Show the menu'
+        """Show the menu.
+
+        Returns:
+            The choice selected from the menu.
+        """
         invalid_choice = True
         valid_choices = list()
         menu = self.title + '\n'
@@ -104,5 +108,10 @@ class SimpleMenu(Menu):
         super().__init__([MenuItem(str(i), itemlist[i-1]) for i in range(1, len(itemlist)+1)] + [MenuItem('0', 'Exit')], **args)
 
     def show(self):
+        """Show the menu.
+
+        Returns:
+            The choice selected from the menu.
+        """
         choice = super().show()
         return self.itemlist[int(choice) - 1] if self.return_text else choice
