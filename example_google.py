@@ -10,7 +10,7 @@
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings. Next: qbpy, reporter, servermgr, statemachine, sysutil, tcpy
 
-# Added class method docstrings for the lang, logger, menu, and platarch modules. (GitLab #29)
+# Added class method docstrings for the qbpy module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
