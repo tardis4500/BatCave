@@ -8,7 +8,7 @@
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
-# Step7: Add class method docstrings. Next: qbpy, reporter, servermgr, statemachine, sysutil, tcpy
+# Step7: Add class method docstrings. Next: reporter, servermgr, statemachine, sysutil, tcpy
 
 # Added class method docstrings for the qbpy module. (GitLab #29)
 
