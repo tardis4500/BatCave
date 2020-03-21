@@ -10,7 +10,7 @@
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings. Next: lang
 
-# Finished adding class method docstrings for the k8s module. (GitLab #29)
+# Added class method docstrings for the qbpy module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
