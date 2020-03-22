@@ -118,9 +118,16 @@ class SimpleAttribute:
 
     count = property(lambda s: len(s._valid), doc='A read-only property which returns the number of valid attribute values.')
 
-    def is_valid(self, val):
-        'Determines if the specified attribute is valid'
-        return val in self._valid
+    def is_valid(self, attr):
+        """Determine if the specified attribute is valid.
+        
+        Args:
+            attr: The attribute to validate.
+            
+        Returns:
+            True if the attribute it valid, False otherwise.
+        """
+        return attr in self._valid
 
 
 class MetaAttribute:
@@ -139,11 +146,26 @@ class MetaAttribute:
         self._attr = attr
         self._valuemap = valmap
 
-    def get_value(self, val):
-        'Returns the value of an attribute'
-        return self._valuemap[val]
+    def get_value(self, attr):
+        """Get the value of an attribute.
+        
+        Args:
+            attr: The attribute for which to return the value.
+            
+        Returns:
+            The value of the attribute.
+        """
+        return self._valuemap[attr]
 
     def _set_values(self, valmap):
+        """Set the value of a collection of attributes.
+        
+        Args:
+            valmap: The collection of attributes to set.
+            
+        Returns:
+            Nothing.
+        """
         self._valuemap = valmap
 
     values = property(fset=_set_values, doc='A read-only property which returns the values of the attribute as a dictionary.')
@@ -227,20 +249,20 @@ _ATTRIBUTES = {OUTPUT_ATTR: SimpleAttribute('html', 'text'),
 class ReportObject:
     """Class to create a universal abstract interface for a report object."""
 
-    def __init__(self, cont=None, **attr):
+    def __init__(self, container=None, **attr):
         """
         Args:
-            cont: The container for this object.
-            attr (optional): A dictionary of attributes for the object.
+            container: The container for this object.
+            **attr (optional): A dictionary of attributes for the object.
 
         Attributes:
-            container: The value of the cont argument.
+            container: The value of the container argument.
             _attributes: A dictionary of attributes for this object as initialized by the attr argument.
         """
         self._attributes = dict()
         for (attr, val) in attr.items():
             self._set_attribute(attr, val)
-        self.container = cont
+        self.container = container
 
     @property
     def depth(self):
@@ -250,6 +272,17 @@ class ReportObject:
         return 1
 
     def _get_attr_ref(self, attr):
+        """Get a reference to the requested attributes.
+        
+        Args:
+            attr: The attribute for which to return the reference.
+            
+        Returns:
+            A reference to the requested attribute.
+            
+        Raises:
+            AttributeError: If the requested attribute is not found.
+        """
         if attr in self._attributes:
             return self._attributes[attr]
         if self.container:
@@ -259,6 +292,14 @@ class ReportObject:
         raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
 
     def _get_attribute(self, attr):
+        """Get the value of the requested attributes.
+        
+        Args:
+            attr: The attribute for which to return the value.
+            
+        Returns:
+            A value of the requested attribute.
+        """
         attr_ref = self._get_attr_ref(attr)
         if isinstance(attr_ref, MetaAttribute):
             sub_attr_ref = self._get_attr_ref(attr_ref.simple_attr_name)
@@ -267,6 +308,15 @@ class ReportObject:
             return attr_ref.value
 
     def _set_attribute(self, attr, val):
+        """Set the value of the requested attributes.
+        
+        Args:
+            attr: The attribute for which to set the value.
+            val: The value to which to set the attribute.
+            
+        Returns:
+            Nothing.
+        """
         if attr not in self._attributes:
             attr_ref = self._get_attr_ref(attr)
             self._attributes[attr] = deepcopy(attr_ref)
@@ -344,24 +394,59 @@ class Section(ReportObject):
         return the_str + self.sec_trm
 
     def add_member(self, thing):
-        'Add a member to the section'
+        """Add a member to the section.
+
+        Args:
+            thing: The member to add to the section.
+
+        Returns:
+            Nothing.
+        """
         self._members.append(thing)
         thing.container = self
 
     def add_section(self, section):
-        'Add a sub-section to the section'
+        """Add a sub-section to the section.
+
+        Args:
+            setion: The sub-section to add to the section.
+
+        Returns:
+            Nothing.
+        """
         self.add_member(section)
 
     def add_table(self, table):
-        'Add a table to the section'
+        """Add a table to the section.
+
+        Args:
+            table: The table to add to the section.
+
+        Returns:
+            Nothing.
+        """
         self.add_member(table)
 
     def add_line(self, line):
-        'Add a line to the section'
+        """Add a line to the section.
+
+        Args:
+            line: The line to add to the section.
+
+        Returns:
+            Nothing.
+        """
         self.add_member(line)
 
     def register_link(self, link):
-        'Register a hyperlink'
+        """Register a hyperlink in the section.
+
+        Args:
+            link: The hyperlink to register.
+
+        Returns:
+            Nothing.
+        """
         link.container = self
 
 
