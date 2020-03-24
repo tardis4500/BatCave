@@ -210,9 +210,12 @@ def update_version_file(build_vars=None, reset=False):
 
 def freeze(_unused_args):
     'Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers.'
-    requirements = {p.split(';')[0].strip() for p in slurp(REQUIREMENTS_FILE)}.union(['pip', 'setuptools', 'wheel'])
-    dev_requirements = [p['name'] for p in json_parse(pip(None, 'list', '--format=json')[0]) if p['name'] not in requirements]
-    pip('Uninstalling unlisted requirements', 'uninstall', '-y', '-qqq', *dev_requirements)
+    requirements = {p.split(';')[0].strip() for p in slurp(REQUIREMENTS_FILE)}.union({'pip', 'setuptools'})
+    dev_requirements = set()
+    for pip_module in json_parse(pip(None, 'list', '--format=json')[0]):
+        if (pip_module['name'] not in requirements) and ('PyQt5' not in pip_module['name']) and ('pywin32' not in pip_module['name']):
+            dev_requirements.add(pip_module['name'])
+    pip('Uninstalling development requirements', 'uninstall', '-y', '-qqq', *dev_requirements)
     pip('Re-installing requirements', 'install', '-qqq', '-U', '-r', REQUIREMENTS_FILE)
     spew(FREEZE_FILE, pip('Creating frozen requirements file', 'freeze'))
     freeze_file = [l.strip() for l in slurp(FREEZE_FILE)]
@@ -220,6 +223,8 @@ def freeze(_unused_args):
         for line in freeze_file:
             if 'win32' in line:
                 line += "; sys_platform == 'win32'"
+            if 'systemd' in line:
+                line += "; sys_platform != 'win32'"
             print(line, file=updated_freeze_file)
 
 
