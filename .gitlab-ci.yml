@@ -64,7 +64,7 @@ install_test:
 
 .publisher:
   extends: .builder
-  image: python:3.7
+  image: python:3.8
   only:
     - master
     - /^release\/.*$/
