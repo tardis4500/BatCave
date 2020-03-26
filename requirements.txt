@@ -1,7 +1,10 @@
 GitPython
 kubernetes
+nitrosdk-python
+psutil
 requests
 setuptools
 twine
+wmi
 xmlrunner
 pywin32==227; sys_platform == 'win32'

@@ -5,12 +5,14 @@ chardet==3.0.4
 docutils==0.16
 gitdb==4.0.2
 GitPython==3.1.0
-google-auth==1.11.3
+google-auth==1.12.0
 idna==2.9
 keyring==21.2.0
 kubernetes==11.0.0
+nitrosdk-python==3.1
 oauthlib==3.1.0
 pkginfo==1.5.0.1
+psutil==5.7.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 Pygments==2.6.1
@@ -30,4 +32,5 @@ twine==3.1.1
 urllib3==1.25.8
 webencodings==0.5.1
 websocket-client==0.57.0
+WMI==1.4.9
 xmlrunner==1.7.7
