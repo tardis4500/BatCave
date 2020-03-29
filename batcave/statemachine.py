@@ -100,8 +100,27 @@ class StateMachine:
         self.done()
         return False
 
+    def _writestate(self):
+        """Write the current state to the state file.
+
+        Returns:
+            Nothing.
+        """
+        if is_debug('STATEMACHINE'):
+            print(f'Writing state file with {self.status.name} {self.state}')
+        with open(self.statefile, 'w') as filestream:
+            print(self.status.name, self.state, file=filestream)
+
     def start(self):
-        'Start the state machine.'
+        """Start the state machine.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            StateMachineError.CRASHED: If the state machine crashed on the previous run.
+            StateMachineError.ALREADY_STARTED: If the state machine has already been started.
+        """
         if self.started:
             raise StateMachineError(StateMachineError.ALREADY_STARTED)
         if self.status == self.STATE_STATUSES.entering:
@@ -109,7 +128,16 @@ class StateMachine:
         self.started = True
 
     def enter_next_state(self):
-        'Enter the next state.'
+        """Enter the next state.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            StateMachineError.BAD_ENTRY: If the state machine has not exitted from the previous start.
+            StateMachineError.DONE: If the state machine has already completed.
+            StateMachineError.NOT_STARTED: If the state machine has not been started.
+        """
         if not self.started:
             raise StateMachineError(StateMachineError.NOT_STARTED)
         if self.status != self.STATE_STATUSES.exited:
@@ -119,40 +147,56 @@ class StateMachine:
             raise StateMachineError(StateMachineError.DONE)
         self.status = self.STATE_STATUSES.entering
         self.state = self.states[next_state_index]
-        self.writestate()
+        self._writestate()
 
     def rollback(self):
-        'Rollback to the previous state.'
+        """Rollback to the previous state.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            StateMachineError.BAD_ROLLBACK: If the state machine has not entered a state.
+        """
         if self.status != self.STATE_STATUSES.entering:
             raise StateMachineError(StateMachineError.BAD_ROLLBACK)
         self.status = self.STATE_STATUSES.exited
         self.state = self.states[self.states.index(self.state) - 1]
-        self.writestate()
+        self._writestate()
 
     def exit_state(self):
-        'Exit the current state.'
+        """Exit the current state.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            StateMachineError.BAD_EXIT: If the state machine has not entered a state.
+            StateMachineError.NOT_STARTED: If the state machine has not been started.
+        """
         if not self.started:
             raise StateMachineError(StateMachineError.NOT_STARTED)
         if self.status != self.STATE_STATUSES.entering:
             raise StateMachineError(StateMachineError.BAD_EXIT)
         self.status = self.STATE_STATUSES.exited
-        self.writestate()
+        self._writestate()
 
     def reset(self):
-        'Reset the state machine.'
+        """Reset the state machine.
+
+        Returns:
+            Nothing.
+        """
         if self.statefile.exists():
             self.statefile.unlink()
         (self.status, self.state) = (self.STATE_STATUSES.exited, self.states[0])
-        self.writestate()
-
-    def writestate(self):
-        'Write the current state to a file.'
-        if is_debug('STATEMACHINE'):
-            print(f'Writing state file with {self.status.name} {self.state}')
-        with open(self.statefile, 'w') as filestream:
-            print(self.status.name, self.state, file=filestream)
+        self._writestate()
 
     def done(self):
-        'Close down the state machine.'
+        """Shutdown the state machine.
+
+        Returns:
+            Nothing.
+        """
         self.logger.shutdown()
         self.locker.close()
