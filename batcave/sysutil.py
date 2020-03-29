@@ -128,7 +128,17 @@ class LockFile:
         return False
 
     def action(self, mode):
-        'Performs the requested action on the loc file'
+        """Perform the requested action on the lock file.
+
+        Args:
+            mode: The action to perform on the lock file.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            LockError.NO_LOCK: If it was not possible to obtain a system level lock on the lock file.
+        """
         lock_mode = self._lock if (mode == LOCK_MODES.lock) else self._unlock
         fail = False
         try:
@@ -141,7 +151,11 @@ class LockFile:
             raise LockError(LockError.NO_LOCK)
 
     def close(self):
-        'Close the lock file'
+        """Close the lock file.
+
+        Returns:
+            Nothing.
+        """
         self.action(LOCK_MODES.unlock)
         self._fh.close()
         if self._cleanup:
@@ -151,30 +165,42 @@ class LockFile:
 class SysCmdRunner:
     """This class provides a simplified interface to sysutil.syscmd()."""
 
-    def __init__(self, command, *default_args, logger=None, **default_keys):
+    def __init__(self, command, *default_args, logger=None, **default_kwargs):
         """
         Args:
             command: The command to run.
-            default_args (optional): A list of default arguments to use each time the command is run.
+            *default_args (optional): A list of default arguments to use each time the command is run.
             logger (optional, default=None): A logging instance to use when the command is run.
-            default_keys (optional): A list of default keys to use each time the command is run.
+            **default_kwargs (optional): A list of default keys to use each time the command is run.
 
         Attributes:
             command: The value of the command argument.
             default_args: The value of the default_args argument.
-            default_keys: The value of the default_keys argument.
+            default_kwargs: The value of the default_kwargs argument.
             writer: The value of the logger argument if not None, otherwise the standard 'print' method.
         """
         self.command = command
         self.writer = logger.loginfo if logger else print
         self.default_args = list(default_args)
-        self.default_keys = default_keys
+        self.default_kwargs = default_kwargs
 
-    def run(self, message, *args, **keys):
-        'Run the defined command with the additional specified args and keys'
+    def run(self, message, *args, **kwargs):
+        """Run the defined command with the additional specified arguments.
+
+        Args:
+            message: The message to log to the defined logger.
+            *args (optional, default=[]): Any extra arguments to pass to the command.
+            **kwargs (optional, default={}): Any extra keyword arguments to pass to the command.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            LockError.NO_LOCK: If it was not possible to obtain a system level lock on the lock file.
+        """
         use_args = self.default_args + list(args)
-        use_keys = copy_object(self.default_keys)
-        use_keys.update(keys)
+        use_keys = copy_object(self.default_kwargs)
+        use_keys.update(kwargs)
         if message:
             self.writer(message)
         return syscmd(self.command, *use_args, **use_keys)
