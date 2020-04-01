@@ -75,10 +75,10 @@ class QuickBuildCfg(QuickBuildObject):
 
     def _get_id(self, thing):
         """Get the ID of the specified configuration.
-        
+
         Args:
             thing: The configuration for which to return the ID.
-            
+
         Returns:
             The ID of the specified configuration.
         """
@@ -91,10 +91,10 @@ class QuickBuildCfg(QuickBuildObject):
 
     def get_children(self, recurse=False):
         """Get the child configurations.
-        
+
         Args:
             recurse (optional, default=False): Get the children recursively.
-            
+
         Returns:
             The list of child configurations.
         """
@@ -110,7 +110,7 @@ class QuickBuildCfg(QuickBuildObject):
 
     def enable(self):
         """Enable this configuration.
-        
+
         Returns:
             Nothing.
         """
@@ -118,10 +118,10 @@ class QuickBuildCfg(QuickBuildObject):
 
     def disable(self, wait=False):
         """Disable this configuration.
-        
+
         Args:
             wait (optional, default=False): If True, wait for the configuration to be disabled.
-            
+
         Returns:
             Nothing.
         """
@@ -131,7 +131,7 @@ class QuickBuildCfg(QuickBuildObject):
 
     def remove(self):
         """Remove this configuration.
-        
+
         Returns:
             Nothing.
         """
@@ -139,12 +139,12 @@ class QuickBuildCfg(QuickBuildObject):
 
     def copy(self, parent, name, recurse=False):
         """Copy this configuration to a new configuration.
-        
+
         Args:
             parent: The parent to which to copy the configuration.
             name: The name of the new configuration.
             recurse (optional, default=False): If True, copy the children configurations also.
-            
+
         Returns:
             The new configuration.
         """
@@ -155,11 +155,11 @@ class QuickBuildCfg(QuickBuildObject):
 
     def reparent(self, newparent, rename=False):
         """Reparent this configuration.
-        
+
         Args:
             newparent: The new parent for the configuration.
             rename (optional, default=False): If not False, rename the configuration when moved.
-            
+
         Returns:
             The moved configuration.
         """
@@ -175,10 +175,10 @@ class QuickBuildCfg(QuickBuildObject):
 
     def rename(self, newname):
         """Rename this configuration.
-        
+
         Args:
             newname: The new name for the configuration.
-            
+
         Returns:
             The renamed configuration.
         """
@@ -191,11 +191,11 @@ class QuickBuildCfg(QuickBuildObject):
 
     def change_var(self, var, val):
         """Change the value of a variable in this configuration.
-        
+
         Args:
             var: The variable to change.
             val: The new value of the variable.
-            
+
         Returns:
             The configuration.
         """
@@ -255,11 +255,11 @@ class QuickBuildConsole:
 
     def create_dashboard(self, name, dashboard):
         """Create a dashboard from an existing one.
-        
+
         Args:
             name: The name of the new dashboard.
             dashboard: The dashboard from which to make the copy.
-            
+
         Returns:
             The new dashboard.
         """
@@ -274,10 +274,10 @@ class QuickBuildConsole:
 
     def get_dashboard(self, dashboard):
         """Get the named dashboard.
-        
+
         Args:
             dashboard: The dashboard to return.
-            
+
         Returns:
             The requested dashboard.
         """
@@ -285,10 +285,10 @@ class QuickBuildConsole:
 
     def has_dashboard(self, dashboard):
         """Determine if the specified dashboard exists.
-        
+
         Args:
             dashboard: The dashboard for which to search.
-            
+
         Returns:
             True if the requested dashboard exists, False otherwise.
         """
@@ -296,7 +296,7 @@ class QuickBuildConsole:
 
     def updater(self):
         """Update the configuration list.
-            
+
         Returns:
             Nothing.
         """
@@ -315,7 +315,7 @@ class QuickBuildConsole:
             cmd: The API command to run.
             xmldata (optional, default=None): Any data to pass to the command.
             delete (optional, default=False): If True, use delete, otherwise use get.
-            
+
         Returns:
             The result of the API call.
         """

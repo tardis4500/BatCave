@@ -86,7 +86,19 @@ class TeamCityServer:
         return False
 
     def api_call(self, calltype, apicall, **params):
-        'Make calls to the TeamCity API'
+        """Provide an interface to the TeamCity RESTful API.
+
+        Args:
+            calltype: The API call type.
+            apicall: The API call.
+            **params (optional, default={}): Any parameters to pass to the API call.
+
+        Returns:
+            The result of the API call.
+
+        Raises:
+            An error unless the result of the API call is OK.
+        """
         caller = getattr(requests, calltype)
         result = caller(self.url+apicall, auth=self.auth, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, json=params, verify=self._CA_CERT)
         if result.status_code != codes.ok:  # pylint: disable=E1101
@@ -94,17 +106,40 @@ class TeamCityServer:
         return result.json()
 
     def create_group(self, name, key=None, description=''):
-        'Create a user group'
+        """Create a user group.
+
+        Args:
+            name: The name of user group.
+            key (optional, default=None): The key name to use for the user group.
+            description (optional, default=''): The description to use for the user group.
+
+        Returns:
+            The result of the API call to create the user group.
+        """
         if not key:
             key = name.upper().replace(' ', '_')
         return self.api_call('post', 'userGroups', name=name, key=key, description=description)
 
     def create_user(self, username):
-        'Creates a user'
+        """Create a user.
+
+        Args:
+            username: The name of user.
+
+        Returns:
+            The result of the API call to create the user group.
+        """
         return self.api_call('post', 'users', username=username)
 
     def get_build_config(self, config):
-        'Gets a build configuration'
+        """Get the named build configuration.
+
+        Args:
+            config: The build configuration to return.
+
+        Returns:
+            The requested build configuration.
+        """
         return TCBuildConfig(self, config)
 
 # cSpell:ignore cacert
