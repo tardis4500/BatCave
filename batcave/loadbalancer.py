@@ -79,7 +79,17 @@ class LoadBalancer:
         return False
 
     def get_cache_content_group(self, group_name):
-        'Get the NetScaler cache content group'
+        """Get the specified load balancer cache content group.
+
+        Args:
+            group_name: The name of the group to return.
+
+        Returns:
+            The requested cache content group.
+
+        Raises:
+            LoadBalancerError.BAD_OBJECT: If the requested group could not be found.
+        """
         try:
             group_ref = NetScalerCacheContentGroup.get(self._api, group_name)
             group_ref.query = group_ref.host = group_ref.selectorvalue = ''
@@ -90,12 +100,26 @@ class LoadBalancer:
             raise
 
     def flush_cache_content(self, group_name):
-        'Flush the NetScaler cache content for the specified group'
+        """Flush the specified load balancer cache content group.
+
+        Args:
+            group_name: The name of the group to flush.
+
+        Returns:
+            The result of the flush call.
+        """
         group_ref = self.get_cache_content_group(group_name)
         return NetScalerCacheContentGroup.flush(self._api, group_ref)
 
     def has_server(self, server_info):
-        'Determine if the load balancer server exists'
+        """Determine if the load balancer server exists.
+
+        Args:
+            server_info: The info about the server for which to search.
+
+        Returns:
+            True if the requested server exists, False otherwise.
+        """
         try:
             self.get_server(server_info)
         except LoadBalancerError as err:
@@ -106,7 +130,14 @@ class LoadBalancer:
             return True
 
     def add_server(self, server_info):
-        'Add a server to the load balancer'
+        """Add the specified server to the load balancer.
+
+        Args:
+            server_info: The info about the server to add.
+
+        Returns:
+            The result of the server add call.
+        """
         server_object = _get_server_object(server_info)
         ns_server = NetScalerServer()
         ns_server.name = server_object.hostname
@@ -115,7 +146,17 @@ class LoadBalancer:
         return self.get_server(server_info)
 
     def get_server(self, server_info):
-        'Get a handle to the load balancer server'
+        """Get the specified server from the load balancer.
+
+        Args:
+            server_info: The info about the server to return.
+
+        Returns:
+            The requested server.
+
+        Raises:
+            LoadBalancerError.BAD_OBJECT: If the requested server could not be found.
+        """
         server_hostname = _get_server_object(server_info).hostname
         try:
             return LoadBalancerServer(self, NetScalerServer.get(self._api, server_hostname))
@@ -125,7 +166,21 @@ class LoadBalancer:
             raise
 
     def add_virtual_server(self, server_info, service_type=LB_VIP_TYPES.HTTP, port=None, servers=tuple(), services=tuple(), certificates=tuple(), responder_policies=tuple()):
-        'Add a virtual server to the load balancer'
+        """Add a virtual server to the load balancer.
+
+        Args:
+            server_info: The info about the virtual server to add.
+            service_type (optional, default=LB_VIP_TYPES.HTTP): The service type for the virtual server.
+            port (optional, default=None): The port for the virtual server, if None the default is based on the service_type.
+                self.LB_VIP_TYPES.HTTP, self.LB_VIP_TYPES.SSL_OFFLOAD: 80
+                self.LB_VIP_TYPES.SSL: 443
+            servers (optional, default=[]): The list of servers to add to the virtual server.
+            certificates (optional, default=[]): The list of certificates to add to the virtual server.
+            responder_policies (optional, default=[]): The list of responder policies to add to the virtual server.
+
+        Returns:
+            The virtual server if there is not offload server, otherwise a tuple of the virtual server and offload server.
+        """
         if port is not None:
             port_value = port
         elif service_type in (self.LB_VIP_TYPES.HTTP, self.LB_VIP_TYPES.SSL_OFFLOAD):
@@ -170,7 +225,17 @@ class LoadBalancer:
         return (virtual_server, offload_server) if offload_server else virtual_server
 
     def get_virtual_server(self, server_name):
-        'Get a handle to a virtual load balancer server'
+        """Get the specified virtual server from the load balancer.
+
+        Args:
+            server_name: The name of the virtual server to return.
+
+        Returns:
+            The requested server virtual.
+
+        Raises:
+            LoadBalancerError.BAD_OBJECT: If the requested virtual server could not be found.
+        """
         server_hostname = _get_server_object(server_name).hostname
         try:
             return LoadBalancerVirtualServer(self, NetScalerVirtualServer.get(self._api, server_hostname))
@@ -180,7 +245,19 @@ class LoadBalancer:
             raise
 
     def manage_servers(self, signal, servers, validate=True):
-        'Manage a server serviced by the load balancer'
+        """Perform an action on servers managed by the load balancer.
+
+        Args:
+            signal: The action to perform on the managed server.
+            servers: The list of servers to manage.
+            validate (optional, default=True): Confirm that the request action is complete.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            LoadBalancerError.BAD_OBJECT: If the requested virtual server could not be found.
+        """
         if signal not in (self.LB_SERVER_SIGNALS.enable, self.LB_SERVER_SIGNALS.disable):
             raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
@@ -223,7 +300,16 @@ class LoadBalancerServer(LoadBalancerObject):
     """Class to create a universal abstract interface for a load balancer server."""
 
     def add_service(self, service_name, service_type='HTTP', port=80):
-        'Add a service to a server in the load balancer'
+        """Add a service to a server in the load balancer.
+
+        Args:
+            service_name: The name of the service to add.
+            server_type (optional, default='HTTP'): The type of the service to add.
+            port (optional, default=80): The port for the service to add.
+
+        Returns:
+            The added service.
+        """
         ns_service = NetScalerServerService()
         ns_service.servicetype = service_type
         ns_service.name = service_name
@@ -233,7 +319,17 @@ class LoadBalancerServer(LoadBalancerObject):
         return self.get_service(service_name)
 
     def get_service(self, service_name):
-        'Get a handle to the load balancer server'
+        """Get the specified service.
+
+        Args:
+            service_name: The name of the service to return.
+
+        Returns:
+            The requested service.
+
+        Raises:
+            LoadBalancerError.BAD_OBJECT: If the requested service could not be found.
+        """
         try:
             return LoadBalancerService(self, NetScalerServerService.get(self.load_balancer_ref.ns_session, service_name))
         except NetScalerError as err:
@@ -250,21 +346,43 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
     """Class to create a universal abstract interface for a load balancer virtual server."""
 
     def bind_service(self, service):
-        'Bind a service to the virtual server'
+        """Bind a service to the virtual server.
+
+        Args:
+            service: The service to bind.
+
+        Returns:
+            Nothing.
+       """
         ns_virtual_service_binding = NetScalerVirtualServiceBinding()
         ns_virtual_service_binding.name = self.name
         ns_virtual_service_binding.servicename = service.name if isinstance(service, LoadBalancerService) else service
         NetScalerVirtualServiceBinding.add(self.load_balancer_ref.ns_session, ns_virtual_service_binding)
 
     def bind_certificate(self, cert_name):
-        'Bind a certificate to the virtual server'
+        """Bind a certificate to the virtual server.
+
+        Args:
+            cert_name: The name of the certificate to bind.
+
+        Returns:
+            Nothing.
+       """
         ns_certificate_binding = NetScalerCertificateBinding()
         ns_certificate_binding.vservername = self.name
         ns_certificate_binding.certkeyname = cert_name
         NetScalerCertificateBinding.add(self.load_balancer_ref.ns_session, ns_certificate_binding)
 
     def bind_responder_policy(self, policy_name, policy_priority=100):
-        'Bind a responder policy to the virtual server'
+        """Bind a responder policy to the virtual server.
+
+        Args:
+            policy_name: The name of the responder policy to bind.
+            policy_priority (optional, default=100): The priority of the policy to bind.
+
+        Returns:
+            Nothing.
+       """
         ns_policy_binding = NetScalerResponderPolicyBinding()
         ns_policy_binding.name = self.name
         ns_policy_binding.policyname = policy_name
