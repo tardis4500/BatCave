@@ -174,7 +174,14 @@ class Server:
         return False
 
     def _connect_wmi(self):
-        'Make a WMI connection to the server'
+        """Make a WMI connection to the server.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was an error connecting to the WMI manager.
+        """
         manager_args = dict() if self.is_local else {'computer': self.hostname}
         if self.auth:
             manager_args['user'] = self.auth[0]
@@ -189,6 +196,18 @@ class Server:
             raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self.hostname, msg=str(raise_error))
 
     def _get_object_manager(self, item_type, wmi):
+        """Return the correct object manager for the platform and item type.
+
+        Args:
+            item_type: The item type for which the object manager is requested.
+            wmi: The WMI manager.
+
+        Returns:
+            The object manager.
+
+        Raises:
+            ServerObjectManagementError.REMOTE_NOT_SUPPORTED: If the platform is Linux or the item_type is Service.
+        """
         if (item_type != 'Service') and (self.os_type != self.OS_TYPES.windows) and not self.is_local:
             raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_NOT_SUPPORTED)
         if wmi and not self._wmi_manager:
