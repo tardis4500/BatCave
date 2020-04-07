@@ -215,7 +215,16 @@ class Server:
         return self._wmi_manager if wmi else self._os_manager
 
     def get_management_objects(self, item_type, wmi=True if WIN32 else False, **filters):
-        'Get the requested management objects as a list'
+        """Get a list of management objects.
+
+        Args:
+            item_type: The item type of the objects.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter the objects returned.
+
+        Return:
+            The list of management objects.
+        """
         manager = self._get_object_manager(item_type, wmi)
         unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
         extra_keys = dict()
@@ -228,7 +237,19 @@ class Server:
         return [globals()[item_type](r, manager, unique_key, getattr(r, unique_key), **extra_keys) for r in getattr(manager, ManagementObject.OBJECT_PREFIX+item_type)(**filters)]
 
     def get_unique_object(self, item_type, wmi=True if WIN32 else False, **filters):
-        'Get the requested management object and error if more than one is found for the specified filters'
+        """Get the requested management object which must be unique.
+
+        Args:
+            item_type: The item type of the object.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
+
+        Return:
+            The requested management object.
+
+        Raises:
+            ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
+        """
         results = self.get_management_objects(item_type, wmi, **filters)
         for case in switch(len(results)):
             if case(0):
@@ -238,9 +259,22 @@ class Server:
             if case():
                 raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=item_type, filters=filters)
 
-    def get_object_by_name(self, item_type, name, wmi=True if WIN32 else False, **key_args):
-        'Get the requested management object by name and error if more than one is found'
-        return self.get_unique_object(item_type, wmi, Name=name, **key_args)
+    def get_object_by_name(self, item_type, name, wmi=True if WIN32 else False, **filters):
+        """Get a management object by name.
+
+        Args:
+            item_type: The item type of the object.
+            name: The name of the object.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
+
+        Return:
+            The requested management object.
+
+        Raises:
+            ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
+        """
+        return self.get_unique_object(item_type, wmi, Name=name, **filters)
 
     def create_management_object(self, item_type, unique_id, wmi=True if WIN32 else False, error_if_exists=True, **key_args):
         'Create the requested management object'
