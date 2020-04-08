@@ -222,7 +222,7 @@ class Server:
             wmi (optional): True if this is a Windows platform, False otherwise.
             **filters (optional, default={}): A dictionary of filters to pass to the manager to filter the objects returned.
 
-        Return:
+        Returns:
             The list of management objects.
         """
         manager = self._get_object_manager(item_type, wmi)
@@ -244,7 +244,7 @@ class Server:
             wmi (optional): True if this is a Windows platform, False otherwise.
             **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
 
-        Return:
+        Returns:
             The requested management object.
 
         Raises:
@@ -268,7 +268,7 @@ class Server:
             wmi (optional): True if this is a Windows platform, False otherwise.
             **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
 
-        Return:
+        Returns:
             The requested management object.
 
         Raises:
@@ -277,7 +277,21 @@ class Server:
         return self.get_unique_object(item_type, wmi, Name=name, **filters)
 
     def create_management_object(self, item_type, unique_id, wmi=True if WIN32 else False, error_if_exists=True, **key_args):
-        'Create the requested management object'
+        """Create a management object of the specified type.
+
+        Args:
+            item_type: The item type of the object to create.
+            unique_id: The unique object identifier.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            error_if_exists (optional, default=True): If True raise an error if the object already exists.
+            **key_args (optional, default={}): A dictionary of key value pairs to pass to add to the create object.
+
+        Returns:
+            The created management object.
+
+        Raises:
+            ServerObjectManagementError.WMI_ERROR: If there was an error creating the object.
+        """
         manager = self._get_object_manager(item_type, wmi)
         unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
         creation_args = {unique_key: unique_id, 'DisplayName': unique_id}
@@ -297,7 +311,20 @@ class Server:
         return globals()[item_type](created_object, manager, unique_key, unique_id)
 
     def remove_management_object(self, item_type, unique_id, wmi=True if WIN32 else False, error_if_not_exists=False):
-        'Remove the requested management object'
+        """Remove a management object.
+
+        Args:
+            item_type: The item type of the object to remove.
+            unique_id: The unique identifier of the object to remove.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            error_if_not_exists (optional, default=False): If False raise an error if the object does not exist.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.WMI_ERROR: If there was an error removing the object.
+        """
         unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
         removal_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
         if error_if_not_exists and not removal_object:
@@ -308,19 +335,35 @@ class Server:
             raise ServerObjectManagementError(ServerObjectManagementError.WMI_ERROR, server=self.hostname, msg=msg)
 
     def get_iis_instance(self):
-        'Get the IIS instance for this server'
+        """Get the IIS instance for this server.
+
+        Returns:
+            The IIS instance for this server.
+        """
         return IISInstance(self.fqdn if not self.is_local else None)
 
     def get_process_list(self, **filters):
-        'Get the process list for this server as a management object list'
+        """Get the process list for this server.
+
+        Returns:
+            The process list for this server.
+        """
         return self.get_management_objects('Process', **filters)
 
     def get_process_connection(self, process):
-        'Make a COM connection to the specified process'
+        """Get a COM connection to the specified process.
+
+        Returns:
+            The COM connection to the specified process.
+        """
         return COMObject(process, self.ip)
 
     def get_scheduled_task_list(self):
-        'Get a list of the scheduled task management objects'
+        """Get the scheduled tasks for this server.
+
+        Returns:
+            The scheduled tasks for this server.
+        """
         cmd_args = ['/Query', '/FO', 'CSV']
         if not self.is_local:
             cmd_args += ['/S', self.fqdn]
@@ -329,11 +372,29 @@ class Server:
         return [self.get_scheduled_task(t['TaskName']) for t in DictReader(_run_task_scheduler(*cmd_args))]
 
     def get_scheduled_task(self, task):
-        'Get the specified scheduled task as a management object'
+        """Get the specified scheduled task.
+
+        Returns:
+            The specified scheduled task.
+        """
         return self.get_object_by_name('ScheduledTask', task, False)
 
     def create_scheduled_task(self, task, exe, schedule_type, schedule, user=None, password=None, start_in=None, disable=False):
-        'Create the specified scheduled task'
+        """Create a scheduled task.
+
+        Args:
+            task: The name of the scheduled task to create.
+            exe: The executable the scheduled task will run.
+            schedule_type: The schedule type.
+            schedule: The schedule on which to run the task.
+            user (optional, default=None): In not None, the user account that the task will run under.
+            password (optional, default=None): The password for the user account that the task will run under.
+            start_in (optional, default=None): If not None, the directory in which the task will start.
+            disable (optional, default=False): If True the task will be created as disabled.
+
+        Returns:
+            The created scheduled task.
+        """
         if isinstance(exe, str):
             exe_args = list()
         else:
@@ -375,11 +436,25 @@ class Server:
         return task_object
 
     def remove_scheduled_task(self, task):
-        'Remove the specified scheduled task'
+        """Remove the specified scheduled task.
+
+        Args:
+            task: The name of the scheduled task to remove.
+
+        Returns:
+            Nothing.
+        """
         self.get_scheduled_task(task).remove()
 
     def get_service_list(self, service_type=None):
-        'Get a list of the services'
+        """Get the services for this server.
+
+        Args:
+            service_type (optional, default=None): If None, determine the service type based on the OS.
+
+        Returns:
+            The services for this server.
+        """
         if service_type is None:
             if self.os_type == self.OS_TYPES.windows:
                 service_type = Service.SERVICE_TYPES.windows
@@ -392,7 +467,14 @@ class Server:
         return self.get_management_objects('Service', service_type=service_type)
 
     def get_service(self, service, **key_args):
-        'Get the specified service as a management object'
+        """Get the specified service.
+
+        Args:
+            **key_args (optional, default={}): A dictionary of key value pairs to apply as filters when retrieving the service.
+
+        Returns:
+            The specified service.
+        """
         if 'service_type' not in key_args:
             if self.os_type == self.OS_TYPES.windows:
                 service_type = Service.SERVICE_TYPES.windows
@@ -406,24 +488,60 @@ class Server:
         return self.get_object_by_name('Service', service, **key_args)
 
     def create_service(self, service, exe, user=None, password=None, start=False, timeout=False, error_if_exists=True):
-        'Create the specified service'
+        """Create a service.
+
+        Args:
+            service: The name of the service to create.
+            exe: The executable the service will run.
+            user (optional, default=None): In not None, the user account that the service will run under.
+            password (optional, default=None): The password for the user account that the service will run under.
+            timeout (optional, default=False): If not False, the number of seconds to wait for the service to start.
+            error_if_exists (optional, default=True): If True raise an error if the object already exists.
+
+        Returns:
+            The created service.
+        """
         service_obj = self.create_management_object('Service', service, PathName=str(exe), StartName=user, StartPassword=password, error_if_exists=error_if_exists)
         if start:
             service_obj.manage(Service.SERVICE_SIGNALS.start, timeout=timeout)
         return service_obj
 
     def remove_service(self, service, error_if_not_exists=False):
-        'Remove the specified service'
+        """Remove the specified service.
+
+        Args:
+            service: The name of the service to remove.
+            error_if_not_exists (optional, default=False): If False raise an error if the object does not exist.
+
+        Returns:
+            Nothing.
+        """
         self.remove_management_object('Service', service, error_if_not_exists=error_if_not_exists)
 
     def run_command(self, command, *cmd_args, **sys_cmd_args):
-        'Run the specified command'
+        """Run a command on the server.
+
+        Args:
+            command: The command to run.
+            *cmd_args (optional, default=[]): The arguments to pass to the command.
+            *sys_cmd_args (optional, default={}): A dictionary of named arguments to pass to the command.
+
+        Returns:
+            The result of the command.
+        """
         if (not self.is_local) and self.auth:
             sys_cmd_args['remote_auth'] = self.auth
         return syscmd(command, *cmd_args, remote=(False if self.is_local else self.ip), remote_is_windows=(not self.is_local) and (self.os_type == self.OS_TYPES.windows), **sys_cmd_args)
 
     def get_path(self, the_path):
-        'Get the specified path as a ServerPath object'
+        """Get the specified path as a ServerPath object.
+
+        Args:
+            the_path: The path to return.
+
+        Return:
+            The specified path as a ServerPath object.
+        """
         return ServerPath(self, the_path)
 
 
@@ -1070,7 +1188,7 @@ def _get_server_object(server):
     Args:
         server: The fqdn string for the server
 
-    Return:
+    Returns:
         Returns the Server object.
     """
     if isinstance(server, Server):
