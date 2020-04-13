@@ -10,7 +10,7 @@
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings. Next: servermgr
 
-# Continued adding class method docstrings for the servermgr module. (GitLab #29)
+# Added class method docstrings for the serverpath module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.

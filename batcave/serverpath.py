@@ -69,7 +69,11 @@ class ServerPath:
     parent = property(lambda s: ServerPath(s.server, s.local.parent), doc='A read-only property which returns the parent of the path.')
 
     def exists(self):
-        'Implementation of pathlib.Path.exists() adding remote server support'
+        """Implementation of pathlib.Path.exists() adding remote server support.
+
+        Returns:
+            True if this path exists, False otherwise.
+        """
         if self.server.is_local:
             if is_debug('SERVERPATH'):
                 print(f'Testing local path: {self.local}')
@@ -89,7 +93,11 @@ class ServerPath:
             raise
 
     def iterdir(self):
-        'Implementation of pathlib.Path.iterdir() adding remote server support'
+        """Implementation of pathlib.Path.iterdir() adding remote server support.
+
+        Returns:
+            The contents of this directory path.
+        """
         if self.server.is_local:
             return [i for i in Path(self.local).iterdir()]
         if self.win_to_win:
@@ -97,7 +105,16 @@ class ServerPath:
         return self.server.run_command('dir' if self.is_win else 'ls', self.local)
 
     def mkdir(self, mode=0o777, parents=False, exist_ok=False):
-        'Implementation of pathlib.Path.mkdir() adding remote server support'
+        """Implementation of pathlib.Path.mkdir() adding remote server support.
+
+        Args:
+            mode (optional, default=0o777): The access mode of the created directory.
+            parents (optional, default=False): If True, also create intermediate directories.
+            exist_ok (optional, default=False): If True, do not throw an exception if the path already exists.
+
+        Returns:
+            The newly created directory.
+        """
         if self.server.is_local:
             return Path(self.local).mkdir(mode, parents, exist_ok)
         if self.win_to_win:
@@ -109,7 +126,14 @@ class ServerPath:
         return self.server.run_command(*cmd)
 
     def rename(self, new):
-        'Implementation of pathlib.Path.rename() adding remote server support'
+        """Implementation of pathlib.Path.rename() adding remote server support.
+
+        Args:
+            new: The new path name.
+
+        Returns:
+            The result of the rename.
+        """
         if self.server.is_local:
             return Path(self.local).rename(new)
         if self.win_to_win:
@@ -117,7 +141,15 @@ class ServerPath:
         return self.server.run_command('ren' if self.is_win else 'mv', self.local, new)
 
     def rmdir(self, remote_rm_command=None, recursive=False):
-        'Implementation of pathlib.Path.rmdir() adding remote server support'
+        """Implementation of pathlib.Path.rmdir() adding remote server support.
+
+        Args:
+            remote_rm_command (optional, default=None): If not None, the command to use if the path is remote other than the default.
+            recursive (optional, default=False): If True, also remove all subdirectories.
+
+        Returns:
+            The result of the remove.
+        """
         if remote_rm_command is None:
             remote_rm_command = ['RD', '/Q'] if self.is_win else ['rm', '-f']
 
@@ -138,6 +170,19 @@ class ServerPath:
 
     def copy(self, sp_dest, remote_cp_command=None, remote_cp_args=None):
         'Copy this server path to another, possibly remote, location'
+        """Implementation of shutil.copy() adding remote server support.
+
+        Args:
+            sp_dest: The destination of the copy.
+            remote_cp_command (optional, default=None): If not None, the command to use if the path is remote other than the default.
+            remote_cp_args (optional, default=None): If not None, the arguments to use if the path is remote other than the default.
+
+        Returns:
+            The result of the copy.
+
+        Raises:
+            ServerPathError.REMOTE_COPY_SPACE_ERROR: If the remote destination is out of space.
+        """
         if self.win_to_win and WindowsPath(self.remote).is_dir():
             remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.windows] if (remote_cp_command is None) else remote_cp_command
             remote_cp_args = self.DEFAULT_REMOTE_COPY_ARGS[Server.OS_TYPES.windows] if (remote_cp_args is None) else remote_cp_args
@@ -171,7 +216,14 @@ class ServerPath:
         return copy(self.remote, sp_dest.remote)
 
     def walk(self):
-        'Implementation of os.walk() adding remote server support'
+        """Implementation of os.walk() adding remote server support.
+
+        Returns:
+            The result of the walk.
+
+        raises:
+            ServerPathError.INVALID_OPERATION: If the command is not supported on the target path.
+        """
         if self.server.is_local:
             return walk(self.local)
         if self.win_to_win:
