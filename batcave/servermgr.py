@@ -551,7 +551,16 @@ class OSManager:
         self.auth = auth
 
     def get_object_as_list(self, object_type, Name, **key_args):
-        'Get the specified object as a list'
+        """Get the specified OS object.
+
+        Args:
+            object_type: The object type.
+            Name: The name of the object to return.
+            **key_args (optional, default={}): A dictionary of filters to pass to the manager to filter the objects returned.
+
+        Returns:
+            The list of management objects.
+        """
         try:
             return [globals()[object_type](Name, self.computer, self.auth, **key_args)]
         except ServerObjectManagementError as err:
@@ -560,11 +569,33 @@ class OSManager:
             raise
 
     def LinuxService(self, Name, service_type):
-        'Return the specified Linux service as an object list'
+        """Get the specified Linux service.
+
+        Args:
+            Name: The name of the service to return.
+            service_type: The type of service to return.
+
+        Returns:
+            The specified Linux service.
+        """
         return self.get_object_as_list('LinuxService', Name, service_type=service_type)
 
     def LinuxProcess(self, CommandLine=None, ExecutablePath=None, Name=None, ProcessId=None):
-        'Return the specified Linux process as an object list'
+        """Get the specified Linux process.
+
+        Args:
+            Exactly one of these options must be specified:
+            CommandLine (optional, default=None): The command line for the process.
+            ExecutablePath (optional, default=None): The command line for the process.
+            Name (optional, default=None): The command line for the process.
+            ProcessId (optional, default=None): The command line for the process.
+
+        Returns:
+            The specified Linux process.
+
+        Raises:
+            ServerObjectManagementError.BAD_FILTER: If more than one selection option is specified.
+        """
         if len([v for v in (CommandLine, ExecutablePath, Name, ProcessId) if v is not None]) != 1:
             raise ServerObjectManagementError(ServerObjectManagementError.BAD_FILTER)
 
@@ -583,7 +614,14 @@ class OSManager:
             return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]
 
     def Win32_ScheduledTask(self, Name):
-        'Provides a WMI-like interface to a Windows Scheduled Task'
+        """Get the specified Windows Scheduled Task.
+
+        Args:
+            Name: The name of the scheduled task to return.
+
+        Returns:
+            The specified Windows scheduled task.
+        """
         return self.get_object_as_list('Win32_ScheduledTask', Name)
 
 
@@ -726,6 +764,15 @@ class Win32_ScheduledTask(NamedOSObject):
             raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
         return task_info[attr]
 
+    def _run_task_scheduler(self, *cmd_args, **sys_cmd_args):
+        'Uses the container server info to run the Windows sc command'
+        cmd_args = list(cmd_args) + ['/TN', self.Name]
+        if self.computer:
+            cmd_args += ['/S', self.computer]
+        if self.auth:
+            cmd_args += ('/U', self.auth[0], '/P', self.auth[1])
+        return _run_task_scheduler(*cmd_args, **sys_cmd_args)
+
     def validate(self):
         'Determines if the scheduled task exists'
         not_found = False
@@ -763,15 +810,6 @@ class Win32_ScheduledTask(NamedOSObject):
     def remove(self):
         'Removes the scheduled task'
         return self._run_task_scheduler('/Delete', '/F')
-
-    def _run_task_scheduler(self, *cmd_args, **sys_cmd_args):
-        'Uses the container server info to run the Windows sc command'
-        cmd_args = list(cmd_args) + ['/TN', self.Name]
-        if self.computer:
-            cmd_args += ['/S', self.computer]
-        if self.auth:
-            cmd_args += ('/U', self.auth[0], '/P', self.auth[1])
-        return _run_task_scheduler(*cmd_args, **sys_cmd_args)
 
 
 class COMObject:
