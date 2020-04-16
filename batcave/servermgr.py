@@ -676,6 +676,14 @@ class LinuxService(NamedOSObject):
         raise result
 
     def _manage(self, command):
+        """Manage the service.
+
+        Args:
+            command: The management action to perform.
+
+        Returns:
+            The result of the management command.
+        """
         control_command = ['service', self.Name, command] if (self.type == Service.SERVICE_TYPES.sysv) \
                                                           else ['systemctl' if (self.type == Service.SERVICE_TYPES.systemd) else 'initctl', command, self.Name]
         try:
@@ -686,7 +694,14 @@ class LinuxService(NamedOSObject):
             raise
 
     def validate(self):
-        'Determines if the service exists'
+        """Determine if the service exists.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.OBJECT_NOT_FOUND: If the service is not found.
+        """
         not_found = False
         try:
             self.state
@@ -698,25 +713,45 @@ class LinuxService(NamedOSObject):
             raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
 
     def DisableService(self):
-        'Disables the service'
+        """Disable the service.
+
+        Returns:
+            Nothing.
+        """
         self.StopService()
         self._manage('disable')
 
     def EnableService(self):
-        'Enables the service'
+        """Enable the service.
+
+        Returns:
+            Nothing.
+        """
         self._manage('enable')
         self.StartService()
 
     def StopService(self):
-        'Stops the service'
+        """Stop the service.
+
+        Returns:
+            Nothing.
+        """
         self._manage('stop')
 
     def StartService(self):
-        'Starts the service'
+        """Start the service.
+
+        Returns:
+            Nothing.
+        """
         self._manage('start')
 
     def RestartService(self):
-        'Restarts the service'
+        """Restart the service.
+
+        Returns:
+            Nothing.
+        """
         self._manage('restart')
 
 
@@ -740,11 +775,19 @@ class LinuxProcess:
     Name = property(lambda s: s.process_obj.name(), doc='A read-only property which returns the name of the process.')
 
     def Kill(self):
-        'Kills the process'
+        """Kill the process.
+
+        Returns:
+            Nothing.
+        """
         self.process_obj.kill()
 
     def Terminate(self):
-        'Terminates the service'
+        """Terminate the process.
+
+        Returns:
+            Nothing.
+        """
         self.process_obj.terminate()
 
 
@@ -765,7 +808,15 @@ class Win32_ScheduledTask(NamedOSObject):
         return task_info[attr]
 
     def _run_task_scheduler(self, *cmd_args, **sys_cmd_args):
-        'Uses the container server info to run the Windows sc command'
+        """Run the Windows sc command to manage the service.
+
+        Args:
+            *cmd_args (optional, default=[]): The command and arguments.
+            **sys_cmd_args (optional, default={}): The named arguments.
+
+        Returns:
+            The result of the sc command.
+        """
         cmd_args = list(cmd_args) + ['/TN', self.Name]
         if self.computer:
             cmd_args += ['/S', self.computer]
@@ -774,7 +825,14 @@ class Win32_ScheduledTask(NamedOSObject):
         return _run_task_scheduler(*cmd_args, **sys_cmd_args)
 
     def validate(self):
-        'Determines if the scheduled task exists'
+        """Determine if the scheduled task exists.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.OBJECT_NOT_FOUND: If the scheduled task is not found.
+        """
         not_found = False
         try:
             self.state
@@ -786,7 +844,18 @@ class Win32_ScheduledTask(NamedOSObject):
             raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
 
     def manage(self, signal, wait=True):
-        'Method to provide generic management interface for the scheduled task'
+        """Manage the scheduled task.
+
+        Args:
+            signal: The signal to send to the scheduled task.
+            wait (optional, default=True): If True, wait for the action to complete.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the signal is unknown.
+        """
         for case in switch(signal):
             if case(ScheduledTask.TASK_SIGNALS.enable):
                 control_args = ('/Change', '/ENABLE')
@@ -808,7 +877,11 @@ class Win32_ScheduledTask(NamedOSObject):
             sleep(_STATUS_CHECK_INTERVAL)
 
     def remove(self):
-        'Removes the scheduled task'
+        """Remove the scheduled task.
+
+        Returns:
+            The result of the remove command.
+        """
         return self._run_task_scheduler('/Delete', '/F')
 
 
@@ -858,7 +931,11 @@ class COMObject:
         setattr(self._connection, attr, value)
 
     def disconnect(self):
-        'Disconnect the COM object'
+        """Disconnect the COM object.
+
+        Returns:
+            Nothing.
+        """
         del self._connection
 
 
@@ -906,7 +983,14 @@ class ManagementObject:
         return getattr(self.object_ref, attr)
 
     def refresh(self):
-        'Refresh the state of the object'
+        """Refresh the state of the object.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.NOT_UNIQUE: If the object is not unique.
+        """
         if self.object_ref:
             results = getattr(self.manager, self.type)(**{self.key: self.value}, **self.key_values)
             if len(results) > 1:
@@ -932,7 +1016,23 @@ class Service(ManagementObject):
         return super().__getattr__(attr)
 
     def manage(self, signal, wait=True, ignore_state=False, timeout=False):
-        'Provides a management interface for the service'
+        """Manage the service.
+
+        Args:
+            signal: The signal to send to the service.
+            wait (optional, default=True): If True, wait for the action to complete.
+            ignore_state (optional, default=False): If False, do not check the initial state before performing the action.
+            timeout (optional, default=False): If wait is True, the number of seconds to wait for the action to complete, indefinitely if False.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the requested action is invalid.
+            ServerObjectManagementError.BAD_OBJECT_STATE: If ignore_state is False and the current state is invalid.
+            ServerObjectManagementError.BAD_TRANSITION: If ignore_state is False and the requested action is not valid for the current state.
+            ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
+        """
         for case in switch(signal):
             if case(self.SERVICE_SIGNALS.enable, self.SERVICE_SIGNALS.start, self.SERVICE_SIGNALS.resume, self.SERVICE_SIGNALS.restart):
                 for signal_case in switch(signal):
@@ -1018,7 +1118,20 @@ class Process(ManagementObject):
     PROCESS_SIGNALS = Enum('process_signals', ('stop', 'kill'))
 
     def manage(self, signal, wait=True, timeout=False):
-        'Provides a management interface for the process'
+        """Manage the process.
+
+        Args:
+            signal: The signal to send to the process.
+            wait (optional, default=True): If True, wait for the action to complete.
+            timeout (optional, default=False): If wait is True, the number of seconds to wait for the action to complete, indefinitely if False.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the requested action is invalid.
+            ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
+        """
         for case in switch(signal):
             if case(self.PROCESS_SIGNALS.stop):
                 control_method = 'Terminate'

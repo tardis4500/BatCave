@@ -8,9 +8,9 @@
 # Step4: Add Error docstrings.
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
-# Step7: Add class method docstrings. Next: servermgr.LinuxService
+# Step7: Add class method docstrings.
 
-# Continued adding class method docstrings for the servermgr module. (GitLab #29)
+# Finished adding class method docstrings for the servermgr module. (GitLab #29)
 
 # Step8: Add class private method docstrings.
 # Step9: Add PEP484 type hints.
