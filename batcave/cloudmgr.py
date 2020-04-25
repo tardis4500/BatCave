@@ -72,39 +72,26 @@ class Cloud:
     def __exit__(self, *exc_info):
         return False
 
-    def login(self):
-        """Perform a login to the cloud provider.
+    containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
-        Returns:
-            Nothing.
-
-        Raises:
-            CloudError.INVALID_OPERATION: If the value of self.ctype is not in CLOUD_TYPES.
-        """
-        for case in switch(self.type):
-            if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
-                self._client = DockerClient()
-                if self.type == self.CLOUD_TYPES.dockerhub:
-                    self._client.login(*self.auth)
-                break
-            if case(self.CLOUD_TYPES.gcloud):
-                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / (self.auth[0]+'.json'), ignore_stderr=True)
-                gcloud(None, 'auth', 'configure-docker', ignore_stderr=True)
-                self._client = True
-                break
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
-
-    def get_image(self, tag: str) -> Image:  # noqa:F821, pylint: disable=used-before-assignment
-        """Get an image from the cloud container registry.
+    def exec(self, *args, **kwargs):
+        """Execute a command against the cloud API.
 
         Args:
-            tag: The container image tag to retrive.
+            *args (optional, default=[]): A list of arguments to pass to the API.
+            **kwargs (optional, default={}): A dictionary to pass to the API.
 
         Returns:
-            The image object.
+            The result of the API call.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support an API call.
         """
-        return Image(self, tag)
+        for case in switch(self.type):
+            if case(self.CLOUD_TYPES.gcloud):
+                return gcloud(None, *args, **kwargs)
+            if case():
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
     def get_container(self, name: str) -> Container:  # noqa:F821, pylint: disable=used-before-assignment
         """Get a container from the cloud.
@@ -134,24 +121,38 @@ class Cloud:
                 return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
-    containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
-    def exec(self, *args, **kwargs):
-        """Execute a command against the cloud API.
+    def get_image(self, tag: str) -> Image:  # noqa:F821, pylint: disable=used-before-assignment
+        """Get an image from the cloud container registry.
 
         Args:
-            *args (optional, default=[]): A list of arguments to pass to the API.
-            **kwargs (optional, default={}): A dictionary to pass to the API.
+            tag: The container image tag to retrive.
 
         Returns:
-            The result of the API call.
+            The image object.
+        """
+        return Image(self, tag)
+
+    def login(self):
+        """Perform a login to the cloud provider.
+
+        Returns:
+            Nothing.
 
         Raises:
-            CloudError.INVALID_OPERATION: If the cloud type does not support an API call.
+            CloudError.INVALID_OPERATION: If the value of self.ctype is not in CLOUD_TYPES.
         """
         for case in switch(self.type):
+            if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
+                self._client = DockerClient()
+                if self.type == self.CLOUD_TYPES.dockerhub:
+                    self._client.login(*self.auth)
+                break
             if case(self.CLOUD_TYPES.gcloud):
-                return gcloud(None, *args, **kwargs)
+                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / (self.auth[0]+'.json'), ignore_stderr=True)
+                gcloud(None, 'auth', 'configure-docker', ignore_stderr=True)
+                self._client = True
+                break
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
@@ -193,6 +194,10 @@ class Image:
     def __exit__(self, *exc_info):
         return False
 
+    containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
+                          doc='A read-only property which returns all the containers for this image.')
+    tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
+
     def get_tags(self, image_filter=None):
         """Get a list of tags applied to the image.
 
@@ -215,9 +220,6 @@ class Image:
                 return sorted([t for i in json_read(self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)) for t in i['tags']])
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
-    tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
-    containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
-                          doc='A read-only property which returns all the containers for this image.')
 
     def manage(self, action):
         """Manage an image in the cloud registry.
@@ -241,6 +243,14 @@ class Image:
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
+    def pull(self):
+        """Pull the image from the registry.
+
+        Returns:
+            The result of the self.manage() call.
+        """
+        return self.manage('pull')
+
     def push(self):
         """Push the image to the registry.
 
@@ -249,13 +259,27 @@ class Image:
         """
         return self.manage('push')
 
-    def pull(self):
-        """Pull the image from the registry.
+    def run(self, detach=True, update=True, **kwargs):
+        """Run an image to create an active container.
+
+        Args:
+            detach (optional, default=True): If True, do not wait for the container to complete.
+            update (optional, default=True): If True, perform a pull of the image from the registry before running.
+            **kwargs (optional, default={}): A dictionary of arguments to pass to the run command.
 
         Returns:
-            The result of the self.manage() call.
+            A reference to the active container.
+
+        Raises:
+            CloudError.INVALID_OPERATION: If the cloud type does not support running an image.
         """
-        return self.manage('pull')
+        if update:
+            self.pull()
+        for case in switch(self.cloud.type):
+            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+                return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
+            if case():
+                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def tag(self, new_tag):
         """Tag an image in the registry.
@@ -281,28 +305,6 @@ class Image:
             if case():
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
         return new_ref
-
-    def run(self, detach=True, update=True, **kwargs):
-        """Run an image to create an active container.
-
-        Args:
-            detach (optional, default=True): If True, do not wait for the container to complete.
-            update (optional, default=True): If True, perform a pull of the image from the registry before running.
-            **kwargs (optional, default={}): A dictionary of arguments to pass to the run command.
-
-        Returns:
-            A reference to the active container.
-
-        Raises:
-            CloudError.INVALID_OPERATION: If the cloud type does not support running an image.
-        """
-        if update:
-            self.pull()
-        for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
-                return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
 
 class Container:

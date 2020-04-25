@@ -43,36 +43,10 @@ class PackError(BatCaveException):
     NO_FILES = BatCaveError(2, 'No files to add')
 
 
+COMPRESSION_TYPE = {'gz': 'gz', 'tgz': 'gz',
+                    'bz': 'bz2', 'tbz': 'bz2', 'bz2': 'bz2',
+                    'xz': 'xz', 'txz': 'xz'}
 CONVERSION_MODES = Enum('conversion_modes', ('to_unix', 'to_dos'))
-
-
-def eol_convert(filename, mode, backup=True):
-    """Perform end-of-line conversions from Windows to UNIX or vice versa.
-
-    Attributes:
-        filename: The file to convert.
-        mode: The direction of the conversion. Must be a member of CONVERSION_MODES.
-        backup (optional, default=True): If True, creates a backup of filename as filename.bak.
-
-    Returns:
-        Nothing.
-
-    Raises:
-        ConvertError.BACKUP_EXISTS: If backup is True and the backup file already exists.
-    """
-    if backup:
-        backupfile = Path(filename + '.bak')
-        if backupfile.exists():
-            raise ConvertError(ConvertError.BACKUP_EXISTS, file=backupfile)
-        copy(filename, backupfile)
-
-    with open(filename, 'rb') as stream:
-        data = stream.read().replace(b'\r\n', b'\n')
-
-    if mode == CONVERSION_MODES.to_dos:
-        data = data.replace(b'\n', b'\r\n')
-    with open(filename, 'wb') as stream:
-        stream.write(data)
 
 
 class CompressedFile:
@@ -108,9 +82,35 @@ class BatCaveBZ2File(BZ2File, CompressedFile):
 
 
 PACKER_CLASSES = {'zip': ZipFile, 'gz': BatCaveGzipFile, 'bz2': BatCaveBZ2File, 'xz': LZMAFile}
-COMPRESSION_TYPE = {'gz': 'gz', 'tgz': 'gz',
-                    'bz': 'bz2', 'tbz': 'bz2', 'bz2': 'bz2',
-                    'xz': 'xz', 'txz': 'xz'}
+
+
+def eol_convert(filename, mode, backup=True):
+    """Perform end-of-line conversions from Windows to UNIX or vice versa.
+
+    Attributes:
+        filename: The file to convert.
+        mode: The direction of the conversion. Must be a member of CONVERSION_MODES.
+        backup (optional, default=True): If True, creates a backup of filename as filename.bak.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        ConvertError.BACKUP_EXISTS: If backup is True and the backup file already exists.
+    """
+    if backup:
+        backupfile = Path(filename + '.bak')
+        if backupfile.exists():
+            raise ConvertError(ConvertError.BACKUP_EXISTS, file=backupfile)
+        copy(filename, backupfile)
+
+    with open(filename, 'rb') as stream:
+        data = stream.read().replace(b'\r\n', b'\n')
+
+    if mode == CONVERSION_MODES.to_dos:
+        data = data.replace(b'\n', b'\r\n')
+    with open(filename, 'wb') as stream:
+        stream.write(data)
 
 
 def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
@@ -176,6 +176,31 @@ def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
         popd()
 
 
+def slurp(filename):
+    """Return all the lines of a file as a list.
+
+    Args:
+        filename: The filename to return the lines from.
+
+    Returns:
+        The list of lines from the file.
+    """
+    return [l for l in open(filename)]
+
+
+def spew(filename, outlines):
+    """Write the list of lines to a file.
+
+    Args:
+        filename: The filename to which to write the lines.
+        outlines: The lines to write.
+
+    Returns:
+        Nothing.
+    """
+    open(filename, 'w').writelines(outlines)
+
+
 def unpack(arcfile, dest=None, arctype=None):
     """Extract the contents of a compressed file.
 
@@ -228,28 +253,3 @@ def unpack(arcfile, dest=None, arctype=None):
 
     if dest:
         popd()
-
-
-def slurp(filename):
-    """Return all the lines of a file as a list.
-
-    Args:
-        filename: The filename to return the lines from.
-
-    Returns:
-        The list of lines from the file.
-    """
-    return [l for l in open(filename)]
-
-
-def spew(filename, outlines):
-    """Write the list of lines to a file.
-
-    Args:
-        filename: The filename to which to write the lines.
-        outlines: The lines to write.
-
-    Returns:
-        Nothing.
-    """
-    open(filename, 'w').writelines(outlines)

@@ -27,8 +27,8 @@ class Menu:
         _DEFAULT_PROMPT: The default choice prompt.
     """
     _DEFAULT_INVALID_MESSAGE = '\nInvalid choice\n'
-    _DEFAULT_TITLE = '\nSelect one of the following\n'
     _DEFAULT_PROMPT = '-> '
+    _DEFAULT_TITLE = '\nSelect one of the following\n'
 
     def __init__(self, items,
                  title=_DEFAULT_TITLE, prompt=_DEFAULT_PROMPT, invalidmsg=_DEFAULT_INVALID_MESSAGE,

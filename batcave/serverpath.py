@@ -30,9 +30,9 @@ class ServerPath:
         DEFAULT_REMOTE_COPY_COMMAND: The default command to perform a remote copy based on the OS of the source.
         DEFAULT_REMOTE_COPY_ARGS: The default arguments used to perform a remote copy based on the OS of the source.
     """
-    DEFAULT_REMOTE_COPY_COMMAND = {Server.OS_TYPES.windows: 'robocopy', Server.OS_TYPES.linux: 'pscp' if WIN32 else 'scp'}
     DEFAULT_REMOTE_COPY_ARGS = {Server.OS_TYPES.windows: ['/MIR', '/MT', '/R:0', '/NFL', '/NDL', '/NP', '/NJH', '/NJS'],
                                 Server.OS_TYPES.linux: ['-r', '-batch']}
+    DEFAULT_REMOTE_COPY_COMMAND = {Server.OS_TYPES.windows: 'robocopy', Server.OS_TYPES.linux: 'pscp' if WIN32 else 'scp'}
 
     def __init__(self, server, the_path):
         """
@@ -58,6 +58,8 @@ class ServerPath:
     def __truediv__(self, other):
         return ServerPath(self.server, self.local / other)
 
+    parent = property(lambda s: ServerPath(s.server, s.local.parent), doc='A read-only property which returns the parent of the path.')
+
     @property
     def remote(self):
         """A read-only property which returns the name of this remote server which hosts the path."""
@@ -66,7 +68,53 @@ class ServerPath:
         if self.win_to_win:
             return WindowsPath(f'//{self.server.fqdn}/{self.local}'.replace(':', '$'))
         return f'{self.server.fqdn}:{self.local}'
-    parent = property(lambda s: ServerPath(s.server, s.local.parent), doc='A read-only property which returns the parent of the path.')
+
+    def copy(self, sp_dest, remote_cp_command=None, remote_cp_args=None):
+        'Copy this server path to another, possibly remote, location'
+        """Implementation of shutil.copy() adding remote server support.
+
+        Args:
+            sp_dest: The destination of the copy.
+            remote_cp_command (optional, default=None): If not None, the command to use if the path is remote other than the default.
+            remote_cp_args (optional, default=None): If not None, the arguments to use if the path is remote other than the default.
+
+        Returns:
+            The result of the copy.
+
+        Raises:
+            ServerPathError.REMOTE_COPY_SPACE_ERROR: If the remote destination is out of space.
+        """
+        if self.win_to_win and WindowsPath(self.remote).is_dir():
+            remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.windows] if (remote_cp_command is None) else remote_cp_command
+            remote_cp_args = self.DEFAULT_REMOTE_COPY_ARGS[Server.OS_TYPES.windows] if (remote_cp_args is None) else remote_cp_args
+
+            if sp_dest.server.is_local and not self.server.is_local:
+                use_server = sp_dest.server
+                source = self.remote
+                dest = sp_dest.local
+            else:
+                use_server = self.server
+                source = self.local
+                dest = sp_dest.local if (self.server == sp_dest.server) else sp_dest.remote
+
+            try:
+                return use_server.run_command(remote_cp_command, source, dest, *remote_cp_args, use_shell=True)
+            except CMDError as err:
+                if remote_cp_command != self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.windows]:
+                    raise
+                if 'returncode' in err.vars:
+                    if err.vars['returncode'] in (1, 2, 3):
+                        return
+                    if err.vars['returncode'] in (8, 9):
+                        raise ServerPathError(ServerPathError.REMOTE_COPY_SPACE_ERROR, dest=sp_dest)
+                raise
+        elif sp_dest.server.os_type == Server.OS_TYPES.linux:
+            remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.linux] if (remote_cp_command is None) else remote_cp_command
+            remote_cp_args = self.DEFAULT_REMOTE_COPY_ARGS[Server.OS_TYPES.linux] if (remote_cp_args is None) else remote_cp_args
+            return syscmd(remote_cp_command, *remote_cp_args, self.local, sp_dest.remote)
+
+        # if you get here it is a file copy from Windows to Windows, just use shutil
+        return copy(self.remote, sp_dest.remote)
 
     def exists(self):
         """Implementation of pathlib.Path.exists() adding remote server support.
@@ -167,53 +215,6 @@ class ServerPath:
             return rmpath(self.remote)
         remote_rm_command += ['/S' if self.is_win else '-r', self.local]
         return self.server.run_command(*remote_rm_command, use_shell=True)
-
-    def copy(self, sp_dest, remote_cp_command=None, remote_cp_args=None):
-        'Copy this server path to another, possibly remote, location'
-        """Implementation of shutil.copy() adding remote server support.
-
-        Args:
-            sp_dest: The destination of the copy.
-            remote_cp_command (optional, default=None): If not None, the command to use if the path is remote other than the default.
-            remote_cp_args (optional, default=None): If not None, the arguments to use if the path is remote other than the default.
-
-        Returns:
-            The result of the copy.
-
-        Raises:
-            ServerPathError.REMOTE_COPY_SPACE_ERROR: If the remote destination is out of space.
-        """
-        if self.win_to_win and WindowsPath(self.remote).is_dir():
-            remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.windows] if (remote_cp_command is None) else remote_cp_command
-            remote_cp_args = self.DEFAULT_REMOTE_COPY_ARGS[Server.OS_TYPES.windows] if (remote_cp_args is None) else remote_cp_args
-
-            if sp_dest.server.is_local and not self.server.is_local:
-                use_server = sp_dest.server
-                source = self.remote
-                dest = sp_dest.local
-            else:
-                use_server = self.server
-                source = self.local
-                dest = sp_dest.local if (self.server == sp_dest.server) else sp_dest.remote
-
-            try:
-                return use_server.run_command(remote_cp_command, source, dest, *remote_cp_args, use_shell=True)
-            except CMDError as err:
-                if remote_cp_command != self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.windows]:
-                    raise
-                if 'returncode' in err.vars:
-                    if err.vars['returncode'] in (1, 2, 3):
-                        return
-                    if err.vars['returncode'] in (8, 9):
-                        raise ServerPathError(ServerPathError.REMOTE_COPY_SPACE_ERROR, dest=sp_dest)
-                raise
-        elif sp_dest.server.os_type == Server.OS_TYPES.linux:
-            remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[Server.OS_TYPES.linux] if (remote_cp_command is None) else remote_cp_command
-            remote_cp_args = self.DEFAULT_REMOTE_COPY_ARGS[Server.OS_TYPES.linux] if (remote_cp_args is None) else remote_cp_args
-            return syscmd(remote_cp_command, *remote_cp_args, self.local, sp_dest.remote)
-
-        # if you get here it is a file copy from Windows to Windows, just use shutil
-        return copy(self.remote, sp_dest.remote)
 
     def walk(self):
         """Implementation of os.walk() adding remote server support.

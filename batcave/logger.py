@@ -46,6 +46,13 @@ class Logger:
         self._queue = queue
         self.level = INFO
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.shutdown()
+        return False
+
     @property
     def level(self):
         """A read-write property which returns and sets the current logging level."""
@@ -54,13 +61,6 @@ class Logger:
     @level.setter
     def level(self, level):
         self._logger.setLevel(level)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc_info):
-        self.shutdown()
-        return False
 
     def logdebug(self, msg):
         """Create a DEBUG level log message.
@@ -72,6 +72,21 @@ class Logger:
             Nothing.
         """
         self._logger.debug(msg)
+        if self._pipe:
+            self._pipe.send(msg)
+        if self._queue:
+            self._queue.put(msg)
+
+    def logerror(self, msg):
+        """Create an ERROR level log message.
+
+        Args:
+            msg: The message to log.
+
+        Returns:
+            Nothing.
+        """
+        self._logger.error(msg)
         if self._pipe:
             self._pipe.send(msg)
         if self._queue:
@@ -102,21 +117,6 @@ class Logger:
             Nothing.
         """
         self._logger.warning(msg)
-        if self._pipe:
-            self._pipe.send(msg)
-        if self._queue:
-            self._queue.put(msg)
-
-    def logerror(self, msg):
-        """Create an ERROR level log message.
-
-        Args:
-            msg: The message to log.
-
-        Returns:
-            Nothing.
-        """
-        self._logger.error(msg)
         if self._pipe:
             self._pipe.send(msg)
         if self._queue:

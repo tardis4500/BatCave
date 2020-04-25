@@ -89,8 +89,9 @@ class Formatter:
         OUTPUT_FORMATS: The valid output formats.
         _LINK_PRELIM: The prefix to indicate a hyperlink during formatting.
     """
-    OUTPUT_FORMATS = Enum('output_formats', ('text', 'html', 'csv'))
     _LINK_PRELIM = '{link:'
+
+    OUTPUT_FORMATS = Enum('output_formats', ('text', 'html', 'csv'))
 
     def __init__(self, output_format):
         """
@@ -154,6 +155,40 @@ class Formatter:
                 sep = ': '
             return f'{self._bol}{space}{self.prefix}{self.count}{sep}'
 
+    def format_hyperlinks(self, line):
+        """Format the hyperlinks in a line.
+
+        Args:
+            line: The line for which to format hyperlinks.
+
+        Returns:
+            The formatted line.
+
+        Raises:
+            ProcedureError.BAD_FORMAT: If the requested format is not valid.
+        """
+        if not line or (self._LINK_PRELIM not in line):
+            return line
+
+        match = self.link_regex.search(line)
+        replace_what = match.group(0)
+        link = match.group(1)
+        text = match.group(3) if (len(match.groups()) == 3) else ''
+        for case in switch(self.format):
+            if case(self.OUTPUT_FORMATS.csv):
+                replace_with = f'"=HYPERLINK(""{link}"", ""{text}"")"' if text else link
+                break
+            if case(self.OUTPUT_FORMATS.text):
+                replace_with = f'{text} ({link})' if text else link
+                break
+            if case(self.OUTPUT_FORMATS.html):
+                text = text if text else link
+                replace_with = f'<a href="{link}">{text}</a>'
+                break
+            if case():
+                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
+        return line.replace(replace_what, replace_with)
+
     def increment(self):
         """Increment the counter at the current indentation level.
 
@@ -191,40 +226,6 @@ class Formatter:
             self._bol = '<h2><li>'
             self.eol = '</li></h2>'
 
-    def format_hyperlinks(self, line):
-        """Format the hyperlinks in a line.
-
-        Args:
-            line: The line for which to format hyperlinks.
-
-        Returns:
-            The formatted line.
-
-        Raises:
-            ProcedureError.BAD_FORMAT: If the requested format is not valid.
-        """
-        if not line or (self._LINK_PRELIM not in line):
-            return line
-
-        match = self.link_regex.search(line)
-        replace_what = match.group(0)
-        link = match.group(1)
-        text = match.group(3) if (len(match.groups()) == 3) else ''
-        for case in switch(self.format):
-            if case(self.OUTPUT_FORMATS.csv):
-                replace_with = f'"=HYPERLINK(""{link}"", ""{text}"")"' if text else link
-                break
-            if case(self.OUTPUT_FORMATS.text):
-                replace_with = f'{text} ({link})' if text else link
-                break
-            if case(self.OUTPUT_FORMATS.html):
-                text = text if text else link
-                replace_with = f'<a href="{link}">{text}</a>'
-                break
-            if case():
-                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
-        return line.replace(replace_what, replace_with)
-
 
 class Expander:
     """Class to handle interpolation of strings and files.
@@ -261,6 +262,48 @@ class Expander:
             prelim_re = prelim_re.replace(spec, '\\' + spec)
             postlim_re = postlim_re.replace(spec, '\\' + spec)
         self.re_var = re_compile(f'{prelim_re}([.a-zA-Z0-9_:]+){postlim_re}')
+
+    def evaluate_expression(self, expression):
+        """Evaluate an expression in the expansion.
+
+        Args:
+            expression: The expression to evaluate.
+
+        Returns:
+            The evaluated expression.
+
+        Raises:
+            ExpanderError.NO_REPLACEMENT: If no replacement was found for the requested expansion variable.
+        """
+        if is_debug('EXPANDER'):
+            print(f'Expanding (raw expression) "{expression}"')
+
+        if isinstance(expression, bool):
+            return expression
+        if not expression:
+            return True
+
+        expression = self.expand(expression)
+        synonyms = {' not ': ('!', '-not'),
+                    ' and ': ('&&', ',', '-and'),
+                    ' or ': ('||', '-or')}
+        for (operator, synlist) in synonyms.items():
+            for synonym in synlist:
+                expression = expression.replace(synonym, operator)
+        try:
+            if is_debug('EXPANDER'):
+                print(f'Expanding (corrected expression) "{expression}"')
+            result = eval(expression, self.vardict)  # pylint: disable=W0123
+            if is_debug('EXPANDER'):
+                print(f'Expanding (evaluated expression) "{result}"')
+            if isinstance(result, str):
+                result = str_to_pythonval(result)
+            if is_debug('EXPANDER'):
+                print(f'Returning: "{result}"')
+            return result
+        except NameError as err:
+            badvar = str(err)
+        raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=badvar, thing=expression)
 
     def expand(self, thing):
         """Perform an expansion on a Python object.
@@ -315,23 +358,6 @@ class Expander:
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
 
-    def expand_file(self, in_file, out_file):
-        """Perform an expansion on an entire file.
-
-        Args:
-            in_file: The name of the file on which to perform the expansions.
-            out_file: The name of the output file for the expansion results.
-
-        Returns:
-            Nothing.
-        """
-        with open(in_file) as instream:
-            Path(out_file).parent.mkdir(parents=True, exist_ok=True)
-            with open(out_file, 'w') as outstream:
-                for line in instream:
-                    line = self.expand(line)
-                    outstream.write(line)
-
     def expand_directory(self, source_dir, target_dir=None, ignore_files=tuple(), no_expand_files=tuple(), err_if_exists=True):
         """Perform an expansion on an entire directory tree.
 
@@ -369,47 +395,22 @@ class Expander:
                         print(f'Expanding {source_file} to {target_file} (root={root})')
                     self.expand_file(source_file, target_file)
 
-    def evaluate_expression(self, expression):
-        """Evaluate an expression in the expansion.
+    def expand_file(self, in_file, out_file):
+        """Perform an expansion on an entire file.
 
         Args:
-            expression: The expression to evaluate.
+            in_file: The name of the file on which to perform the expansions.
+            out_file: The name of the output file for the expansion results.
 
         Returns:
-            The evaluated expression.
-
-        Raises:
-            ExpanderError.NO_REPLACEMENT: If no replacement was found for the requested expansion variable.
+            Nothing.
         """
-        if is_debug('EXPANDER'):
-            print(f'Expanding (raw expression) "{expression}"')
-
-        if isinstance(expression, bool):
-            return expression
-        if not expression:
-            return True
-
-        expression = self.expand(expression)
-        synonyms = {' not ': ('!', '-not'),
-                    ' and ': ('&&', ',', '-and'),
-                    ' or ': ('||', '-or')}
-        for (operator, synlist) in synonyms.items():
-            for synonym in synlist:
-                expression = expression.replace(synonym, operator)
-        try:
-            if is_debug('EXPANDER'):
-                print(f'Expanding (corrected expression) "{expression}"')
-            result = eval(expression, self.vardict)  # pylint: disable=W0123
-            if is_debug('EXPANDER'):
-                print(f'Expanding (evaluated expression) "{result}"')
-            if isinstance(result, str):
-                result = str_to_pythonval(result)
-            if is_debug('EXPANDER'):
-                print(f'Returning: "{result}"')
-            return result
-        except NameError as err:
-            badvar = str(err)
-        raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=badvar, thing=expression)
+        with open(in_file) as instream:
+            Path(out_file).parent.mkdir(parents=True, exist_ok=True)
+            with open(out_file, 'w') as outstream:
+                for line in instream:
+                    line = self.expand(line)
+                    outstream.write(line)
 
 
 def file_expander(in_file, out_file, vardict=None, varprops=None):
@@ -444,18 +445,16 @@ class Procedure:
         _COMMON_ENVIRONMENT: The XML tag which indicates the procedure common environment.
         _ENVIRONMENT_VARIABLE: The XML tag which indicates an environment variable.
     """
-    _SCHEMA_ATTR = 'schema'
-    _REQUIRED_PROCEDURE_SCHEMA = 1
-
-    _HEADER_TAG = 'header'
-    _FLAGS_TAG = 'flags'
+    _COMMON_ENVIRONMENT = 'common'
     _DIRECTORIES_TAG = 'directories'
     _ENVIRONMENTS_TAG = 'environments'
-    _STEPS_TAG = 'steps'
-    _LIBRARY_TAG = 'step-library'
-
-    _COMMON_ENVIRONMENT = 'common'
     _ENVIRONMENT_VARIABLE = 'Environment'
+    _FLAGS_TAG = 'flags'
+    _HEADER_TAG = 'header'
+    _LIBRARY_TAG = 'step-library'
+    _REQUIRED_PROCEDURE_SCHEMA = 1
+    _SCHEMA_ATTR = 'schema'
+    _STEPS_TAG = 'steps'
 
     def __init__(self, procfile, output_format=Formatter.OUTPUT_FORMATS.html, variable_overrides=None):
         """
@@ -539,22 +538,6 @@ class Procedure:
         result[self._STEPS_TAG] = [s.dump() for s in self.steps]
         return result
 
-    def setup_expander(self, environment):
-        """Setup the Expander for the requested environment.
-
-        Args:
-            environment: The environment for which to setup the expander.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            ProcedureError.BAD_ENVIRONMENT: If the requested environment is not defined.
-        """
-        if environment not in self.environments:
-            ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
-        self.expander = Expander(self.environments[environment])
-
     def expand(self, text):
         """Expand the Procedure.
 
@@ -574,6 +557,25 @@ class Procedure:
                 raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text)
             raise
 
+    def expand_directories(self, env, destination_root, source_root=None, err_if_exists=True):
+        """Perform variable expansion on the directories defined in the procedure.
+
+        Args:
+            env: The environment for which to expand the directories.
+            destination_root: That destination directory for the expansion.
+            source_root (optional, default=None): Defined for recursion.
+            err_if_exists (optional, default=True): If True, raise an error if destination_root exists.
+
+        Returns:
+            Nothing.
+        """
+        self.setup_expander(env)
+        for dirname in self.directories:
+            dirpath = Path(dirname)
+            if not dirpath.is_absolute():
+                dirpath = source_root / dirpath
+            self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
+
     def format(self, text):
         """Format an output line including hyperlinks.
 
@@ -584,6 +586,23 @@ class Procedure:
             The formatted output line.
         """
         return self.formatter.format_hyperlinks(self.expand(text))
+
+    def parse_flag(self, flag):
+        """Evaluate a parsing flag.
+
+        Args:
+            flag: The flag to evaluate.
+
+        Return:
+            The evaluated value for the flag.
+
+        Raises:
+            ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
+        """
+        value = str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False'))
+        if not isinstance(value, bool):
+            raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
+        return value
 
     def realize(self, env):
         """Realize the procedure for the specified environments based on the variables.
@@ -683,41 +702,21 @@ class Procedure:
             self.expander.vardict = expander_vars_keeper
         return output
 
-    def expand_directories(self, env, destination_root, source_root=None, err_if_exists=True):
-        """Perform variable expansion on the directories defined in the procedure.
+    def setup_expander(self, environment):
+        """Setup the Expander for the requested environment.
 
         Args:
-            env: The environment for which to expand the directories.
-            destination_root: That destination directory for the expansion.
-            source_root (optional, default=None): Defined for recursion.
-            err_if_exists (optional, default=True): If True, raise an error if destination_root exists.
+            environment: The environment for which to setup the expander.
 
         Returns:
             Nothing.
-        """
-        self.setup_expander(env)
-        for dirname in self.directories:
-            dirpath = Path(dirname)
-            if not dirpath.is_absolute():
-                dirpath = source_root / dirpath
-            self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
-
-    def parse_flag(self, flag):
-        """Evaluate a parsing flag.
-
-        Args:
-            flag: The flag to evaluate.
-
-        Return:
-            The evaluated value for the flag.
 
         Raises:
-            ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
+            ProcedureError.BAD_ENVIRONMENT: If the requested environment is not defined.
         """
-        value = str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False'))
-        if not isinstance(value, bool):
-            raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
-        return value
+        if environment not in self.environments:
+            ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
+        self.expander = Expander(self.environments[environment])
 
 
 class Step:
@@ -730,12 +729,12 @@ class Step:
         _REPEAT_ATTR: The XML attribute to indicate the step repeat condition.
         _VARS_ATTR: The XML attribute to indicate the step variables.
     """
-    NAME_ATTR = 'name'
-
     _CONDITION_ATTR = 'condition'
     _IMPORT_ATTR = 'import'
     _REPEAT_ATTR = 'repeat'
     _VARS_ATTR = 'vars'
+
+    NAME_ATTR = 'name'
 
     def __init__(self, step_def):
         """

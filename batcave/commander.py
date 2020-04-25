@@ -102,6 +102,21 @@ class Commander:
         if self._parse_extra:
             self.parser.add_argument('extra_parser_args', nargs=REMAINDER, metavar='[[var1:val1] ...]')
 
+    def execute(self, argv=None, use_args=None):
+        """Parse the command line and call the command_runner.
+
+        Args:
+            argv (optional, default=None): The arguments to pass to the parser if use_args is None, otherwise sys.argv will be used.
+            use_args (optional, default=None): The arguments to pass to the parser, otherwise argv will be used.
+
+        Returns:
+            The result of the called command_runner.
+        """
+        args = use_args if use_args else self.parse_args(argv)
+        caller = self._default if (self._subparsers and not args.command and self._default) else args.command
+        caller_args = (self.subparser_common_parser, self._pass_on) if self.subparser_common_parser else (args,)
+        return caller(*caller_args)
+
     def parse_args(self, argv=None, err_msg='No command specified', raise_on_error=False):
         """Parse the command line.
 
@@ -127,21 +142,6 @@ class Commander:
                     (var, val) = arg.split(self._extra_var_sep, 1)
                     setattr(args, var, str_to_pythonval(val) if self._convert_extra else val)
         return args
-
-    def execute(self, argv=None, use_args=None):
-        """Parse the command line and call the command_runner.
-
-        Args:
-            argv (optional, default=None): The arguments to pass to the parser if use_args is None, otherwise sys.argv will be used.
-            use_args (optional, default=None): The arguments to pass to the parser, otherwise argv will be used.
-
-        Returns:
-            The result of the called command_runner.
-        """
-        args = use_args if use_args else self.parse_args(argv)
-        caller = self._default if (self._subparsers and not args.command and self._default) else args.command
-        caller_args = (self.subparser_common_parser, self._pass_on) if self.subparser_common_parser else (args,)
-        return caller(*caller_args)
 
 
 def _add_arguments_to_parser(parser, arglist):

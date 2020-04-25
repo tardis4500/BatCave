@@ -9,12 +9,14 @@
 # Step5: Add class __init__ docstrings. Arguments, Attributes, Raises.
 # Step6: Add class property docstrings.
 # Step7: Add class method docstrings.
-
-# Finished adding class method docstrings for the servermgr module. (GitLab #29)
-
 # Step8: Add class private method docstrings.
-# Step9: Add PEP484 type hints.
-# Step10: Reorder Classes: private, protected, properties, methods.
+# Step9: Reorder Classes: private, protected, properties, methods.
+
+# Reordered class members alphabetically by type. (GitLab #29)
+
+# Step10: Add PEP484 type hints.
+# Step11: Add PEP526 variable type annotations
+# Step12: Add linting and type checking to build pipeline.
 
 # -*- coding: utf-8 -*-
 """Example Google style docstrings.

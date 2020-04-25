@@ -32,11 +32,12 @@ class ConfigCollection:
         _PARAMS_CONFIGURATION: The configuration section which is used as configuration parameters for the collection.
         _PARENT_CONFIGURATION: The parameter to indicate the parent configuration name.
     """
-    INCLUDE_CONFIG_TAG = 'include'
     _CURRENT_CONFIG_SCHEMA = 1
     _MASK_MISSING = 'mask_missing'
     _PARAMS_CONFIGURATION = 'configuration'
     _PARENT_CONFIGURATION = 'parent'
+
+    INCLUDE_CONFIG_TAG = 'include'
 
     def __init__(self, name, create=False, suffix='_config.xml'):
         """
@@ -157,8 +158,6 @@ class Configuration:
         self._parent = parent
         self._include = include
 
-    name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')
-
     def __getattr__(self, attr):
         # First check this configuration to see if it has the requested attribute
         values = self._data_table.getrows(attr)
@@ -194,3 +193,5 @@ class Configuration:
         data_row = self._data_table.getrows()[0]
         data_row.setvalue(attr, value)
         self._data_source.commit()
+
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')

@@ -33,7 +33,6 @@ else:
     class x_wmi(Exception):
         'Needed to avoid errors on Linux'
 
-
 _STATUS_CHECK_INTERVAL = 2
 
 
@@ -75,9 +74,6 @@ class Server:
         _WSAHOST_NOT_FOUND: Error code indicating the host was not found.
         _WMI_SERVICE_CREATE_ERRORS: A dictionary to map WMI errors to errors messages.
     """
-    OS_TYPES = Enum('os_types', ('linux', 'windows'))
-    _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
-    _WSAHOST_NOT_FOUND = 11001
     _WMI_SERVICE_CREATE_ERRORS = {1: 'The request is not supported.',
                                   2: 'The user did not have the necessary access.',
                                   3: 'The service cannot be stopped because other services that are running are dependent on it.',
@@ -102,6 +98,10 @@ class Server:
                                   22: 'The account under which this service runs is either invalid or lacks the permissions to run the service.',
                                   23: 'The service exists in the database of services available from the system.',
                                   24: 'The service is currently paused in the system.'}
+    _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
+    _WSAHOST_NOT_FOUND = 11001
+
+    OS_TYPES = Enum('os_types', ('linux', 'windows'))
 
     def __init__(self, hostname=None, domain=None, auth=None, defer_wmi=True, ip=None, os_type=OS_TYPES.windows if WIN32 else OS_TYPES.linux):
         """
@@ -153,9 +153,6 @@ class Server:
         if not defer_wmi:
             self._connect_wmi()
 
-    fqdn = property(lambda s: f'{s.hostname}.{s.domain}' if s.domain else s.hostname, doc='A read-only property which returns the full-qualified domain name of the server.')
-    is_local = property(lambda s: getfqdn().lower() == s.fqdn, doc='A read-only property which returns True if the server is the local host.')
-
     def __enter__(self):
         return self
 
@@ -203,67 +200,8 @@ class Server:
             self._connect_wmi()
         return self._wmi_manager if wmi else self._os_manager
 
-    def get_management_objects(self, item_type, wmi=True if WIN32 else False, **filters):
-        """Get a list of management objects.
-
-        Args:
-            item_type: The item type of the objects.
-            wmi (optional): True if this is a Windows platform, False otherwise.
-            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter the objects returned.
-
-        Returns:
-            The list of management objects.
-        """
-        manager = self._get_object_manager(item_type, wmi)
-        unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
-        extra_keys = dict()
-        for (key, item_list) in {'service_type': 'Service'}.items():
-            if (item_type in item_list) and (key in filters):
-                if self.os_type != self.OS_TYPES.windows:
-                    extra_keys[key] = filters[key]
-                else:
-                    del filters[key]
-        return [globals()[item_type](r, manager, unique_key, getattr(r, unique_key), **extra_keys) for r in getattr(manager, ManagementObject.OBJECT_PREFIX+item_type)(**filters)]
-
-    def get_unique_object(self, item_type, wmi=True if WIN32 else False, **filters):
-        """Get the requested management object which must be unique.
-
-        Args:
-            item_type: The item type of the object.
-            wmi (optional): True if this is a Windows platform, False otherwise.
-            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
-
-        Returns:
-            The requested management object.
-
-        Raises:
-            ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
-        """
-        results = self.get_management_objects(item_type, wmi, **filters)
-        for case in switch(len(results)):
-            if case(0):
-                return None
-            if case(1):
-                return results[0]
-            if case():
-                raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=item_type, filters=filters)
-
-    def get_object_by_name(self, item_type, name, wmi=True if WIN32 else False, **filters):
-        """Get a management object by name.
-
-        Args:
-            item_type: The item type of the object.
-            name: The name of the object.
-            wmi (optional): True if this is a Windows platform, False otherwise.
-            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
-
-        Returns:
-            The requested management object.
-
-        Raises:
-            ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
-        """
-        return self.get_unique_object(item_type, wmi, Name=name, **filters)
+    fqdn = property(lambda s: f'{s.hostname}.{s.domain}' if s.domain else s.hostname, doc='A read-only property which returns the full-qualified domain name of the server.')
+    is_local = property(lambda s: getfqdn().lower() == s.fqdn, doc='A read-only property which returns True if the server is the local host.')
 
     def create_management_object(self, item_type, unique_id, wmi=True if WIN32 else False, error_if_exists=True, **key_args):
         """Create a management object of the specified type.
@@ -298,75 +236,6 @@ class Server:
         if not created_object:
             created_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
         return globals()[item_type](created_object, manager, unique_key, unique_id)
-
-    def remove_management_object(self, item_type, unique_id, wmi=True if WIN32 else False, error_if_not_exists=False):
-        """Remove a management object.
-
-        Args:
-            item_type: The item type of the object to remove.
-            unique_id: The unique identifier of the object to remove.
-            wmi (optional): True if this is a Windows platform, False otherwise.
-            error_if_not_exists (optional, default=False): If False raise an error if the object does not exist.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            ServerObjectManagementError.WMI_ERROR: If there was an error removing the object.
-        """
-        unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
-        removal_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
-        if error_if_not_exists and not removal_object:
-            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=item_type)
-        result = removal_object.Delete()[0] if removal_object else False
-        if result:
-            msg = self._WMI_SERVICE_CREATE_ERRORS[result] if (result in self._WMI_SERVICE_CREATE_ERRORS) else f'Return value: {result}'
-            raise ServerObjectManagementError(ServerObjectManagementError.WMI_ERROR, server=self.hostname, msg=msg)
-
-    def get_iis_instance(self):
-        """Get the IIS instance for this server.
-
-        Returns:
-            The IIS instance for this server.
-        """
-        return IISInstance(self.fqdn if not self.is_local else None)
-
-    def get_process_list(self, **filters):
-        """Get the process list for this server.
-
-        Returns:
-            The process list for this server.
-        """
-        return self.get_management_objects('Process', **filters)
-
-    def get_process_connection(self, process):
-        """Get a COM connection to the specified process.
-
-        Returns:
-            The COM connection to the specified process.
-        """
-        return COMObject(process, self.ip)
-
-    def get_scheduled_task_list(self):
-        """Get the scheduled tasks for this server.
-
-        Returns:
-            The scheduled tasks for this server.
-        """
-        cmd_args = ['/Query', '/FO', 'CSV']
-        if not self.is_local:
-            cmd_args += ['/S', self.fqdn]
-        if self.auth:
-            cmd_args += ('/U', self.auth[0], '/P', self.auth[1])
-        return [self.get_scheduled_task(t['TaskName']) for t in DictReader(_run_task_scheduler(*cmd_args))]
-
-    def get_scheduled_task(self, task):
-        """Get the specified scheduled task.
-
-        Returns:
-            The specified scheduled task.
-        """
-        return self.get_object_by_name('ScheduledTask', task, False)
 
     def create_scheduled_task(self, task, exe, schedule_type, schedule, user=None, password=None, start_in=None, disable=False):
         """Create a scheduled task.
@@ -424,36 +293,119 @@ class Server:
 
         return task_object
 
-    def remove_scheduled_task(self, task):
-        """Remove the specified scheduled task.
+    def create_service(self, service, exe, user=None, password=None, start=False, timeout=False, error_if_exists=True):
+        """Create a service.
 
         Args:
-            task: The name of the scheduled task to remove.
+            service: The name of the service to create.
+            exe: The executable the service will run.
+            user (optional, default=None): In not None, the user account that the service will run under.
+            password (optional, default=None): The password for the user account that the service will run under.
+            timeout (optional, default=False): If not False, the number of seconds to wait for the service to start.
+            error_if_exists (optional, default=True): If True raise an error if the object already exists.
 
         Returns:
-            Nothing.
+            The created service.
         """
-        self.get_scheduled_task(task).remove()
+        service_obj = self.create_management_object('Service', service, PathName=str(exe), StartName=user, StartPassword=password, error_if_exists=error_if_exists)
+        if start:
+            service_obj.manage(Service.SERVICE_SIGNALS.start, timeout=timeout)
+        return service_obj
 
-    def get_service_list(self, service_type=None):
-        """Get the services for this server.
+    def get_iis_instance(self):
+        """Get the IIS instance for this server.
+
+        Returns:
+            The IIS instance for this server.
+        """
+        return IISInstance(self.fqdn if not self.is_local else None)
+
+    def get_management_objects(self, item_type, wmi=True if WIN32 else False, **filters):
+        """Get a list of management objects.
 
         Args:
-            service_type (optional, default=None): If None, determine the service type based on the OS.
+            item_type: The item type of the objects.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter the objects returned.
 
         Returns:
-            The services for this server.
+            The list of management objects.
         """
-        if service_type is None:
-            if self.os_type == self.OS_TYPES.windows:
-                service_type = Service.SERVICE_TYPES.windows
-            elif self.get_path('/sbin/initctl').exists():
-                service_type = Service.SERVICE_TYPES.upstart
-            elif self.get_path('/bin/systemctl').exists():
-                service_type = Service.SERVICE_TYPES.systemd
-            else:
-                service_type = Service.SERVICE_TYPES.sysv
-        return self.get_management_objects('Service', service_type=service_type)
+        manager = self._get_object_manager(item_type, wmi)
+        unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
+        extra_keys = dict()
+        for (key, item_list) in {'service_type': 'Service'}.items():
+            if (item_type in item_list) and (key in filters):
+                if self.os_type != self.OS_TYPES.windows:
+                    extra_keys[key] = filters[key]
+                else:
+                    del filters[key]
+        return [globals()[item_type](r, manager, unique_key, getattr(r, unique_key), **extra_keys) for r in getattr(manager, ManagementObject.OBJECT_PREFIX+item_type)(**filters)]
+
+    def get_object_by_name(self, item_type, name, wmi=True if WIN32 else False, **filters):
+        """Get a management object by name.
+
+        Args:
+            item_type: The item type of the object.
+            name: The name of the object.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
+
+        Returns:
+            The requested management object.
+
+        Raises:
+            ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
+        """
+        return self.get_unique_object(item_type, wmi, Name=name, **filters)
+
+    def get_path(self, the_path):
+        """Get the specified path as a ServerPath object.
+
+        Args:
+            the_path: The path to return.
+
+        Return:
+            The specified path as a ServerPath object.
+        """
+        return ServerPath(self, the_path)
+
+    def get_process_connection(self, process):
+        """Get a COM connection to the specified process.
+
+        Returns:
+            The COM connection to the specified process.
+        """
+        return COMObject(process, self.ip)
+
+    def get_process_list(self, **filters):
+        """Get the process list for this server.
+
+        Returns:
+            The process list for this server.
+        """
+        return self.get_management_objects('Process', **filters)
+
+    def get_scheduled_task(self, task):
+        """Get the specified scheduled task.
+
+        Returns:
+            The specified scheduled task.
+        """
+        return self.get_object_by_name('ScheduledTask', task, False)
+
+    def get_scheduled_task_list(self):
+        """Get the scheduled tasks for this server.
+
+        Returns:
+            The scheduled tasks for this server.
+        """
+        cmd_args = ['/Query', '/FO', 'CSV']
+        if not self.is_local:
+            cmd_args += ['/S', self.fqdn]
+        if self.auth:
+            cmd_args += ('/U', self.auth[0], '/P', self.auth[1])
+        return [self.get_scheduled_task(t['TaskName']) for t in DictReader(_run_task_scheduler(*cmd_args))]
 
     def get_service(self, service, **key_args):
         """Get the specified service.
@@ -476,24 +428,83 @@ class Server:
             key_args['service_type'] = service_type
         return self.get_object_by_name('Service', service, **key_args)
 
-    def create_service(self, service, exe, user=None, password=None, start=False, timeout=False, error_if_exists=True):
-        """Create a service.
+    def get_service_list(self, service_type=None):
+        """Get the services for this server.
 
         Args:
-            service: The name of the service to create.
-            exe: The executable the service will run.
-            user (optional, default=None): In not None, the user account that the service will run under.
-            password (optional, default=None): The password for the user account that the service will run under.
-            timeout (optional, default=False): If not False, the number of seconds to wait for the service to start.
-            error_if_exists (optional, default=True): If True raise an error if the object already exists.
+            service_type (optional, default=None): If None, determine the service type based on the OS.
 
         Returns:
-            The created service.
+            The services for this server.
         """
-        service_obj = self.create_management_object('Service', service, PathName=str(exe), StartName=user, StartPassword=password, error_if_exists=error_if_exists)
-        if start:
-            service_obj.manage(Service.SERVICE_SIGNALS.start, timeout=timeout)
-        return service_obj
+        if service_type is None:
+            if self.os_type == self.OS_TYPES.windows:
+                service_type = Service.SERVICE_TYPES.windows
+            elif self.get_path('/sbin/initctl').exists():
+                service_type = Service.SERVICE_TYPES.upstart
+            elif self.get_path('/bin/systemctl').exists():
+                service_type = Service.SERVICE_TYPES.systemd
+            else:
+                service_type = Service.SERVICE_TYPES.sysv
+        return self.get_management_objects('Service', service_type=service_type)
+
+    def get_unique_object(self, item_type, wmi=True if WIN32 else False, **filters):
+        """Get the requested management object which must be unique.
+
+        Args:
+            item_type: The item type of the object.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            **filters (optional, default={}): A dictionary of filters to pass to the manager to filter for the object.
+
+        Returns:
+            The requested management object.
+
+        Raises:
+            ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
+        """
+        results = self.get_management_objects(item_type, wmi, **filters)
+        for case in switch(len(results)):
+            if case(0):
+                return None
+            if case(1):
+                return results[0]
+            if case():
+                raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=item_type, filters=filters)
+
+    def remove_management_object(self, item_type, unique_id, wmi=True if WIN32 else False, error_if_not_exists=False):
+        """Remove a management object.
+
+        Args:
+            item_type: The item type of the object to remove.
+            unique_id: The unique identifier of the object to remove.
+            wmi (optional): True if this is a Windows platform, False otherwise.
+            error_if_not_exists (optional, default=False): If False raise an error if the object does not exist.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.WMI_ERROR: If there was an error removing the object.
+        """
+        unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
+        removal_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
+        if error_if_not_exists and not removal_object:
+            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=item_type)
+        result = removal_object.Delete()[0] if removal_object else False
+        if result:
+            msg = self._WMI_SERVICE_CREATE_ERRORS[result] if (result in self._WMI_SERVICE_CREATE_ERRORS) else f'Return value: {result}'
+            raise ServerObjectManagementError(ServerObjectManagementError.WMI_ERROR, server=self.hostname, msg=msg)
+
+    def remove_scheduled_task(self, task):
+        """Remove the specified scheduled task.
+
+        Args:
+            task: The name of the scheduled task to remove.
+
+        Returns:
+            Nothing.
+        """
+        self.get_scheduled_task(task).remove()
 
     def remove_service(self, service, error_if_not_exists=False):
         """Remove the specified service.
@@ -521,17 +532,6 @@ class Server:
         if (not self.is_local) and self.auth:
             sys_cmd_args['remote_auth'] = self.auth
         return syscmd(command, *cmd_args, remote=(False if self.is_local else self.ip), remote_is_windows=(not self.is_local) and (self.os_type == self.OS_TYPES.windows), **sys_cmd_args)
-
-    def get_path(self, the_path):
-        """Get the specified path as a ServerPath object.
-
-        Args:
-            the_path: The path to return.
-
-        Return:
-            The specified path as a ServerPath object.
-        """
-        return ServerPath(self, the_path)
 
 
 class OSManager:
@@ -568,18 +568,6 @@ class OSManager:
                 return list()
             raise
 
-    def LinuxService(self, Name, service_type):
-        """Get the specified Linux service.
-
-        Args:
-            Name: The name of the service to return.
-            service_type: The type of service to return.
-
-        Returns:
-            The specified Linux service.
-        """
-        return self.get_object_as_list('LinuxService', Name, service_type=service_type)
-
     def LinuxProcess(self, CommandLine=None, ExecutablePath=None, Name=None, ProcessId=None):
         """Get the specified Linux process.
 
@@ -612,6 +600,18 @@ class OSManager:
             return [LinuxProcess(p.pid) for p in process_list if p.info['exe'] == ExecutablePath]
         if Name:
             return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]
+
+    def LinuxService(self, Name, service_type):
+        """Get the specified Linux service.
+
+        Args:
+            Name: The name of the service to return.
+            service_type: The type of service to return.
+
+        Returns:
+            The specified Linux service.
+        """
+        return self.get_object_as_list('LinuxService', Name, service_type=service_type)
 
     def Win32_ScheduledTask(self, Name):
         """Get the specified Windows Scheduled Task.
@@ -663,18 +663,6 @@ class LinuxService(NamedOSObject):
         self.type = service_type
         super().__init__(Name, computer, auth)
 
-    @property
-    def state(self):
-        """A read-only property which returns the state value of the service."""
-        result = self._manage('status')
-        if result and isinstance(result, list) and ('stop' in result[0]):
-            return 'Stopped'
-        if not hasattr(result, 'vars'):
-            return 'Running'
-        if result.vars['returncode'] == 3:
-            return 'Stopped'
-        raise result
-
     def _manage(self, command):
         """Manage the service.
 
@@ -693,24 +681,17 @@ class LinuxService(NamedOSObject):
                 return err
             raise
 
-    def validate(self):
-        """Determine if the service exists.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            ServerObjectManagementError.OBJECT_NOT_FOUND: If the service is not found.
-        """
-        not_found = False
-        try:
-            self.state
-        except CMDError as err:
-            if not err.vars['returncode'] == (4 if (self.type == Service.SERVICE_TYPES.systemd) else 1):
-                raise
-            not_found = True
-        if not_found:
-            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
+    @property
+    def state(self):
+        """A read-only property which returns the state value of the service."""
+        result = self._manage('status')
+        if result and isinstance(result, list) and ('stop' in result[0]):
+            return 'Stopped'
+        if not hasattr(result, 'vars'):
+            return 'Running'
+        if result.vars['returncode'] == 3:
+            return 'Stopped'
+        raise result
 
     def DisableService(self):
         """Disable the service.
@@ -730,13 +711,13 @@ class LinuxService(NamedOSObject):
         self._manage('enable')
         self.StartService()
 
-    def StopService(self):
-        """Stop the service.
+    def RestartService(self):
+        """Restart the service.
 
         Returns:
             Nothing.
         """
-        self._manage('stop')
+        self._manage('restart')
 
     def StartService(self):
         """Start the service.
@@ -746,13 +727,32 @@ class LinuxService(NamedOSObject):
         """
         self._manage('start')
 
-    def RestartService(self):
-        """Restart the service.
+    def StopService(self):
+        """Stop the service.
 
         Returns:
             Nothing.
         """
-        self._manage('restart')
+        self._manage('stop')
+
+    def validate(self):
+        """Determine if the service exists.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.OBJECT_NOT_FOUND: If the service is not found.
+        """
+        not_found = False
+        try:
+            self.state
+        except CMDError as err:
+            if not err.vars['returncode'] == (4 if (self.type == Service.SERVICE_TYPES.systemd) else 1):
+                raise
+            not_found = True
+        if not_found:
+            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
 
 
 class LinuxProcess:
@@ -824,25 +824,6 @@ class Win32_ScheduledTask(NamedOSObject):
             cmd_args += ('/U', self.auth[0], '/P', self.auth[1])
         return _run_task_scheduler(*cmd_args, **sys_cmd_args)
 
-    def validate(self):
-        """Determine if the scheduled task exists.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            ServerObjectManagementError.OBJECT_NOT_FOUND: If the scheduled task is not found.
-        """
-        not_found = False
-        try:
-            self.state
-        except CMDError as err:
-            if not err.vars['returncode'] == 1:
-                raise
-            not_found = True
-        if not_found:
-            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
-
     def manage(self, signal, wait=True):
         """Manage the scheduled task.
 
@@ -883,6 +864,25 @@ class Win32_ScheduledTask(NamedOSObject):
             The result of the remove command.
         """
         return self._run_task_scheduler('/Delete', '/F')
+
+    def validate(self):
+        """Determine if the scheduled task exists.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            ServerObjectManagementError.OBJECT_NOT_FOUND: If the scheduled task is not found.
+        """
+        not_found = False
+        try:
+            self.state
+        except CMDError as err:
+            if not err.vars['returncode'] == 1:
+                raise
+            not_found = True
+        if not_found:
+            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
 
 
 class COMObject:

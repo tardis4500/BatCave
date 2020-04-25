@@ -110,19 +110,17 @@ class DataSource:
         _XML_TABLE_NAME_ATTRIBUTE: The XML file attribute to denote a table name.
         _XML_SINGLE_COL_NAME: The XML file attribute to denote a column name.
     """
-    SOURCE_TYPES = _SOURCE_TYPES
-    INFO_TABLE = 'DataSourceInfo'
     _SCHEMA_DATA = 'schema'
-
-    INI_ROWLIST_OPT = 'ROWS'
-    INI_ROW_TAG = ' ROW '
-
     _TEXT_TABLE_DELIMITER = '>'
     _TEXT_VAL_DELIMITER = ':'
-
     _XML_TABLE_TAG = 'TABLE'
     _XML_TABLE_NAME_ATTRIBUTE = 'name'
     _XML_SINGLE_COL_NAME = 'name'
+
+    INFO_TABLE = 'DataSourceInfo'
+    INI_ROW_TAG = ' ROW '
+    INI_ROWLIST_OPT = 'ROWS'
+    SOURCE_TYPES = _SOURCE_TYPES
 
     def __init__(self, data_type, connectinfo, name, schema, create=False):
         """
@@ -167,59 +165,12 @@ class DataSource:
             else:
                 raise DataError(DataError.FILE_OPEN, errmsg=str(ioe))
 
-    filename = property(lambda s: s._connectinfo, doc='A read-only property which returns the file name of the data source.')
-
     def __enter__(self):
         return self
 
     def __exit__(self, *exc_info):
         self.close()
         return False
-
-    @property
-    def dict_repr(self):
-        """A read-only property which returns a the data source as a dictionary."""
-        dictrepr = dict()
-        for table in self.gettables():
-            with table.getrows()[0] as row:
-                dictrepr[table.name] = {c: row.getvalue(c) for c in row.getcolumns()}
-        return dictrepr
-
-    @property
-    def schema(self):
-        """A read-only property which returns the schema value of the data source."""
-        try:
-            return int(self.gettable(self.INFO_TABLE).getrows(col=self._SCHEMA_DATA)[0].getvalue(self._SCHEMA_DATA))
-        except IndexError:
-            return 0
-        except DataError as err:
-            if err.code != DataError.BAD_TABLE.code:
-                raise
-            return 0
-
-    def _validate_type(self):
-        """Determine if the specified data source type is valid.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            DataError.INVALID_TYPE: If the data source type is invalid.
-        """
-        if self.type not in self.SOURCE_TYPES:
-            raise DataError(DataError.INVALID_TYPE)
-
-    def _validate_schema(self):
-        """Determine if the data source schema is valid.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            DataError.BAD_SCHEMA: If the data source schema is invalid.
-        """
-        if self._schema != self.schema:
-            raise DataError(DataError.BAD_SCHEMA, schema=self._schema, found=self.schema)
 
     def _create(self):
         """Create the data source.
@@ -315,31 +266,127 @@ class DataSource:
                     raise DataError(DataError.BAD_ROOT, source_name=self._connectinfo, root_name=self._source.tag, expected=self.name)
                 break
 
-    def gettables(self):
-        """Get all the tables from the data source.
+    def _validate_schema(self):
+        """Determine if the data source schema is valid.
 
         Returns:
-            The list of table in the data source.
+            Nothing.
+
+        Raises:
+            DataError.BAD_SCHEMA: If the data source schema is invalid.
+        """
+        if self._schema != self.schema:
+            raise DataError(DataError.BAD_SCHEMA, schema=self._schema, found=self.schema)
+
+    def _validate_type(self):
+        """Determine if the specified data source type is valid.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            DataError.INVALID_TYPE: If the data source type is invalid.
+        """
+        if self.type not in self.SOURCE_TYPES:
+            raise DataError(DataError.INVALID_TYPE)
+
+    filename = property(lambda s: s._connectinfo, doc='A read-only property which returns the file name of the data source.')
+
+    @property
+    def dict_repr(self):
+        """A read-only property which returns a the data source as a dictionary."""
+        dictrepr = dict()
+        for table in self.gettables():
+            with table.getrows()[0] as row:
+                dictrepr[table.name] = {c: row.getvalue(c) for c in row.getcolumns()}
+        return dictrepr
+
+    @property
+    def schema(self):
+        """A read-only property which returns the schema value of the data source."""
+        try:
+            return int(self.gettable(self.INFO_TABLE).getrows(col=self._SCHEMA_DATA)[0].getvalue(self._SCHEMA_DATA))
+        except IndexError:
+            return 0
+        except DataError as err:
+            if err.code != DataError.BAD_TABLE.code:
+                raise
+            return 0
+
+    def addtable(self, name):
+        """Create a new table with the specified name.
+
+        Args:
+            name: The name of the table to add.
+
+        Returns:
+            The created table.
+
+        Raises:
+            DataError.INVALID_OPERATION: If the data source type does not support adding a table.
         """
         for case in switch(self.type):
             if case(self.SOURCE_TYPES.text):
                 pass
             if case(self.SOURCE_TYPES.pickle):
-                table_names = [t for t in self._source]
+                self._source[name] = list()
                 break
             if case(self.SOURCE_TYPES.ini):
-                table_names = [t for t in self._source.sections() if self.INI_ROW_TAG not in t]
+                self._source.add_section(name)
+                self._source.set(name, self.INI_ROWLIST_OPT, '')
                 break
             if case(self.SOURCE_TYPES.xml_single):
-                table_names = [self.name]
-                break
+                raise DataError(DataError.INVALID_OPERATION, function='addtable', source_type=self.type)
             if case(self.SOURCE_TYPES.xml_flat):
-                table_names = self._source.findall()
                 break
             if case(self.SOURCE_TYPES.xml):
-                table_names = [t.get(self._XML_TABLE_NAME_ATTRIBUTE) for t in self._source.iter(self._XML_TABLE_TAG)]
+                table = xml_etree.SubElement(self._source, self._XML_TABLE_TAG)
+                table.attrib[self._XML_TABLE_NAME_ATTRIBUTE] = name
                 break
-        return [self.gettable(t) for t in table_names]
+        return self.gettable(name)
+
+    def close(self):
+        """Close the data source.
+
+        Returns:
+            Nothing.
+        """
+        if self._closer:
+            self._closer.close()
+            self._connectinfo = self._closer = self._source = self._connection = None
+
+    def commit(self):
+        """Commit any changes in memory to the source.
+
+        Returns:
+            Nothing.
+        """
+        for case in switch(self.type):
+            if case(self.SOURCE_TYPES.text):
+                self._connection = open(self._connectinfo, 'w')
+                for (table_name, rows) in self._source.items():
+                    self._connection.write(self._TEXT_TABLE_DELIMITER + table_name + '\n')
+                    for row in rows:
+                        self._connection.write(self._TEXT_TABLE_DELIMITER.join([f'{col}{self._TEXT_VAL_DELIMITER}{row[col]}' for col in row]) + '\n')
+                self._connection.close()
+                break
+            if case(self.SOURCE_TYPES.pickle):
+                self._connection = open(self._connectinfo, 'w')
+                pickle_dump(self._source, self._connection)
+                self._connection.close()
+                break
+            if case(self.SOURCE_TYPES.ini):
+                self._connection = open(self._connectinfo, 'w')
+                self._source.write(self._connection)
+                self._connection.close()
+                break
+            if case(self.SOURCE_TYPES.xml_single):
+                pass
+            if case(self.SOURCE_TYPES.xml_flat):
+                pass
+            if case(self.SOURCE_TYPES.xml):
+                self._connection.write(self._connectinfo, 'ISO-8859-1')
+                break
 
     def gettable(self, name):
         """Get the requested data table.
@@ -383,6 +430,32 @@ class DataSource:
             raise DataError(DataError.BAD_TABLE, table_name=name, source_name=self.name)
         return DataTable(self.type, name, table, self._source)
 
+    def gettables(self):
+        """Get all the tables from the data source.
+
+        Returns:
+            The list of table in the data source.
+        """
+        for case in switch(self.type):
+            if case(self.SOURCE_TYPES.text):
+                pass
+            if case(self.SOURCE_TYPES.pickle):
+                table_names = [t for t in self._source]
+                break
+            if case(self.SOURCE_TYPES.ini):
+                table_names = [t for t in self._source.sections() if self.INI_ROW_TAG not in t]
+                break
+            if case(self.SOURCE_TYPES.xml_single):
+                table_names = [self.name]
+                break
+            if case(self.SOURCE_TYPES.xml_flat):
+                table_names = self._source.findall()
+                break
+            if case(self.SOURCE_TYPES.xml):
+                table_names = [t.get(self._XML_TABLE_NAME_ATTRIBUTE) for t in self._source.iter(self._XML_TABLE_TAG)]
+                break
+        return [self.gettable(t) for t in table_names]
+
     def hastable(self, name):
         """Determine if the named table exists in the data source.
 
@@ -416,81 +489,6 @@ class DataSource:
                 break
         return False
 
-    def addtable(self, name):
-        """Create a new table with the specified name.
-
-        Args:
-            name: The name of the table to add.
-
-        Returns:
-            The created table.
-
-        Raises:
-            DataError.INVALID_OPERATION: If the data source type does not support adding a table.
-        """
-        for case in switch(self.type):
-            if case(self.SOURCE_TYPES.text):
-                pass
-            if case(self.SOURCE_TYPES.pickle):
-                self._source[name] = list()
-                break
-            if case(self.SOURCE_TYPES.ini):
-                self._source.add_section(name)
-                self._source.set(name, self.INI_ROWLIST_OPT, '')
-                break
-            if case(self.SOURCE_TYPES.xml_single):
-                raise DataError(DataError.INVALID_OPERATION, function='addtable', source_type=self.type)
-            if case(self.SOURCE_TYPES.xml_flat):
-                break
-            if case(self.SOURCE_TYPES.xml):
-                table = xml_etree.SubElement(self._source, self._XML_TABLE_TAG)
-                table.attrib[self._XML_TABLE_NAME_ATTRIBUTE] = name
-                break
-        return self.gettable(name)
-
-    def commit(self):
-        """Commit any changes in memory to the source.
-
-        Returns:
-            Nothing.
-        """
-        for case in switch(self.type):
-            if case(self.SOURCE_TYPES.text):
-                self._connection = open(self._connectinfo, 'w')
-                for (table_name, rows) in self._source.items():
-                    self._connection.write(self._TEXT_TABLE_DELIMITER + table_name + '\n')
-                    for row in rows:
-                        self._connection.write(self._TEXT_TABLE_DELIMITER.join([f'{col}{self._TEXT_VAL_DELIMITER}{row[col]}' for col in row]) + '\n')
-                self._connection.close()
-                break
-            if case(self.SOURCE_TYPES.pickle):
-                self._connection = open(self._connectinfo, 'w')
-                pickle_dump(self._source, self._connection)
-                self._connection.close()
-                break
-            if case(self.SOURCE_TYPES.ini):
-                self._connection = open(self._connectinfo, 'w')
-                self._source.write(self._connection)
-                self._connection.close()
-                break
-            if case(self.SOURCE_TYPES.xml_single):
-                pass
-            if case(self.SOURCE_TYPES.xml_flat):
-                pass
-            if case(self.SOURCE_TYPES.xml):
-                self._connection.write(self._connectinfo, 'ISO-8859-1')
-                break
-
-    def close(self):
-        """Close the data source.
-
-        Returns:
-            Nothing.
-        """
-        if self._closer:
-            self._closer.close()
-            self._connectinfo = self._closer = self._source = self._connection = None
-
 
 class DataRow:
     """Class to create a universal abstract interface for a data row."""
@@ -511,79 +509,16 @@ class DataRow:
         self._row = raw
         self._parent = parent
 
-    raw = property(lambda s: s._row, doc='A read-only property which returns the raw contents of the data row.')
-
-    def __getattr__(self, attr):
-        return self.getvalue(attr)
-
     def __enter__(self):
         return self
 
     def __exit__(self, *exc_info):
         return False
 
-    def delete(self):
-        """Delete this data row.
+    def __getattr__(self, attr):
+        return self.getvalue(attr)
 
-        Returns:
-            Nothing.
-        """
-        for case in switch(self.type):
-            if case(DataSource.SOURCE_TYPES.ini):
-                self._parent.remove_section(self._row)
-                break
-            if case():
-                self._parent.remove(self._row)
-
-    def hascol(self, col):
-        """Determine if the named column exists in the row.
-
-        Args:
-            col: The name of the column to search for.
-
-        Returns:
-            Returns True if the named column exists in the data source, False otherwise.
-        """
-        for case in switch(self.type):
-            if case(DataSource.SOURCE_TYPES.text):
-                pass
-            if case(DataSource.SOURCE_TYPES.pickle):
-                return col in self._row
-            if case(DataSource.SOURCE_TYPES.ini):
-                return self._parent.has_option(self._row, col)
-            if case(DataSource.SOURCE_TYPES.xml_single):
-                if col == self._XML_SINGLE_COL_NAME:
-                    return bool(self._row.get(col))
-            if case(DataSource.SOURCE_TYPES.xml):
-                if self._row.find(col) is not None:
-                    return True
-                return False
-            if case(DataSource.SOURCE_TYPES.xml_flat):
-                return bool(self._row.get(col))
-
-    def getcolumns(self):
-        """Get all the columns from the row.
-
-        Returns:
-            The list of columns in the data row.
-        """
-        for case in switch(self.type):
-            if case(DataSource.SOURCE_TYPES.text):
-                pass
-            if case(DataSource.SOURCE_TYPES.pickle):
-                return list(self._row.keys())
-            if case(DataSource.SOURCE_TYPES.ini):
-                return self._parent.options(self._row)
-            if case(DataSource.SOURCE_TYPES.xml_single):
-                cols = [e.tag for e in self._row.getiterator()]
-                if self._row.get(self._XML_SINGLE_COL_NAME):
-                    cols.append(self._XML_SINGLE_COL_NAME)
-                return cols
-            if case(DataSource.SOURCE_TYPES.xml_flat):
-                return list(self._row.attrib.keys())
-            if case(DataSource.SOURCE_TYPES.xml):
-                return [e.tag for e in list(self._row) if e.tag != self._XML_ROW_TAG]
-        return None
+    raw = property(lambda s: s._row, doc='A read-only property which returns the raw contents of the data row.')
 
     def delcolumn(self, col):
         """Delete the named column from the row.
@@ -617,6 +552,43 @@ class DataRow:
                 del self._row.attrib[col]
                 break
 
+    def delete(self):
+        """Delete this data row.
+
+        Returns:
+            Nothing.
+        """
+        for case in switch(self.type):
+            if case(DataSource.SOURCE_TYPES.ini):
+                self._parent.remove_section(self._row)
+                break
+            if case():
+                self._parent.remove(self._row)
+
+    def getcolumns(self):
+        """Get all the columns from the row.
+
+        Returns:
+            The list of columns in the data row.
+        """
+        for case in switch(self.type):
+            if case(DataSource.SOURCE_TYPES.text):
+                pass
+            if case(DataSource.SOURCE_TYPES.pickle):
+                return list(self._row.keys())
+            if case(DataSource.SOURCE_TYPES.ini):
+                return self._parent.options(self._row)
+            if case(DataSource.SOURCE_TYPES.xml_single):
+                cols = [e.tag for e in self._row.getiterator()]
+                if self._row.get(self._XML_SINGLE_COL_NAME):
+                    cols.append(self._XML_SINGLE_COL_NAME)
+                return cols
+            if case(DataSource.SOURCE_TYPES.xml_flat):
+                return list(self._row.attrib.keys())
+            if case(DataSource.SOURCE_TYPES.xml):
+                return [e.tag for e in list(self._row) if e.tag != self._XML_ROW_TAG]
+        return None
+
     def getvalue(self, col):
         """Get the value of the specified column.
 
@@ -646,6 +618,32 @@ class DataRow:
             if case(DataSource.SOURCE_TYPES.xml):
                 return self._row.findtext(col)
         return None
+
+    def hascol(self, col):
+        """Determine if the named column exists in the row.
+
+        Args:
+            col: The name of the column to search for.
+
+        Returns:
+            Returns True if the named column exists in the data source, False otherwise.
+        """
+        for case in switch(self.type):
+            if case(DataSource.SOURCE_TYPES.text):
+                pass
+            if case(DataSource.SOURCE_TYPES.pickle):
+                return col in self._row
+            if case(DataSource.SOURCE_TYPES.ini):
+                return self._parent.has_option(self._row, col)
+            if case(DataSource.SOURCE_TYPES.xml_single):
+                if col == self._XML_SINGLE_COL_NAME:
+                    return bool(self._row.get(col))
+            if case(DataSource.SOURCE_TYPES.xml):
+                if self._row.find(col) is not None:
+                    return True
+                return False
+            if case(DataSource.SOURCE_TYPES.xml_flat):
+                return bool(self._row.get(col))
 
     def setvalue(self, col, value):
         """Set the value of the specified column.
@@ -717,8 +715,6 @@ class DataTable:
         self._parent = parent
         self._table = raw
 
-    raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
-
     def __enter__(self):
         return self
 
@@ -745,23 +741,7 @@ class DataTable:
             if case(DataSource.SOURCE_TYPES.xml_flat):
                 return self._parent
 
-    def getrows(self, col=None, value=None):
-        """Get all the rows matching the specified selector.
-
-        Args:
-            col (optional, default=None): The column to select for if not None.
-            value (optional, default=None): The column value to select for if not None.
-
-        Returns:
-            The list of rows matching the specified selector.
-        """
-        rowlist = self._table if self.type != DataSource.SOURCE_TYPES.ini else [self._INI_ROW_FORMAT % (self.name, r) for r in self._table]
-        allrows = [DataRow(self.type, r, self._get_row_parent()) for r in rowlist]
-        if (col is None) and (value is None):
-            return allrows
-        if value is None:
-            return [r for r in allrows if r.hascol(col)]
-        return [r for r in allrows if r.getvalue(col) == value]
+    raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
 
     def addrow(self, **values):
         """Create a new row with the specified values.
@@ -810,3 +790,21 @@ class DataTable:
         """
         for row in self.getrows(col, value):
             row.delete()
+
+    def getrows(self, col=None, value=None):
+        """Get all the rows matching the specified selector.
+
+        Args:
+            col (optional, default=None): The column to select for if not None.
+            value (optional, default=None): The column value to select for if not None.
+
+        Returns:
+            The list of rows matching the specified selector.
+        """
+        rowlist = self._table if self.type != DataSource.SOURCE_TYPES.ini else [self._INI_ROW_FORMAT % (self.name, r) for r in self._table]
+        allrows = [DataRow(self.type, r, self._get_row_parent()) for r in rowlist]
+        if (col is None) and (value is None):
+            return allrows
+        if value is None:
+            return [r for r in allrows if r.hascol(col)]
+        return [r for r in allrows if r.getvalue(col) == value]

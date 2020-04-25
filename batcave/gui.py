@@ -144,6 +144,25 @@ class BatCaveBaseGUI:
         if icon:
             self.setWindowIcon(QIcon(str(find_image(icon))))  # pylint: disable=E1101
 
+    def closeEvent(self, event):
+        """Overload of standard Qt method called when the object is closed.
+
+        Returns:
+            Nothing.
+        """
+        if event.type() == QEvent.Close:
+            if self._saved_output_streams:
+                (sys.stdout, sys.stderr) = self._saved_output_streams
+
+    def redirect_output(self, widget):
+        """Redirect stdout and stderr to the specified widget.
+
+        Returns:
+            Nothing.
+        """
+        self._saved_output_streams = (sys.stdout, sys.stderr)
+        sys.stdout = sys.stderr = BatCaveGUIOutput(widget)
+
     def validate(self):
         """Run the validators for the object.
 
@@ -155,25 +174,6 @@ class BatCaveBaseGUI:
                 MessageBox(self, Message(how=validator.how, what=validator.what).MISSING_INFO, MessageBox.MESSAGE_TYPES.error).exec()
                 return False
         return True
-
-    def redirect_output(self, widget):
-        """Redirect stdout and stderr to the specified widget.
-
-        Returns:
-            Nothing.
-        """
-        self._saved_output_streams = (sys.stdout, sys.stderr)
-        sys.stdout = sys.stderr = BatCaveGUIOutput(widget)
-
-    def closeEvent(self, event):
-        """Overload of standard Qt method called when the object is closed.
-
-        Returns:
-            Nothing.
-        """
-        if event.type() == QEvent.Close:
-            if self._saved_output_streams:
-                (sys.stdout, sys.stderr) = self._saved_output_streams
 
 
 class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
@@ -216,6 +216,17 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
         """
         return self.validate()
 
+    def onGetDirectory(self):
+        """Show a simplified directory dialog.
+
+        Returns:
+            Nothing.
+        """
+        edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
+        dirpath = Path(QFileDialog.getExistingDirectory(self))
+        if dirpath:
+            edit_control.setText(dirpath)
+
     def onGetFile(self, file_filter=None):
         """Show a simplified file dialog.
 
@@ -230,17 +241,6 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
         if filepath:
             edit_control.setText(filepath)
 
-    def onGetDirectory(self):
-        """Show a simplified directory dialog.
-
-        Returns:
-            Nothing.
-        """
-        edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
-        dirpath = Path(QFileDialog.getExistingDirectory(self))
-        if dirpath:
-            edit_control.setText(dirpath)
-
 
 class MessageBox(QMessageBox):
     """This class provides functionality for a simplified message box.
@@ -249,13 +249,14 @@ class MessageBox(QMessageBox):
         MESSAGE_TYPES: The supported message types.
         _MESSAGE_ICONS: The supported message box icons.
     """
-    MESSAGE_TYPES = _MESSAGE_TYPES
     _MESSAGE_ICONS = {_MESSAGE_TYPES.about: QMessageBox.Information,
                       _MESSAGE_TYPES.info: QMessageBox.Information,
                       _MESSAGE_TYPES.question: QMessageBox.Question,
                       _MESSAGE_TYPES.warning: QMessageBox.Warning,
                       _MESSAGE_TYPES.error: QMessageBox.Critical,
                       _MESSAGE_TYPES.results: QMessageBox.Information}
+
+    MESSAGE_TYPES = _MESSAGE_TYPES
 
     def __init__(self, parent, message, msg_type=_MESSAGE_TYPES.info, detail=None, image=None):
         """

@@ -37,6 +37,7 @@ else:
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
 
+LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))
 S_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 S_664 = S_660 | S_IROTH
 S_770 = S_IRWXU | S_IRWXG
@@ -82,9 +83,6 @@ class OSUtilError(BatCaveException):
     GROUP_EXISTS = BatCaveError(1, Template('The group already exists: $group'))
     INVALID_OPERATION = BatCaveError(2, Template('Platform unsupported: $platform'))
     USER_EXISTS = BatCaveError(3, Template('The user already exists: $user'))
-
-
-LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))
 
 
 class LockFile:
@@ -206,6 +204,46 @@ class SysCmdRunner:
         return syscmd(self.command, *use_args, **use_keys)
 
 
+def chmod(dirname, mode, recursive=False, files_only=False):
+    """Perform chmod recursively if requested.
+
+    Args:
+        dirname: The directory for which to set the mode.
+        mode: The mode to set as would be specified for os.chmod().
+        recursive (optional, default=False): Also perform setting recursively on all children.
+        files_only (optional, default=False): Only affect files.
+
+    Returns:
+        Nothing.
+    """
+    dirname = Path(dirname)
+    if not files_only:
+        dirname.chmod(mode)
+    if recursive:
+        for (root, dirs, files) in walk(dirname):
+            for pathname in (files if files_only else (dirs + files)):  # pylint: disable=superfluous-parens
+                Path(root, pathname).chmod(mode)
+
+
+def chown(pathname, user=None, group=None, recursive=False):
+    """Perform chown and chgrp together, recursively if requested.
+
+    Args:
+        user (optional, default=None): The user to set as the owner, if specified.
+        group (optional, default=None): The group to set as the owner, if specified.
+        recursive (optional, default=False): Also perform the user/owner settings recursively on all children.
+
+    Returns:
+        Nothing.
+    """
+    pathname = Path(pathname)
+    os_chown(pathname, user, group)
+    if recursive:
+        for (root, dirs, files) in walk(pathname):
+            for pathname in dirs + files:
+                os_chown(Path(root, pathname), user, group)
+
+
 def create_group(group_name, exists_ok=True):
     """Create the system group at the OS level.
 
@@ -283,46 +321,6 @@ def is_user_administrator():
     return True
 
 
-def chown(pathname, user=None, group=None, recursive=False):
-    """Perform chown and chgrp together, recursively if requested.
-
-    Args:
-        user (optional, default=None): The user to set as the owner, if specified.
-        group (optional, default=None): The group to set as the owner, if specified.
-        recursive (optional, default=False): Also perform the user/owner settings recursively on all children.
-
-    Returns:
-        Nothing.
-    """
-    pathname = Path(pathname)
-    os_chown(pathname, user, group)
-    if recursive:
-        for (root, dirs, files) in walk(pathname):
-            for pathname in dirs + files:
-                os_chown(Path(root, pathname), user, group)
-
-
-def chmod(dirname, mode, recursive=False, files_only=False):
-    """Perform chmod recursively if requested.
-
-    Args:
-        dirname: The directory for which to set the mode.
-        mode: The mode to set as would be specified for os.chmod().
-        recursive (optional, default=False): Also perform setting recursively on all children.
-        files_only (optional, default=False): Only affect files.
-
-    Returns:
-        Nothing.
-    """
-    dirname = Path(dirname)
-    if not files_only:
-        dirname.chmod(mode)
-    if recursive:
-        for (root, dirs, files) in walk(dirname):
-            for pathname in (files if files_only else (dirs + files)):  # pylint: disable=superfluous-parens
-                Path(root, pathname).chmod(mode)
-
-
 def rmpath(path_name):
     """Remove the specified path object. If a directory, remove recursively.
 
@@ -370,47 +368,6 @@ def _rmtree_onerror(caller, pathstr, excinfo):
         raise excinfo[0](excinfo[1])
     pathstr.chmod(S_IRWXU)
     pathstr.unlink()
-
-
-# Implement standard directory stack on chdir
-_DIRECTORY_STACK = list()
-
-
-def pushd(dirname):
-    """Implements the push function for a directory stack.
-
-    Args:
-        dirname: The directory to which to change.
-
-    Returns:
-        The value of the directory pushed to the stack.
-    """
-    global _DIRECTORY_STACK  # pylint: disable=global-statement
-    cwd = Path.cwd()
-    chdir(dirname)
-    _DIRECTORY_STACK.append(cwd)
-    return cwd
-
-
-def popd():
-    """Implements the pop function for a directory stack.
-
-    Args:
-        None.
-
-    Returns:
-        The value of the directory removed from the stack.
-
-    Raises:
-        IndexError: If the stack is empty.
-    """
-    global _DIRECTORY_STACK  # pylint: disable=global-statement
-    try:
-        dirname = _DIRECTORY_STACK.pop()
-    except IndexError:
-        return 0
-    chdir(dirname)
-    return dirname
 
 
 def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stderr=False, append_stderr=False, fail_on_error=True, show_cmd=False, use_shell=False,
@@ -543,5 +500,46 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
     if errlines and append_stderr:
         outlines += errlines
     return flatten_string_list(outlines) if flatten_output else outlines
+
+
+# Implement standard directory stack on chdir
+_DIRECTORY_STACK = list()
+
+
+def pushd(dirname):
+    """Implements the push function for a directory stack.
+
+    Args:
+        dirname: The directory to which to change.
+
+    Returns:
+        The value of the directory pushed to the stack.
+    """
+    global _DIRECTORY_STACK  # pylint: disable=global-statement
+    cwd = Path.cwd()
+    chdir(dirname)
+    _DIRECTORY_STACK.append(cwd)
+    return cwd
+
+
+def popd():
+    """Implements the pop function for a directory stack.
+
+    Args:
+        None.
+
+    Returns:
+        The value of the directory removed from the stack.
+
+    Raises:
+        IndexError: If the stack is empty.
+    """
+    global _DIRECTORY_STACK  # pylint: disable=global-statement
+    try:
+        dirname = _DIRECTORY_STACK.pop()
+    except IndexError:
+        return 0
+    chdir(dirname)
+    return dirname
 
 # cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd UNLCK

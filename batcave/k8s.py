@@ -72,8 +72,6 @@ class Cluster:
         self._core_api = CoreV1Api()
         self._batch_api = BatchV1Api()
 
-    pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
-
     def __getattr__(self, attr):
         if '_' in attr:
             (verb, item_class_name) = attr.split('_')
@@ -86,66 +84,7 @@ class Cluster:
             method = getattr(self, f'{verb}_item{plural}')
             return lambda *a, **k: method(item_class, *a, **k)
 
-    def find_method(self, item_class, method, suffix=None):
-        """Search all the APIs for the specified method.
-
-        Args:
-            item_class: The item class to search.
-            method: The method for which to search.
-            suffix(optional, default=None): If not None, append to the method name with an underscore when searching.
-
-        Returns:
-            A reference to method.
-
-        Raises:
-            AttributeError: If the method is not found.
-        """
-        method_name = f'{method}_namespaced_{item_class.__name__.lower()}'
-        if suffix:
-            method_name += f'_{suffix}'
-        for api in (self._core_api, self._batch_api):
-            if hasattr(api, method_name):
-                return getattr(api, method_name)
-        raise AttributeError(f'No method found: {method_name}')
-
-    def has_item(self, item_class, item_name, namespace='default'):
-        """Determine if the named items of the specified class exists.
-
-        Args:
-            item_class: The item class for which to search.
-            item_name: The name of the item to search for.
-            namespace (optional, default='default'): The Kubernetes namespace to search.
-
-        Returns:
-            Returns True if the named item exists, False otherwise.
-        """
-        return bool([i for i in self.get_items(item_class, namespace) if i.name == item_name])
-
-    def get_item(self, item_class, name, namespace='default'):
-        """Get the requested item.
-
-        Args:
-            item_class: The item class.
-            item_name: The name of the item to return.
-            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
-
-        Returns:
-            The requested item.
-        """
-        return item_class(self, self.find_method(item_class, 'read')(name, namespace))
-
-    def get_items(self, item_class, namespace='default', **keys):
-        """Get all the item of the requested type.
-
-        Args:
-            item_class: The item class.
-            namespace (optional, default='default'): The Kubernetes namespace from which to return the items.
-            keys (optional): A list of keys by which to filter the items.
-
-        Returns:
-            The requested item list.
-        """
-        return [item_class(self, i) for i in self.find_method(item_class, 'list')(namespace, **keys).items]
+    pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
 
     def create_item(self, item_class, item_spec, namespace='default', exists_ok=False):
         """Create a new item using the specified spec.
@@ -166,19 +105,6 @@ class Cluster:
                 self.find_method(item_class, 'delete')(item_name, namespace)
             return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec))
 
-    def delete_item(self, item_class, name, namespace='default'):
-        """Delete the named item.
-
-        Args:
-            item_class: The class of the item to create.
-            name: The name of the item to delete.
-            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
-
-        Returns:
-            Nothing.
-        """
-        item_class(self, self.find_method(item_class, 'delete')(name, namespace))
-
     def create_job(self, job_spec, namespace='default', exists_ok=False, wait_for=False, check_every=2, timeout=False):
         """Create a job and wait for the specified condition.
 
@@ -187,11 +113,11 @@ class Cluster:
             namespace (optional, default='default'): The Kubernetes namespace in which to create the job.
             exists_ok (optional, default=False): If True and the item already exists, delete before creating.
             wait_for (optional, default=False): If True, wait until the job completes before returning.
-            check_every (optional, default=2): The number of seconds to wait between every check to see if the job has completed. 
+            check_every (optional, default=2): The number of seconds to wait between every check to see if the job has completed.
             timeout (optional, default=False): If not False, this is the maximum number of seconds to wait for the job to complete.
-            
+
         Raises:
-            ClusterError.TIMEOUT: If timeout is True and the maximum number of seconds is exceeded. 
+            ClusterError.TIMEOUT: If timeout is True and the maximum number of seconds is exceeded.
 
         Returns:
             The created job.
@@ -219,12 +145,86 @@ class Cluster:
             job = self.get_job(job.name, namespace)
         return job
 
+    def delete_item(self, item_class, name, namespace='default'):
+        """Delete the named item.
+
+        Args:
+            item_class: The class of the item to create.
+            name: The name of the item to delete.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+
+        Returns:
+            Nothing.
+        """
+        item_class(self, self.find_method(item_class, 'delete')(name, namespace))
+
+    def find_method(self, item_class, method, suffix=None):
+        """Search all the APIs for the specified method.
+
+        Args:
+            item_class: The item class to search.
+            method: The method for which to search.
+            suffix(optional, default=None): If not None, append to the method name with an underscore when searching.
+
+        Returns:
+            A reference to method.
+
+        Raises:
+            AttributeError: If the method is not found.
+        """
+        method_name = f'{method}_namespaced_{item_class.__name__.lower()}'
+        if suffix:
+            method_name += f'_{suffix}'
+        for api in (self._core_api, self._batch_api):
+            if hasattr(api, method_name):
+                return getattr(api, method_name)
+        raise AttributeError(f'No method found: {method_name}')
+
+    def get_item(self, item_class, name, namespace='default'):
+        """Get the requested item.
+
+        Args:
+            item_class: The item class.
+            item_name: The name of the item to return.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+
+        Returns:
+            The requested item.
+        """
+        return item_class(self, self.find_method(item_class, 'read')(name, namespace))
+
+    def get_items(self, item_class, namespace='default', **keys):
+        """Get all the item of the requested type.
+
+        Args:
+            item_class: The item class.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the items.
+            keys (optional): A list of keys by which to filter the items.
+
+        Returns:
+            The requested item list.
+        """
+        return [item_class(self, i) for i in self.find_method(item_class, 'list')(namespace, **keys).items]
+
+    def has_item(self, item_class, item_name, namespace='default'):
+        """Determine if the named items of the specified class exists.
+
+        Args:
+            item_class: The item class for which to search.
+            item_name: The name of the item to search for.
+            namespace (optional, default='default'): The Kubernetes namespace to search.
+
+        Returns:
+            Returns True if the named item exists, False otherwise.
+        """
+        return bool([i for i in self.get_items(item_class, namespace) if i.name == item_name])
+
     def kubectl(self, *args):
         """Run a kubectl command.
-        
+
         Args:
             *args: The arguments to pass to kubectl.
-            
+
         Returns:
             The result of the kubectl command.
         """
@@ -263,52 +263,6 @@ class Pod(ClusterObject):
 
     logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name), doc='A read-only property which returns the pod logs.')
 
-    def exec(self, *command):
-        """Execute a command in the pod.
-
-        Args:
-            *command: The command and arguments to execute.
-
-        Returns:
-            The output from the command.
-            
-        Raises:
-            PodError.EXEC_ERROR: If the word 'error' occurs in the output.
-        """
-        output = k8s_process(self._cluster_obj.pod_exec, self.name, self.namespace,
-                             command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True)
-        if 'error' in output:
-            raise PodError(PodError.EXEC_ERROR, errlines=output)
-        return output.split('\n')[0:-1]
-
-    def has_file(self, filename):
-        """Determine if the pod has the specified file.
-
-        Args:
-            filename: The name of the file for which to search.
-
-        Returns:
-            True if the specified file exists, False otherwise.
-        """
-        return filename == self.exec('ls', filename)[0]
-
-    def remove_file(self, filename, not_exists_ok=False):
-        """Remove the specified file from the pod.
-
-        Args:
-            filename: The name of the file to remove.
-            not_exists_ok (optional, default=False): If True, raise an exception if the file does not exist. 
-
-        Returns:
-            Nothing.
-            
-        Raises:
-            PodError.FILE_NOT_FOUND: If the file is not found.
-        """
-        if not (not_exists_ok or self.has_file(filename)):
-            raise PodError(PodError.FILE_NOT_FOUND, filename=filename)
-        self.exec('rm', filename)
-
     def cp_file(self, mode, source, target):
         """Copy a file into or out of the pod.
 
@@ -319,7 +273,7 @@ class Pod(ClusterObject):
 
         Returns:
             Nothing.
-            
+
         Raises:
             PodError.BAD_COPY_FILENAME: If the source or target name was not found.
             PodError.COPY_ERROR: If there was an error when copying the file.
@@ -340,6 +294,24 @@ class Pod(ClusterObject):
                 raise PodError(PodError.COPY_ERROR, errlines=output)
             raise PodError(PodError.BAD_COPY_FILENAME, mode=mode)
 
+    def exec(self, *command):
+        """Execute a command in the pod.
+
+        Args:
+            *command: The command and arguments to execute.
+
+        Returns:
+            The output from the command.
+
+        Raises:
+            PodError.EXEC_ERROR: If the word 'error' occurs in the output.
+        """
+        output = k8s_process(self._cluster_obj.pod_exec, self.name, self.namespace,
+                             command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True)
+        if 'error' in output:
+            raise PodError(PodError.EXEC_ERROR, errlines=output)
+        return output.split('\n')[0:-1]
+
     def get_file(self, source, target=None):
         """Copy a file out of the pod.
 
@@ -353,6 +325,17 @@ class Pod(ClusterObject):
         target_path = Path(target) if target else Path(Path(source).name)
         self.cp_file('out', source, target_path)
 
+    def has_file(self, filename):
+        """Determine if the pod has the specified file.
+
+        Args:
+            filename: The name of the file for which to search.
+
+        Returns:
+            True if the specified file exists, False otherwise.
+        """
+        return filename == self.exec('ls', filename)[0]
+
     def put_file(self, source, target):
         """Copy a file into the pod.
 
@@ -364,6 +347,23 @@ class Pod(ClusterObject):
             Nothing.
         """
         self.cp_file('in', source, target)
+
+    def remove_file(self, filename, not_exists_ok=False):
+        """Remove the specified file from the pod.
+
+        Args:
+            filename: The name of the file to remove.
+            not_exists_ok (optional, default=False): If True, raise an exception if the file does not exist.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            PodError.FILE_NOT_FOUND: If the file is not found.
+        """
+        if not (not_exists_ok or self.has_file(filename)):
+            raise PodError(PodError.FILE_NOT_FOUND, filename=filename)
+        self.exec('rm', filename)
 
 
 class Job(ClusterObject):

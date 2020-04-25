@@ -38,9 +38,6 @@ class QuickBuildObject:
     def __exit__(self, *exc_info):
         return False
 
-    def __str__(self):
-        return self._console.qb_runner(self._object_path).text
-
     def __getattr__(self, attr):
         try:
             return self._console.qb_runner(f'{self._object_path}/{attr}').text
@@ -58,6 +55,9 @@ class QuickBuildObject:
         object_xml = fromstring(self._console.qb_runner(self._object_path).text)
         object_xml.find(attr).text = value
         self._console.qb_runner(f'{self._object_type}s', object_xml)
+
+    def __str__(self):
+        return self._console.qb_runner(self._object_path).text
 
     id = property(lambda s: s._object_id, doc='A read-only property which returns the QuickBuild object ID.')
 
@@ -89,18 +89,6 @@ class QuickBuildCfg(QuickBuildObject):
         else:
             return self._console.configs[thing].id
 
-    def get_children(self, recurse=False):
-        """Get the child configurations.
-
-        Args:
-            recurse (optional, default=False): Get the children recursively.
-
-        Returns:
-            The list of child configurations.
-        """
-        ans = self._console.qb_runner(f'configurations?parent_id={self._object_id}&recursive=' + bool_to_str(recurse))
-        return [QuickBuildCfg(self._console, c.find('id').text) for c in fromstring(ans.text).findall('com.pmease.quickbuild.model.Configuration')]
-
     children = property(get_children, doc='A read-only property which returns a list of children for the object.')
 
     @property
@@ -108,34 +96,23 @@ class QuickBuildCfg(QuickBuildObject):
         """A read-only property which returns the latest build for this configuration."""
         return QuickBuildBuild(self._console, fromstring(self._console.qb_runner(f'latest_builds/{self._object_id}').text).find('id').text)
 
-    def enable(self):
-        """Enable this configuration.
-
-        Returns:
-            Nothing.
-        """
-        self.disabled = 'false'  # pylint: disable=attribute-defined-outside-init
-
-    def disable(self, wait=False):
-        """Disable this configuration.
+    def change_var(self, var, val):
+        """Change the value of a variable in this configuration.
 
         Args:
-            wait (optional, default=False): If True, wait for the configuration to be disabled.
+            var: The variable to change.
+            val: The new value of the variable.
 
         Returns:
-            Nothing.
+            The configuration.
         """
-        self.disabled = 'true'  # pylint: disable=attribute-defined-outside-init
-        while wait and self.latest_build.status.upper() not in ('SUCCESSFUL', 'FAILED'):
-            pass
-
-    def remove(self):
-        """Remove this configuration.
-
-        Returns:
-            Nothing.
-        """
-        self._console.qb_runner(f'configurations/{self._object_id}', delete=True)
+        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
+        for varxml in cfgxml.find('variables').findall('com.pmease.quickbuild.variable.Variable'):
+            if varxml.find('name').text == var:
+                valref = varxml.find('valueProvider').find('value')
+                valref.text = val
+        self._console.qb_runner('configurations', cfgxml)
+        return self
 
     def copy(self, parent, name, recurse=False):
         """Copy this configuration to a new configuration.
@@ -152,6 +129,63 @@ class QuickBuildCfg(QuickBuildObject):
         new_cfg = QuickBuildCfg(self._console, new_id.text)
         self._console.updater()
         return new_cfg
+
+    def disable(self, wait=False):
+        """Disable this configuration.
+
+        Args:
+            wait (optional, default=False): If True, wait for the configuration to be disabled.
+
+        Returns:
+            Nothing.
+        """
+        self.disabled = 'true'  # pylint: disable=attribute-defined-outside-init
+        while wait and self.latest_build.status.upper() not in ('SUCCESSFUL', 'FAILED'):
+            pass
+
+    def enable(self):
+        """Enable this configuration.
+
+        Returns:
+            Nothing.
+        """
+        self.disabled = 'false'  # pylint: disable=attribute-defined-outside-init
+
+    def get_children(self, recurse=False):
+        """Get the child configurations.
+
+        Args:
+            recurse (optional, default=False): Get the children recursively.
+
+        Returns:
+            The list of child configurations.
+        """
+        ans = self._console.qb_runner(f'configurations?parent_id={self._object_id}&recursive=' + bool_to_str(recurse))
+        return [QuickBuildCfg(self._console, c.find('id').text) for c in fromstring(ans.text).findall('com.pmease.quickbuild.model.Configuration')]
+
+    def remove(self):
+        """Remove this configuration.
+
+        Returns:
+            Nothing.
+        """
+        self._console.qb_runner(f'configurations/{self._object_id}', delete=True)
+
+    def rename(self, newname):
+        """Rename this configuration.
+
+        Args:
+            newname: The new name for the configuration.
+
+        Returns:
+            The renamed configuration.
+        """
+        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
+        name = cfgxml.find('name')
+        name.text = newname
+        self._console.qb_runner('configurations', cfgxml)
+        self._console.updater()
+        return self
 
     def reparent(self, newparent, rename=False):
         """Reparent this configuration.
@@ -171,40 +205,6 @@ class QuickBuildCfg(QuickBuildObject):
             name.text = rename
         self._console.qb_runner('configurations', cfgxml)
         self._console.updater()
-        return self
-
-    def rename(self, newname):
-        """Rename this configuration.
-
-        Args:
-            newname: The new name for the configuration.
-
-        Returns:
-            The renamed configuration.
-        """
-        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
-        name = cfgxml.find('name')
-        name.text = newname
-        self._console.qb_runner('configurations', cfgxml)
-        self._console.updater()
-        return self
-
-    def change_var(self, var, val):
-        """Change the value of a variable in this configuration.
-
-        Args:
-            var: The variable to change.
-            val: The new value of the variable.
-
-        Returns:
-            The configuration.
-        """
-        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
-        for varxml in cfgxml.find('variables').findall('com.pmease.quickbuild.variable.Variable'):
-            if varxml.find('name').text == var:
-                valref = varxml.find('valueProvider').find('value')
-                valref.text = val
-        self._console.qb_runner('configurations', cfgxml)
         return self
 
 
@@ -232,16 +232,6 @@ class QuickBuildConsole:
         self.dashboards = dict()
         self.updater()
 
-    @property
-    def update(self):
-        """A read-write property which returns and sets the update state for the console."""
-        return self._update
-
-    @update.setter
-    def update(self, val):
-        self._update = val
-        self.updater()
-
     def __enter__(self):
         return self
 
@@ -252,6 +242,16 @@ class QuickBuildConsole:
         if attr in self.configs:
             return self.configs[attr]
         raise AttributeError(f'No such configuration: {attr}')
+
+    @property
+    def update(self):
+        """A read-write property which returns and sets the update state for the console."""
+        return self._update
+
+    @update.setter
+    def update(self, val):
+        self._update = val
+        self.updater()
 
     def create_dashboard(self, name, dashboard):
         """Create a dashboard from an existing one.
@@ -294,20 +294,6 @@ class QuickBuildConsole:
         """
         return dashboard in self.dashboards
 
-    def updater(self):
-        """Update the configuration list.
-
-        Returns:
-            Nothing.
-        """
-        if self._update:
-            top = QuickBuildCfg(self, 1)
-            self.configs = {c.path: c for c in top.get_children(True)}
-            self.configs[top.path] = top
-
-            for dashboard in fromstring(self.qb_runner('dashboards').text).iter('com.pmease.quickbuild.model.Dashboard'):
-                self.dashboards[dashboard.find('name').text] = QuickBuildDashboard(self, dashboard.find('id').text)
-
     def qb_runner(self, cmd, xmldata=None, delete=False):
         """Provide an interface to the RESTful API.
 
@@ -332,5 +318,19 @@ class QuickBuildConsole:
         if result.status_code != codes.ok:  # pylint: disable=E1101
             result.raise_for_status()
         return result
+
+    def updater(self):
+        """Update the configuration list.
+
+        Returns:
+            Nothing.
+        """
+        if self._update:
+            top = QuickBuildCfg(self, 1)
+            self.configs = {c.path: c for c in top.get_children(True)}
+            self.configs[top.path] = top
+
+            for dashboard in fromstring(self.qb_runner('dashboards').text).iter('com.pmease.quickbuild.model.Dashboard'):
+                self.dashboards[dashboard.find('name').text] = QuickBuildDashboard(self, dashboard.find('id').text)
 
 # cSpell:ignore tful

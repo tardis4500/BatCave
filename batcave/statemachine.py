@@ -43,10 +43,11 @@ class StateMachine:
         _DEFAULT_LOGFILE: The default file to use to store the log information.
         _DEFAULT_LOCKFILE: The default file to use for file locking.
     """
-    STATE_STATUSES = Enum('state_status', ('entering', 'exited'))
-    _DEFAULT_STATEFILE = Path('state')
-    _DEFAULT_LOGFILE = Path('log')
     _DEFAULT_LOCKFILE = Path('lock')
+    _DEFAULT_LOGFILE = Path('log')
+    _DEFAULT_STATEFILE = Path('state')
+
+    STATE_STATUSES = Enum('state_status', ('entering', 'exited'))
 
     def __init__(self, states, statefile=_DEFAULT_STATEFILE, logfile=_DEFAULT_LOGFILE, lockfile=_DEFAULT_LOCKFILE, logger_args=None, autostart=True):
         """
@@ -111,21 +112,14 @@ class StateMachine:
         with open(self.statefile, 'w') as filestream:
             print(self.status.name, self.state, file=filestream)
 
-    def start(self):
-        """Start the state machine.
+    def done(self):
+        """Shutdown the state machine.
 
         Returns:
             Nothing.
-
-        Raises:
-            StateMachineError.CRASHED: If the state machine crashed on the previous run.
-            StateMachineError.ALREADY_STARTED: If the state machine has already been started.
         """
-        if self.started:
-            raise StateMachineError(StateMachineError.ALREADY_STARTED)
-        if self.status == self.STATE_STATUSES.entering:
-            raise StateMachineError(StateMachineError.CRASHED, state=self.state)
-        self.started = True
+        self.logger.shutdown()
+        self.locker.close()
 
     def enter_next_state(self):
         """Enter the next state.
@@ -147,21 +141,6 @@ class StateMachine:
             raise StateMachineError(StateMachineError.DONE)
         self.status = self.STATE_STATUSES.entering
         self.state = self.states[next_state_index]
-        self._writestate()
-
-    def rollback(self):
-        """Rollback to the previous state.
-
-        Returns:
-            Nothing.
-
-        Raises:
-            StateMachineError.BAD_ROLLBACK: If the state machine has not entered a state.
-        """
-        if self.status != self.STATE_STATUSES.entering:
-            raise StateMachineError(StateMachineError.BAD_ROLLBACK)
-        self.status = self.STATE_STATUSES.exited
-        self.state = self.states[self.states.index(self.state) - 1]
         self._writestate()
 
     def exit_state(self):
@@ -192,11 +171,33 @@ class StateMachine:
         (self.status, self.state) = (self.STATE_STATUSES.exited, self.states[0])
         self._writestate()
 
-    def done(self):
-        """Shutdown the state machine.
+    def rollback(self):
+        """Rollback to the previous state.
 
         Returns:
             Nothing.
+
+        Raises:
+            StateMachineError.BAD_ROLLBACK: If the state machine has not entered a state.
         """
-        self.logger.shutdown()
-        self.locker.close()
+        if self.status != self.STATE_STATUSES.entering:
+            raise StateMachineError(StateMachineError.BAD_ROLLBACK)
+        self.status = self.STATE_STATUSES.exited
+        self.state = self.states[self.states.index(self.state) - 1]
+        self._writestate()
+
+    def start(self):
+        """Start the state machine.
+
+        Returns:
+            Nothing.
+
+        Raises:
+            StateMachineError.CRASHED: If the state machine crashed on the previous run.
+            StateMachineError.ALREADY_STARTED: If the state machine has already been started.
+        """
+        if self.started:
+            raise StateMachineError(StateMachineError.ALREADY_STARTED)
+        if self.status == self.STATE_STATUSES.entering:
+            raise StateMachineError(StateMachineError.CRASHED, state=self.state)
+        self.started = True
