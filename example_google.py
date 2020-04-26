@@ -11,10 +11,10 @@
 # Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.
 # Step9: Reorder Classes: private, protected, properties, methods.
-
-# Reordered class members alphabetically by type. (GitLab #29)
-
 # Step10: Add PEP484 type hints.
+
+# Added PEP484 type hints to automation module. (GitLab #29)
+
 # Step11: Add PEP526 variable type annotations
 # Step12: Add linting and type checking to build pipeline.
 
