@@ -14,6 +14,7 @@ from platform import node
 from socket import getfqdn, gethostbyname, gaierror
 from string import Template
 from time import sleep
+from typing import Any
 from xml.etree.ElementTree import SubElement, parse as xmlparse
 
 # Import third-party modules
@@ -156,7 +157,7 @@ class Server:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def _connect_wmi(self):
@@ -225,7 +226,7 @@ class Server:
 
         created_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
         if error_if_exists or not created_object:
-            result = getattr(manager, ManagementObject.OBJECT_PREFIX+item_type).Create(**creation_args, **key_args)[0]
+            result = getattr(manager, ManagementObject.OBJECT_PREFIX + item_type).Create(**creation_args, **key_args)[0]
         else:
             result = False
 
@@ -340,7 +341,7 @@ class Server:
                     extra_keys[key] = filters[key]
                 else:
                     del filters[key]
-        return [globals()[item_type](r, manager, unique_key, getattr(r, unique_key), **extra_keys) for r in getattr(manager, ManagementObject.OBJECT_PREFIX+item_type)(**filters)]
+        return [globals()[item_type](r, manager, unique_key, getattr(r, unique_key), **extra_keys) for r in getattr(manager, ManagementObject.OBJECT_PREFIX + item_type)(**filters)]
 
     def get_object_by_name(self, item_type, name, wmi=True if WIN32 else False, **filters):
         """Get a management object by name.
@@ -673,7 +674,7 @@ class LinuxService(NamedOSObject):
             The result of the management command.
         """
         control_command = ['service', self.Name, command] if (self.type == Service.SERVICE_TYPES.sysv) \
-                                                          else ['systemctl' if (self.type == Service.SERVICE_TYPES.systemd) else 'initctl', command, self.Name]
+            else ['systemctl' if (self.type == Service.SERVICE_TYPES.systemd) else 'initctl', command, self.Name]
         try:
             return syscmd(*control_command, use_shell=True, ignore_stderr=True, remote=self.computer, remote_auth=self.auth)
         except CMDError as err:
@@ -917,7 +918,7 @@ class COMObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         self.disconnect()
         return False
 
@@ -974,7 +975,7 @@ class ManagementObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         del self.object_ref
         return False
 

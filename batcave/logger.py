@@ -49,7 +49,7 @@ class Logger:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         self.shutdown()
         return False
 

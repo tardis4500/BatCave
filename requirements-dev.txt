@@ -8,6 +8,8 @@ WMI
 autopep8
 doc8
 flake8
+flake8-annotations
+mypy
 pipdeptree
 pylint
 restview

@@ -59,6 +59,7 @@ from enum import Enum
 from pathlib import PurePath
 from pickle import dump as pickle_dump, load as pickle_load
 from string import Template
+from typing import Any
 from urllib.request import urlopen
 from xml.parsers import expat
 import xml.etree.ElementTree as xml_etree
@@ -168,7 +169,7 @@ class DataSource:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         self.close()
         return False
 
@@ -512,7 +513,7 @@ class DataRow:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def __getattr__(self, attr):
@@ -718,7 +719,7 @@ class DataTable:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def _get_row_parent(self):

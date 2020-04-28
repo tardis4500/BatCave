@@ -4,6 +4,7 @@
 from enum import Enum
 from string import Template
 from time import sleep
+from typing import Any
 
 # Import third-party modules
 from nssrc.com.citrix.netscaler.nitro.resource.config.ssl.sslvserver_sslcertkey_binding import sslvserver_sslcertkey_binding as NetScalerCertificateBinding
@@ -74,7 +75,7 @@ class LoadBalancer:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         self._api.logout()
         return False
 
@@ -292,7 +293,7 @@ class LoadBalancerObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
 

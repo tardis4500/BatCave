@@ -121,7 +121,7 @@ class LockFile:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         self.close()
         return False
 

@@ -45,6 +45,7 @@ from pathlib import Path
 from re import compile as re_compile
 from shutil import copyfile
 from string import Template
+from typing import Any
 from xml.etree.ElementTree import fromstringlist as xmlparse
 
 # Import BatCave packages
@@ -141,7 +142,7 @@ class Formatter:
                 if case(self.OUTPUT_FORMATS.csv):
                     pass
                 if case(self.OUTPUT_FORMATS.text):
-                    return chr(64+self.count) + sep
+                    return chr(64 + self.count) + sep
                 if case(self.OUTPUT_FORMATS.html):
                     return self._bol
                 if case():
@@ -336,7 +337,7 @@ class Expander:
                 var = self.re_var.search(thing).group(1)
             except AttributeError:
                 prelim_index = thing.index(self.prelim)
-                substr = thing[prelim_index:prelim_index+200]
+                substr = thing[prelim_index:prelim_index + 200]
                 fail = True
             if fail:
                 raise ExpanderError(ExpanderError.NO_POST_DELIMITER, substr=substr)
@@ -503,7 +504,7 @@ class Procedure:
 
         # Create a default value of False for IsEnvironment of every environment
         for env in self.environments:
-            common_environment['Is'+env] = False
+            common_environment['Is' + env] = False
 
         # Update the environments with the common environment values and
         # set the Environment variable and
@@ -516,12 +517,12 @@ class Procedure:
             self.environments[env] = env_dict
             if self._ENVIRONMENT_VARIABLE not in self.environments[env]:
                 self.environments[env][self._ENVIRONMENT_VARIABLE] = env
-            self.environments[env]['Is'+env] = True
+            self.environments[env]['Is' + env] = True
 
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def dump(self):

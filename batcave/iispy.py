@@ -4,6 +4,7 @@
 from os import getenv
 from pathlib import Path
 from string import Template
+from typing import Any
 from xml.etree.ElementTree import fromstring as xmlparse_str, fromstringlist as xmlparse_list
 
 # Import internal modules
@@ -59,7 +60,7 @@ class IISObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def manage_item(self, action):
@@ -138,7 +139,7 @@ class IISInstance:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def __getattr__(self, attr):
@@ -147,8 +148,6 @@ class IISInstance:
         if not result:
             raise AttributeError(attr)
         return result
-
-    advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
     def create_virtual_dir(self, vdir_name, vdir_location, website):
         """Create the specified virtual directory in the IIS instance.
@@ -217,6 +216,8 @@ class IISInstance:
             The specified advanced logger.
         """
         return IISAdvancedLogger(path=path, logtype=logtype, set_location=set_location, hostname=self.hostname)
+
+    advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
     def get_configuration_section(self, name, path=None, set_location='apphost'):
         """Get the named configuration section from the IIS configuration files.
@@ -375,7 +376,7 @@ class IISInstance:
         Returns:
             The result of the reset command.
         """
-        return syscmd('iisreset', remote=self.hostname, show_stdout=not quiet)
+        return syscmd('iisreset', remote=self.hostname, show_stdout=not verbose)
 
     def start(self, quiet=False):
         """Start the IIS instance.
@@ -429,7 +430,7 @@ class IISConfigurationSection:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def __str__(self):
@@ -442,8 +443,8 @@ class IISConfigurationSection:
         cfg_section = config.find(self._name.replace('/', '-'))
         if attr in cfg_section.attrib:
             return str_to_pythonval(cfg_section.attrib[attr])
-        if attr.endswith('s') and cfg_section.findall('.//'+attr.rstrip('s')):
-            return cfg_section.findall('.//'+attr.rstrip('s'))
+        if attr.endswith('s') and cfg_section.findall('.//' + attr.rstrip('s')):
+            return cfg_section.findall('.//' + attr.rstrip('s'))
         result = cfg_section.find(f'./[@{attr}]')
         if not result:
             raise AttributeError(attr)

@@ -3,6 +3,7 @@
 # Import standard modules
 from pathlib import Path
 from string import Template
+from typing import Any
 
 # Import third-party modules
 import requests
@@ -40,7 +41,7 @@ class TCBuildConfig:
         self.config_id = config_id
         fail = False
         try:
-            self.info = self._server.api_call('get', 'buildTypes/id:'+self.config_id)
+            self.info = self._server.api_call('get', 'buildTypes/id:' + self.config_id)
         except exceptions.HTTPError:
             fail = True
         if fail:
@@ -78,7 +79,7 @@ class TeamCityServer:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     build_configs = property(lambda s: s.api_call('get', 'buildTypes')['buildType'], doc='A read-only property which returns a list of the build configurations.')
@@ -100,7 +101,7 @@ class TeamCityServer:
             An error unless the result of the API call is OK.
         """
         caller = getattr(requests, calltype)
-        result = caller(self.url+apicall, auth=self.auth, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, json=params, verify=self._CA_CERT)
+        result = caller(self.url + apicall, auth=self.auth, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, json=params, verify=self._CA_CERT)
         if result.status_code != codes.ok:  # pylint: disable=E1101
             raise result.raise_for_status()
         return result.json()

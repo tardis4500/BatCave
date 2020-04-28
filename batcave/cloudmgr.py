@@ -11,16 +11,17 @@ from enum import Enum
 from json import loads as json_read
 from pathlib import Path
 from string import Template
-from typing import Any
+from typing import Any, List, Optional, Sequence, Union
 
 # Import third-party modules
 from docker import DockerClient
+from docker.models.containers import Container as DockerContainer
 
 # Import internal modules
 from .lang import switch, BatCaveError, BatCaveException, WIN32
 from .sysutil import SysCmdRunner
 
-_CLOUD_TYPES = Enum('cloud_types', ('local', 'gcloud', 'dockerhub'))
+_CLOUD_TYPES = Enum('_CLOUD_TYPES', ('local', 'gcloud', 'dockerhub'))
 
 gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
 
@@ -44,9 +45,9 @@ class Cloud:
     Attributes:
         CLOUD_TYPES: The cloud providers currently supported by this class.
     """
-    CLOUD_TYPES: Enum = _CLOUD_TYPES
+    CLOUD_TYPES = _CLOUD_TYPES
 
-    def __init__(self, ctype: CLOUD_TYPES, auth: Any = None, login: bool = True):
+    def __init__(self, ctype: _CLOUD_TYPES, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
         """
         Args:
             ctype: The cloud provider for this instance. Must be a member of _CLOUD_TYPES.
@@ -61,7 +62,7 @@ class Cloud:
         """
         self.type = ctype
         self.auth = auth
-        self._client = None
+        self._client = False
         validatetype(self.type)
         if login:
             self.login()
@@ -69,12 +70,12 @@ class Cloud:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
-    containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
+    client = property(lambda s: s._client)
 
-    def exec(self, *args, **kwargs):
+    def exec(self, *args, **kwargs) -> str:
         """Execute a command against the cloud API.
 
         Args:
@@ -90,8 +91,7 @@ class Cloud:
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.gcloud):
                 return gcloud(None, *args, **kwargs)
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
     def get_container(self, name: str) -> Container:  # noqa:F821, pylint: disable=used-before-assignment
         """Get a container from the cloud.
@@ -104,7 +104,7 @@ class Cloud:
         """
         return Container(self, name)
 
-    def get_containers(self, filters=None):
+    def get_containers(self, filters: str = None) -> List['Container']:
         """Get a possibly filtered list of containers.
 
         Args:
@@ -118,9 +118,10 @@ class Cloud:
         """
         for case in switch(self.type):
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
-                return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
+                return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]  # type: ignore[attr-defined] # noqa:F821
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
+
+    containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
     def get_image(self, tag: str) -> Image:  # noqa:F821, pylint: disable=used-before-assignment
         """Get an image from the cloud container registry.
@@ -133,7 +134,7 @@ class Cloud:
         """
         return Image(self, tag)
 
-    def login(self):
+    def login(self) -> None:
         """Perform a login to the cloud provider.
 
         Returns:
@@ -146,10 +147,10 @@ class Cloud:
             if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
                 self._client = DockerClient()
                 if self.type == self.CLOUD_TYPES.dockerhub:
-                    self._client.login(*self.auth)
+                    self._client.login(*self.auth)  # type: ignore[attr-defined] # noqa:F821
                 break
             if case(self.CLOUD_TYPES.gcloud):
-                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / (self.auth[0]+'.json'), ignore_stderr=True)
+                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / (self.auth[0] + '.json'), ignore_stderr=True)
                 gcloud(None, 'auth', 'configure-docker', ignore_stderr=True)
                 self._client = True
                 break
@@ -160,7 +161,7 @@ class Cloud:
 class Image:
     """Class to create a universal abstract interface to a container image."""
 
-    def __init__(self, cloud, name):
+    def __init__(self, cloud: Cloud, name: str):
         """
         Args:
             cloud: The API cloud reference.
@@ -191,14 +192,13 @@ class Image:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
                           doc='A read-only property which returns all the containers for this image.')
-    tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
 
-    def get_tags(self, image_filter=None):
+    def get_tags(self, image_filter: str = None) -> List[str]:
         """Get a list of tags applied to the image.
 
         Args:
@@ -214,14 +214,15 @@ class Image:
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self._ref.tags
             if case(Cloud.CLOUD_TYPES.gcloud):
-                args = ('--format=json',)
+                args = ['--format=json']
                 if image_filter:
-                    args += ('--filter='+image_filter,)
+                    args += ['--filter=' + image_filter]
                 return sorted([t for i in json_read(self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)) for t in i['tags']])
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
-    def manage(self, action):
+    tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
+
+    def manage(self, action: str) -> List[str]:
         """Manage an image in the cloud registry.
 
         Args:
@@ -240,10 +241,9 @@ class Image:
                 if errors:
                     raise CloudError(CloudError.IMAGE_ERROR, action=action, err=''.join(errors))
                 return docker_log
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
-    def pull(self):
+    def pull(self) -> List[str]:
         """Pull the image from the registry.
 
         Returns:
@@ -251,7 +251,7 @@ class Image:
         """
         return self.manage('pull')
 
-    def push(self):
+    def push(self) -> List[str]:
         """Push the image to the registry.
 
         Returns:
@@ -259,7 +259,7 @@ class Image:
         """
         return self.manage('push')
 
-    def run(self, detach=True, update=True, **kwargs):
+    def run(self, detach: bool = True, update: bool = True, **kwargs) -> DockerContainer:
         """Run an image to create an active container.
 
         Args:
@@ -278,14 +278,13 @@ class Image:
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
-    def tag(self, new_tag):
+    def tag(self, new_tag: str) -> Optional['Image']:
         """Tag an image in the registry.
 
         Returns:
-            The new tag.
+            The tagged image.
 
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support image tagging.
@@ -310,7 +309,7 @@ class Image:
 class Container:
     """Class to create a universal abstract interface to a container."""
 
-    def __init__(self, cloud, name):
+    def __init__(self, cloud: Cloud, name: str):
         """
         Args:
             cloud: The API cloud reference.
@@ -336,10 +335,10 @@ class Container:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
-    def stop(self):
+    def stop(self) -> DockerContainer:
         """Stop a running container.
 
         Returns:
@@ -351,11 +350,10 @@ class Container:
         for case in switch(self.cloud.type):
             if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
                 return self._ref.stop()
-            if case():
-                raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
 
-def validatetype(ctype):
+def validatetype(ctype: _CLOUD_TYPES) -> None:
     """Determine if the specified Cloud type is valid.
 
     Args:

@@ -1,6 +1,7 @@
 """This module provides a Pythonic interface to the QuickBuild RESTful API."""
 
 # Import standard modules
+from typing import Any
 from xml.etree.ElementTree import fromstring, tostring
 
 # Import third-party modules
@@ -35,7 +36,7 @@ class QuickBuildObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def __getattr__(self, attr):
@@ -88,8 +89,6 @@ class QuickBuildCfg(QuickBuildObject):
             return thing.id
         else:
             return self._console.configs[thing].id
-
-    children = property(get_children, doc='A read-only property which returns a list of children for the object.')
 
     @property
     def latest_build(self):
@@ -163,6 +162,8 @@ class QuickBuildCfg(QuickBuildObject):
         ans = self._console.qb_runner(f'configurations?parent_id={self._object_id}&recursive=' + bool_to_str(recurse))
         return [QuickBuildCfg(self._console, c.find('id').text) for c in fromstring(ans.text).findall('com.pmease.quickbuild.model.Configuration')]
 
+    children = property(get_children, doc='A read-only property which returns a list of children for the object.')
+
     def remove(self):
         """Remove this configuration.
 
@@ -235,7 +236,7 @@ class QuickBuildConsole:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def __getattr__(self, attr):

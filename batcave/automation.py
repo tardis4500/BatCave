@@ -4,7 +4,7 @@
 import sys
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Union
 
 # Import internal modules
 from .sysutil import popd, SysCmdRunner
@@ -28,7 +28,7 @@ class ActionCommandRunner(SysCmdRunner):
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
         self.guard = guard
 
-    def run(self, message: str, *args: Any, **kwargs: Any) -> List[str]:
+    def run(self, message: str, *args: Any, **kwargs: Any) -> Union[str, List[str]]:
         """Run the action.
 
         Args:

@@ -135,7 +135,7 @@ class Label:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         return False
 
     def __str__(self):
@@ -480,7 +480,7 @@ class Client:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info):
+    def __exit__(self, *exc_info: Any):
         self.close()
         return False
 
