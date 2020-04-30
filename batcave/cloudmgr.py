@@ -1,7 +1,7 @@
 """This module provides utilities for managing cloud resources.
 
 Attributes:
-    _CLOUD_TYPES (Enum): The cloud providers supported by the Cloud class.
+    CloudType (Enum): The cloud providers supported by the Cloud class.
     gcloud (SysCmdRunner.run): A simple interface to the gcloud command line tool.
 """
 
@@ -21,7 +21,7 @@ from docker.models.containers import Container as DockerContainer
 from .lang import switch, BatCaveError, BatCaveException, WIN32
 from .sysutil import SysCmdRunner
 
-_CLOUD_TYPES = Enum('_CLOUD_TYPES', ('local', 'gcloud', 'dockerhub'))
+CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))  # pylint: disable=invalid-name
 
 gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
 
@@ -36,7 +36,7 @@ class CloudError(BatCaveException):
     """
     IMAGE_ERROR = BatCaveError(1, Template('Error ${action}ing image: $err'))
     INVALID_OPERATION = BatCaveError(2, Template('Invalid Cloud type ($ctype) for this operation'))
-    INVALID_TYPE = BatCaveError(3, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in _CLOUD_TYPES])))
+    INVALID_TYPE = BatCaveError(3, Template('Invalid Cloud type ($ctype). Must be one of: ' + str([t.name for t in CloudType])))
 
 
 class Cloud:
@@ -45,12 +45,10 @@ class Cloud:
     Attributes:
         CLOUD_TYPES: The cloud providers currently supported by this class.
     """
-    CLOUD_TYPES = _CLOUD_TYPES
-
-    def __init__(self, ctype: _CLOUD_TYPES, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
+    def __init__(self, ctype: CloudType, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
         """
         Args:
-            ctype: The cloud provider for this instance. Must be a member of _CLOUD_TYPES.
+            ctype: The cloud provider for this instance. Must be a member of CloudType.
             auth (optional, default=None): For local or Docker Hub this is a (username, password) tuple.
                 For Google Cloud it is a service account keyfile found at ~/.ssh/{value}.json.
             login (optional, default=True): Whether or not to login to the cloud provider at instance initialization.
@@ -89,7 +87,7 @@ class Cloud:
             CloudError.INVALID_OPERATION: If the cloud type does not support an API call.
         """
         for case in switch(self.type):
-            if case(self.CLOUD_TYPES.gcloud):
+            if case(CloudType.gcloud):
                 return gcloud(None, *args, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
@@ -117,7 +115,7 @@ class Cloud:
             CloudError.INVALID_OPERATION: If the cloud type does not support login.
         """
         for case in switch(self.type):
-            if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]  # type: ignore[attr-defined] # noqa:F821
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
@@ -144,13 +142,13 @@ class Cloud:
             CloudError.INVALID_OPERATION: If the value of self.ctype is not in CLOUD_TYPES.
         """
         for case in switch(self.type):
-            if case(self.CLOUD_TYPES.local, self.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 self._client = DockerClient()
-                if self.type == self.CLOUD_TYPES.dockerhub:
+                if self.type == CloudType.dockerhub:
                     self._client.login(*self.auth)  # type: ignore[attr-defined] # noqa:F821
                 break
-            if case(self.CLOUD_TYPES.gcloud):
-                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / (self.auth[0] + '.json'), ignore_stderr=True)
+            if case(CloudType.gcloud):
+                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / f'{self.auth[0]}.json', ignore_stderr=True)
                 gcloud(None, 'auth', 'configure-docker', ignore_stderr=True)
                 self._client = True
                 break
@@ -180,10 +178,10 @@ class Image:
         self.name = name
         self._docker_client = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 self._ref = self.cloud.client.images.get(self.name)
                 break
-            if case(Cloud.CLOUD_TYPES.gcloud):
+            if case(CloudType.gcloud):
                 self._ref = None
                 break
             if case():
@@ -211,9 +209,9 @@ class Image:
             CloudError.INVALID_OPERATION: If the cloud type does not support image tags.
         """
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 return self._ref.tags
-            if case(Cloud.CLOUD_TYPES.gcloud):
+            if case(CloudType.gcloud):
                 args = ['--format=json']
                 if image_filter:
                     args += ['--filter=' + image_filter]
@@ -235,7 +233,7 @@ class Image:
             CloudError.INVALID_OPERATION: If the cloud type does not support image management.
         """
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub, Cloud.CLOUD_TYPES.gcloud):
+            if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
                 docker_log = [literal_eval(l.strip()) for l in getattr(self._docker_client.images, action)(self.name).split('\n') if l]
                 errors = [l['error'] for l in docker_log if 'error' in l]
                 if errors:
@@ -276,7 +274,7 @@ class Image:
         if update:
             self.pull()
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
@@ -291,13 +289,13 @@ class Image:
         """
         new_ref = None
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 self.pull()
                 self._ref.tag(new_tag)
                 new_ref = Image(self.cloud, new_tag)
                 new_ref.push()
                 break
-            if case(Cloud.CLOUD_TYPES.gcloud):
+            if case(CloudType.gcloud):
                 self.cloud.exec('container', 'images', 'add-tag', self.name, new_tag, ignore_stderr=True)
                 new_ref = Image(self.cloud, new_tag)
                 break
@@ -326,7 +324,7 @@ class Container:
         self.cloud = cloud
         self.name = name
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 self._ref = self.cloud.client.containers.get(self.name)
                 break
             if case():
@@ -348,12 +346,12 @@ class Container:
             CloudError.INVALID_OPERATION: If the cloud type does not support stopping an container.
         """
         for case in switch(self.cloud.type):
-            if case(Cloud.CLOUD_TYPES.local, Cloud.CLOUD_TYPES.dockerhub):
+            if case(CloudType.local, CloudType.dockerhub):
                 return self._ref.stop()
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
 
-def validatetype(ctype: _CLOUD_TYPES) -> None:
+def validatetype(ctype: CloudType) -> None:
     """Determine if the specified Cloud type is valid.
 
     Args:
@@ -365,5 +363,5 @@ def validatetype(ctype: _CLOUD_TYPES) -> None:
     Raises
         CloudError.INVALID_TYPE: If the cloud type is not valid.
     """
-    if ctype not in Cloud.CLOUD_TYPES:
+    if ctype not in CloudType:
         raise CloudError(CloudError.INVALID_TYPE, ctype=ctype)
