@@ -50,7 +50,7 @@ setup(
                       'psutil >= 5.6',
                       'pywin32 >= 225; sys_platform == "win32"',
                       'requests >= 2.22',
-                      'WMI >= 1.4'],
+                      'WMI >= 1.4 < 1.5'],
     extras_require={
         'dev': ['setuptools', 'twine', 'wheel', 'xmlrunner'],
         'test': [],

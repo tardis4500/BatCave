@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [38.1.1] - 2020-05-04
+
+- Changed
+  - Set the required WMI version to be less than 1.5. (GitLab #47)
+
+## Release History
+
 ### [38.1.0] - 2020-02-14
 
 - Added
   - Added context parameter to k8s.Cluster initializer. (GitLab #43)
-
-
-## Release History
 
 ### [38.0.1] - 2020-02-13
 
