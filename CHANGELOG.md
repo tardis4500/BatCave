@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Set the required WMI version to be less than 1.5. (GitLab #47)
 
+<!-- This comment will prevent merge conflicts -->
 ## Release History
 
 ### [38.1.0] - 2020-02-14
