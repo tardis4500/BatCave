@@ -22,7 +22,7 @@ from re import compile as re_compile
 from stat import S_IWUSR
 from string import Template
 from tempfile import mkdtemp
-from typing import cast, Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Sequence, Tuple, Union
 
 # Import internal modules
 from .fileutil import slurp
@@ -972,7 +972,7 @@ class Client:
                     if forfiles:
                         arglist += forfiles
                     names = self._p4run('changes', *arglist)
-                return [ChangeList(self, c, ) for c in names]
+                return [ChangeList(self, str(c)) for c in names]
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_clients(self, *args) -> List['Client']:
@@ -1500,7 +1500,7 @@ class Client:
 class FileRevision:
     """This class describes information about a file revision."""
 
-    def __init__(self, filename, revision, author, date, labels, description):
+    def __init__(self, filename: str, revision: str, author: str, date: str, labels: List, description: str):
         """
         Args/Attributes:
             filename: The name of the file.
@@ -1524,7 +1524,7 @@ class FileRevision:
 class FileChangeRecord:
     """This class describes information about a file change."""
 
-    def __init__(self, client, filename, revision, mod_type, changelist):
+    def __init__(self, client: Client, filename: str, revision: str, mod_type: str, changelist: str):
         """
         Args/Attributes:
             client: The CMS Client object where this file change record is located.
@@ -1551,7 +1551,7 @@ class FileChangeRecord:
 class ChangeList:
     """Class to create a universal abstract interface for a CMS changelist."""
 
-    def __init__(self, client, chg_list_id=None, editable=None):
+    def __init__(self, client: Client, chg_list_id: Any = None, editable: Optional[bool] = None):
         """
         Args:
             client: The CMS Client object where this file change record is located.
@@ -1569,12 +1569,10 @@ class ChangeList:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         self._client = client
-        self._id = chg_list_id
-        self._files = None
-        if editable is None:
-            self._editable = not bool(self._id)
-        else:
-            self._editable = editable
+        self._files = None  # type: Optional[List]
+        self._id = None
+        self._changelist = dict()
+        self._editable = editable if (editable is not None) else not bool(id)
         for case in switch(client.type):
             if case(ClientType.perforce):
                 if isinstance(id, str) or isinstance(id, int):
@@ -1596,16 +1594,15 @@ class ChangeList:
     name = property(lambda s: s._id, doc='A read-only property which returns the name of the change list.')
 
     @property
-    def desc(self):
+    def desc(self) -> str:
         """A read-write property which returns and sets the change list description."""
         for case in switch(self._client.type):
             if case(ClientType.perforce):
                 return self._changelist['Description' if self._editable else 'desc']
-            if case():
-                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
+        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @desc.setter
-    def desc(self, newdesc):
+    def desc(self, newdesc: str) -> None:
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1616,7 +1613,7 @@ class ChangeList:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @property
-    def files(self):
+    def files(self) -> List[FileChangeRecord]:
         """A read-only property which returns the list of files in the change list."""
         if self._files is None:
             desc = self._client._p4run('describe', '-s', self.name)[0]  # pylint: disable=W0212
@@ -1625,7 +1622,7 @@ class ChangeList:
         return self._files
 
     @property
-    def time(self):
+    def time(self) -> datetime:
         """A read-write property which returns and sets the change list time."""
         for case in switch(self._client.type):
             if case(ClientType.perforce):
@@ -1633,11 +1630,10 @@ class ChangeList:
                     return datetime.strptime(self._changelist['Date'], '%Y/%m/%d %H:%M:%S')
                 else:
                     return datetime.fromtimestamp(int(self._changelist['time']))
-            if case():
-                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
+        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @time.setter
-    def time(self, newtime):
+    def time(self, newtime: Union[str, datetime]) -> None:
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1648,16 +1644,15 @@ class ChangeList:
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @property
-    def user(self):
+    def user(self) -> str:
         """A read-write property which returns and sets the change list user."""
         for case in switch(self._client.type):
             if case(ClientType.perforce):
                 return self._changelist['User' if self._editable else 'user']
-            if case():
-                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
+        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @user.setter
-    def user(self, newuser):
+    def user(self, newuser: str) -> None:
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1667,21 +1662,20 @@ class ChangeList:
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
-    def store(self, no_execute: bool = False):
+    def store(self, no_execute: bool = False) -> None:
         """Save the ChangeList to the CMS server.
 
         Args:
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
-            The result of the changelist save command.
+            Nothing.
         """
         if not no_execute:
-            return self._client._p4save('change', self._changelist, '-f')  # type: ignore # pylint: disable=W0212
-        return None
+            self._client._p4save('change', self._changelist, '-f')  # pylint: disable=W0212
 
 
-def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
+def create_client_name(prefix: Optional[str] = None, suffix: Optional[str] = None, sep: str = '_', licenseplate: bool = False) -> str:
     """Automatically create a client name from the user and hostname.
 
     Attributes:
@@ -1704,7 +1698,7 @@ def create_client_name(prefix=None, suffix=None, sep='_', licenseplate=False):
     return sep.join(parts)
 
 
-def validatetype(ctype):
+def validatetype(ctype: ClientType) -> None:
     """Determine if the specified CMS type is valid.
 
     Args:
@@ -1720,7 +1714,7 @@ def validatetype(ctype):
         raise CMSError(CMSError.INVALID_TYPE, ctype=ctype)
 
 
-def walk_git_tree(tree, parent=None):
+def walk_git_tree(tree: git.Tree, parent: Optional[git.Tree] = None) -> Generator[Tuple, Tuple, None]:
     """Walk the git tree similar to os.walk().
 
     Attributes:
