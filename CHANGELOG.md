@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [38.1.2] - 2020-05-18
+
+- Changed
+  - Pass Kubernetes API call parameters to exec call. (GitLab #48)
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
 ### [38.1.1] - 2020-05-04
 
 - Changed
   - Set the required WMI version to be less than 1.5. (GitLab #47)
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [38.1.0] - 2020-02-14
 

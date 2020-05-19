@@ -144,10 +144,10 @@ class Pod(ClusterObject):
     'Class to represent a kubernetes pod'
     logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name))
 
-    def exec(self, *command):
+    def exec(self, *command, **k8s_api_kwargs):
         'Execute a command on the specified pod'
         output = k8s_process(self._cluster_obj.pod_exec, self.name, self.namespace,
-                             command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True)
+                             command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True, **k8s_api_kwargs)
         if 'error' in output:
             raise PodError(PodError.EXEC_ERROR, errlines=output)
         return output.split('\n')[0:-1]
