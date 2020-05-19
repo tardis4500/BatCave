@@ -266,10 +266,6 @@ class Pod(ClusterObject):
     def cp_file(self, mode, source, target):
         """Copy a file into or out of the pod.
 
-        Args:
-            mode: Either 'in' or 'out' to indicate the direction of the copy.
-            source: The source for the copy.
-            target: The target of the copy.
 
         Returns:
             Nothing.
@@ -294,11 +290,12 @@ class Pod(ClusterObject):
                 raise PodError(PodError.COPY_ERROR, errlines=output)
             raise PodError(PodError.BAD_COPY_FILENAME, mode=mode)
 
-    def exec(self, *command):
+    def exec(self, *command, **k8s_api_kwargs):
         """Execute a command in the pod.
 
         Args:
             *command: The command and arguments to execute.
+            **k8s_api_kwargs: The Kubernetes API parameters to pass to the stream call.
 
         Returns:
             The output from the command.
@@ -307,7 +304,7 @@ class Pod(ClusterObject):
             PodError.EXEC_ERROR: If the word 'error' occurs in the output.
         """
         output = k8s_process(self._cluster_obj.pod_exec, self.name, self.namespace,
-                             command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True)
+                             command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True, **k8s_api_kwargs)
         if 'error' in output:
             raise PodError(PodError.EXEC_ERROR, errlines=output)
         return output.split('\n')[0:-1]

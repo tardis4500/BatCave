@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- This comment will prevent merge conflicts -->
 ## Release History
 
+### [38.1.2] - 2020-05-18
+
+- Changed
+  - Pass Kubernetes API call parameters to exec call. (GitLab #48)
+
 ### [38.1.1] - 2020-05-04
 
 - Changed

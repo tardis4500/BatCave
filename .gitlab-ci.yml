@@ -54,9 +54,9 @@ ci_build:
 
 install_test:
   stage: install_test
+  image: python:3.7
   except:
     - tags
-  image: python:3.7
   before_script:
     - echo Testing install
   script:
