@@ -13,10 +13,11 @@
 # Step9: Reorder Classes: private, protected, properties, methods.
 # Step10: Add PEP484 type hints.
 
-# Finished adding PEP484 type hints to cms module. (GitLab #29)
+# Finished adding PEP484 type hints to commander module. (GitLab #29)
 
 # Step11: Add PEP526 variable type annotations
 # Step12: Add linting and type checking to build pipeline.
+# Step13: Fix enums (if not other ticket)
 
 # -*- coding: utf-8 -*-
 """Example Google style docstrings.

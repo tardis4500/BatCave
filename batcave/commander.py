@@ -1,7 +1,8 @@
 """This module provides a simplified interface to the standard argparse module."""
 
 # Import standard modules
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, REMAINDER
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, HelpFormatter, Namespace, REMAINDER, _MutuallyExclusiveGroup
+from typing import cast, Any, Callable, Iterable, Optional, Sequence, Type, Union
 
 # Import internal modules
 from .version import get_version_info, VERSION_STYLES
@@ -28,7 +29,7 @@ class Argument:
 class SubParser:
     """This is a simple container class to encapsulate a subparser definition."""
 
-    def __init__(self, subcommand, command_runner, arguments=tuple()):
+    def __init__(self, subcommand: str, command_runner: Callable, arguments: Sequence[Argument] = tuple()):
         """
         Args:
             subcommand: The subcommand name for the subparser.
@@ -48,9 +49,10 @@ class SubParser:
 class Commander:
     """This class provides a simplified interface to the argparse.ArgumentParser class."""
 
-    def __init__(self, description, arguments=tuple(), subparsers=tuple(), subparser_common_args=tuple(), default=None, parents=tuple(),
-                 parse_extra=False, extra_var_sep=':', convert_extra=True,
-                 add_version=True, version_style=VERSION_STYLES.oneline, formatter_class=ArgumentDefaultsHelpFormatter):
+    def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),
+                 subparser_common_args: Sequence[Argument] = tuple(), default: Optional[SubParser] = None, parents: Sequence[ArgumentParser] = tuple(),
+                 parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, add_version: bool = True,
+                 version_style: VERSION_STYLES = VERSION_STYLES.oneline, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):
         """
         Args:
             description: The subcommand name for the subparser.
@@ -81,8 +83,9 @@ class Commander:
         self._default = default
         self._extra_var_sep = extra_var_sep
         self._parse_extra = parse_extra
-        self._pass_on = None
+        self._pass_on = tuple()  # type: Sequence[str]
         self._subparsers = subparsers
+        self.subparser_common_parser = None
 
         self.parser = ArgumentParser(description=description, formatter_class=formatter_class, parents=parents)
         _add_arguments_to_parser(self.parser, arguments)
@@ -96,13 +99,14 @@ class Commander:
             _add_arguments_to_parser(subparser, subparser_def.arguments)
             subparser.set_defaults(command=subparser_def.command_runner)
 
-        self.subparser_common_parser = ArgumentParser(add_help=False) if subparser_common_args else None
-        _add_arguments_to_parser(self.subparser_common_parser, subparser_common_args)
+        if subparser_common_args:
+            self.subparser_common_parser = ArgumentParser(add_help=False)
+            _add_arguments_to_parser(self.subparser_common_parser, subparser_common_args)
 
         if self._parse_extra:
             self.parser.add_argument('extra_parser_args', nargs=REMAINDER, metavar='[[var1:val1] ...]')
 
-    def execute(self, argv=None, use_args=None):
+    def execute(self, argv: Optional[Sequence[str]] = None, use_args: Optional[Sequence[str]] = None) -> Any:
         """Parse the command line and call the command_runner.
 
         Args:
@@ -112,18 +116,18 @@ class Commander:
         Returns:
             The result of the called command_runner.
         """
-        args = use_args if use_args else self.parse_args(argv)
+        args = cast(Namespace, use_args if use_args else self.parse_args(argv))
         caller = self._default if (self._subparsers and not args.command and self._default) else args.command
         caller_args = (self.subparser_common_parser, self._pass_on) if self.subparser_common_parser else (args,)
         return caller(*caller_args)
 
-    def parse_args(self, argv=None, err_msg='No command specified', raise_on_error=False):
+    def parse_args(self, argv: Optional[Sequence[str]] = None, err_msg: str = 'No command specified', raise_on_error: Optional[BaseException] = None) -> Namespace:
         """Parse the command line.
 
         Args:
             argv (optional, default=None): The arguments to pass to the parser, otherwise sys.argv will be used.
             err_msg (optional, default='No command specified'): The error message to use if a bad subcommand is requested.
-            raise_on_error (optional, default=False): If not False, use the value as the error to be raised on a failure.
+            raise_on_error (optional, default=None): If not None, use the value as the error to be raised on a failure.
 
         Returns:
             The parsed argument Namespace.
@@ -131,10 +135,10 @@ class Commander:
         Raises:
             The value of raise_on_error if not False.
         """
-        (args, self._pass_on) = self.parser.parse_known_args(argv) if self.subparser_common_parser else (self.parser.parse_args(argv), None)
+        (args, self._pass_on) = self.parser.parse_known_args(argv) if self.subparser_common_parser else (self.parser.parse_args(argv), tuple())
         if self._subparsers and not args.command and not self._default:
             if raise_on_error:
-                raise raise_on_error  # pylint: disable=E0702
+                raise raise_on_error
             self.parser.error(err_msg)
         if self._parse_extra:
             for arg in args.extra_parser_args:
@@ -144,7 +148,7 @@ class Commander:
         return args
 
 
-def _add_arguments_to_parser(parser, arglist):
+def _add_arguments_to_parser(parser: Union[ArgumentParser, _MutuallyExclusiveGroup], arglist: Iterable[Union[dict, Argument]]) -> None:
     """Add arguments to the specified parser.
 
     Args:

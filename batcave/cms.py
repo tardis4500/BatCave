@@ -949,7 +949,7 @@ class Client:
         else:
             return self.get_changelists(name, forfiles=files)[0]
 
-    def get_changelists(self, *names: Optional[Sequence[str]], forfiles: Optional[Iterable[str]] = tuple(), count: Optional[int] = None) -> List['ChangeList']:
+    def get_changelists(self, *names: Optional[Iterable[str]], forfiles: Optional[Iterable[str]] = tuple(), count: Optional[int] = None) -> List['ChangeList']:
         """Get a list of changelist objects for the specified changelist names.
 
         Args:
