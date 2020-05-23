@@ -10,6 +10,8 @@ from .logger import Logger
 from .sysutil import LockFile
 from .lang import is_debug, BatCaveError, BatCaveException
 
+StateStatus = Enum('StateStatus', ('entering', 'exited'))
+
 
 class StateMachineError(BatCaveException):
     """State Machine Exceptions.
@@ -38,7 +40,6 @@ class StateMachine:
     """This class implements a classic state machine.
 
     Attributes:
-        STATE_STATUSES: The status of the current state.
         _DEFAULT_STATEFILE: The default file to use to store the current state information.
         _DEFAULT_LOGFILE: The default file to use to store the log information.
         _DEFAULT_LOCKFILE: The default file to use for file locking.
@@ -46,8 +47,6 @@ class StateMachine:
     _DEFAULT_LOCKFILE = Path('lock')
     _DEFAULT_LOGFILE = Path('log')
     _DEFAULT_STATEFILE = Path('state')
-
-    STATE_STATUSES = Enum('state_status', ('entering', 'exited'))
 
     def __init__(self, states, statefile=_DEFAULT_STATEFILE, logfile=_DEFAULT_LOGFILE, lockfile=_DEFAULT_LOCKFILE, logger_args=None, autostart=True):
         """
@@ -69,7 +68,7 @@ class StateMachine:
             status: Indicates the current status of the state machine.
 
         Raises:
-            StateMachineError.BAD_STATUS: if the value of self.status is not in STATE_STATUSES
+            StateMachineError.BAD_STATUS: if the value of self.status is not in StateStatus
         """
         self.statefile = Path(statefile)
         self.locker = LockFile(lockfile)
@@ -80,9 +79,9 @@ class StateMachine:
             debug_msg = 'Found'
             with open(self.statefile) as filestream:
                 (status, state) = filestream.read().split()
-                self.status = self.STATE_STATUSES[status]
+                self.status = StateStatus[status]
                 self.state = state
-                if self.status not in self.STATE_STATUSES:
+                if self.status not in StateStatus:
                     raise StateMachineError(StateMachineError.BAD_STATUS, status=self.status)
         else:
             debug_msg = 'Initializing'
@@ -134,12 +133,12 @@ class StateMachine:
         """
         if not self.started:
             raise StateMachineError(StateMachineError.NOT_STARTED)
-        if self.status != self.STATE_STATUSES.exited:
+        if self.status != StateStatus.exited:
             raise StateMachineError(StateMachineError.BAD_ENTRY)
         next_state_index = self.states.index(self.state) + 1
         if next_state_index >= len(self.states):
             raise StateMachineError(StateMachineError.DONE)
-        self.status = self.STATE_STATUSES.entering
+        self.status = StateStatus.entering
         self.state = self.states[next_state_index]
         self._writestate()
 
@@ -155,9 +154,9 @@ class StateMachine:
         """
         if not self.started:
             raise StateMachineError(StateMachineError.NOT_STARTED)
-        if self.status != self.STATE_STATUSES.entering:
+        if self.status != StateStatus.entering:
             raise StateMachineError(StateMachineError.BAD_EXIT)
-        self.status = self.STATE_STATUSES.exited
+        self.status = StateStatus.exited
         self._writestate()
 
     def reset(self):
@@ -168,7 +167,7 @@ class StateMachine:
         """
         if self.statefile.exists():
             self.statefile.unlink()
-        (self.status, self.state) = (self.STATE_STATUSES.exited, self.states[0])
+        (self.status, self.state) = (StateStatus.exited, self.states[0])
         self._writestate()
 
     def rollback(self):
@@ -180,9 +179,9 @@ class StateMachine:
         Raises:
             StateMachineError.BAD_ROLLBACK: If the state machine has not entered a state.
         """
-        if self.status != self.STATE_STATUSES.entering:
+        if self.status != StateStatus.entering:
             raise StateMachineError(StateMachineError.BAD_ROLLBACK)
-        self.status = self.STATE_STATUSES.exited
+        self.status = StateStatus.exited
         self.state = self.states[self.states.index(self.state) - 1]
         self._writestate()
 
@@ -198,6 +197,6 @@ class StateMachine:
         """
         if self.started:
             raise StateMachineError(StateMachineError.ALREADY_STARTED)
-        if self.status == self.STATE_STATUSES.entering:
+        if self.status == StateStatus.entering:
             raise StateMachineError(StateMachineError.CRASHED, state=self.state)
         self.started = True

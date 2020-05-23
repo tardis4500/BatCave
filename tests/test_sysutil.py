@@ -9,9 +9,9 @@ from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from unittest import main, skip, TestCase
 
-from batcave.sysutil import pushd, popd, LockFile, LockError, PlatformError, LOCK_MODES
+from batcave.sysutil import pushd, popd, LockFile, LockError, LockMode, PlatformError
 
-LOCK_SIGNAL = Enum('lock_signal', ('true', 'false'))
+LockSignal = Enum('LockSignal', ('true', 'false'))
 
 
 class TestExceptions(TestCase):
@@ -52,26 +52,26 @@ class TestLockFile(TestCase):
             self._lockagain.start()
             gotlock = self._gotlock.get()
             self._lockagain.join()
-            self.assertTrue(gotlock == LOCK_SIGNAL.false)
+            self.assertTrue(gotlock == LockSignal.false)
 
     @skip('Problems with secondary process')
     def test_unlock(self):
         with LockFile(filename=self._fn, handle=self._fh, cleanup=True) as lockfile:
-            lockfile.action(LOCK_MODES.unlock)
+            lockfile.action(LockMode.unlock)
             self._lockagain.start()
             gotlock = self._gotlock.get()
             self._lockagain.join()
-            lockfile.action(LOCK_MODES.lock)
-            self.assertTrue(gotlock == LOCK_SIGNAL.true)
+            lockfile.action(LockMode.lock)
+            self.assertTrue(gotlock == LockSignal.true)
 
 
 def secondary_lock_process(filename, queue):
     try:
         with LockFile(filename=filename, cleanup=False) as lockagain:
-            lockagain.action(LOCK_MODES.unlock)
-            queue.put(LOCK_SIGNAL.true)
+            lockagain.action(LockMode.unlock)
+            queue.put(LockSignal.true)
     except LockError:
-        queue.put(LOCK_SIGNAL.false)
+        queue.put(LockSignal.false)
 
 
 class TestDirStack(TestCase):

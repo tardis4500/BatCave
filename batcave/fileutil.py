@@ -1,7 +1,7 @@
 """This module provides utilities for working with files.
 
 Attributes:
-    CONVERSION_MODES (Enum): The conversion modes for the eol_convert function.
+    ConversionMode (Enum): The conversion modes for the eol_convert function.
     PACKER_CLASSES (dict): A mapping of file compression extensions to the classes that create them.
     COMPRESSION_TYPE (dict): A mapping of file compression extensions to compression types.
 """
@@ -46,7 +46,7 @@ class PackError(BatCaveException):
 COMPRESSION_TYPE = {'gz': 'gz', 'tgz': 'gz',
                     'bz': 'bz2', 'tbz': 'bz2', 'bz2': 'bz2',
                     'xz': 'xz', 'txz': 'xz'}
-CONVERSION_MODES = Enum('conversion_modes', ('to_unix', 'to_dos'))
+ConversionMode = Enum('ConversionMode', ('to_unix', 'to_dos'))
 
 
 class CompressedFile:
@@ -89,7 +89,7 @@ def eol_convert(filename, mode, backup=True):
 
     Attributes:
         filename: The file to convert.
-        mode: The direction of the conversion. Must be a member of CONVERSION_MODES.
+        mode: The direction of the conversion. Must be a member of ConversionMode.
         backup (optional, default=True): If True, creates a backup of filename as filename.bak.
 
     Returns:
@@ -107,7 +107,7 @@ def eol_convert(filename, mode, backup=True):
     with open(filename, 'rb') as stream:
         data = stream.read().replace(b'\r\n', b'\n')
 
-    if mode == CONVERSION_MODES.to_dos:
+    if mode == ConversionMode.to_dos:
         data = data.replace(b'\n', b'\r\n')
     with open(filename, 'wb') as stream:
         stream.write(data)

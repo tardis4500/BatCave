@@ -37,7 +37,7 @@ else:
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
 
-LOCK_MODES = Enum('lock_modes', ('lock', 'unlock'))
+LockMode = Enum('LockMode', ('lock', 'unlock'))
 S_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 S_664 = S_660 | S_IROTH
 S_770 = S_IRWXU | S_IRWXG
@@ -116,7 +116,7 @@ class LockFile:
             self._locker = lockf
             self._lock = LOCK_EX | LOCK_NB
             self._unlock = LOCK_UN
-        self.action(LOCK_MODES.lock)
+        self.action(LockMode.lock)
 
     def __enter__(self):
         return self
@@ -137,7 +137,7 @@ class LockFile:
         Raises:
             LockError.NO_LOCK: If it was not possible to obtain a system level lock on the lock file.
         """
-        lock_mode = self._lock if (mode == LOCK_MODES.lock) else self._unlock
+        lock_mode = self._lock if (mode == LockMode.lock) else self._unlock
         fail = False
         try:
             self._locker(self._fd, lock_mode, 1)
@@ -154,7 +154,7 @@ class LockFile:
         Returns:
             Nothing.
         """
-        self.action(LOCK_MODES.unlock)
+        self.action(LockMode.unlock)
         self._fh.close()
         if self._cleanup:
             self._filename.unlink()

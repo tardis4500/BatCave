@@ -3,6 +3,7 @@
 # Import standard modules
 from pathlib import Path
 from string import Template
+from typing import Optional, Union
 from xml.etree.ElementTree import ParseError
 
 from .data import DataError, DataSource
@@ -39,7 +40,7 @@ class ConfigCollection:
 
     INCLUDE_CONFIG_TAG = 'include'
 
-    def __init__(self, name, create=False, suffix='_config.xml'):
+    def __init__(self, name: Union[str, Path], create: bool = False, suffix: str = '_config.xml'):
         """
         Args:
             name: The configuration collection name.
@@ -62,21 +63,18 @@ class ConfigCollection:
             ConfigurationError.BAD_SCHEMA: If the schema of the configuration file is not supported.
             ConfigurationError.CONFIG_NOT_FOUND: If the derived configuration file is not found.
         """
-        if isinstance(name, Path):
-            self.name = name.name
-            self._config_filename = name.parent / (name.name + suffix)
-        else:
-            self.name = name
-            self._config_filename = Path(self.name + suffix)
-        failure = False
+        path_name = Path(name)
+        self.name = path_name.name
+        self._config_filename = path_name.parent / (path_name.name + suffix)
+        failure = None
         try:
             self._data_source = DataSource(DataSource.SOURCE_TYPES.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
         except DataError as err:
             for case in switch(err.code):
-                if case(DataError.FILEOPEN.code):
+                if case(DataError.FILE_OPEN.code):
                     failure = ConfigurationError.CONFIG_NOT_FOUND
                     break
-                if case(DataError.WRONGSCHEMA.code):
+                if case(DataError.BAD_SCHEMA.code):
                     failure = ConfigurationError.BAD_SCHEMA
                     break
                 if case():
@@ -100,7 +98,7 @@ class ConfigCollection:
             self._configs += [c for c in self.parent if c.name not in config_names]
         self._current = 0
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
         if self._data_source.hastable(attr):
             parent_config = getattr(self.parent, attr) if (self.parent and hasattr(self.parent, attr)) else None
             config = Configuration(self._data_source, attr, parent_config)
@@ -118,9 +116,9 @@ class ConfigCollection:
         if self._current >= len(self._configs):
             raise StopIteration()
         self._current += 1
-        return self._configs[self._current-1]
+        return self._configs[self._current - 1]
 
-    def add(self, name):
+    def add(self, name: str) -> str:
         """Add an item to the configuration collection.
 
         Args:
@@ -137,7 +135,7 @@ class ConfigCollection:
 class Configuration:
     """This is a container class to hold an individual configuration in a collection."""
 
-    def __init__(self, config_source, name, parent=None, include=None):
+    def __init__(self, config_source: DataSource, name: str, parent: Optional['Configuration'] = None, include: Optional['Configuration'] = None):
         """
         Args:
             config_source: The configuration source.
@@ -158,7 +156,7 @@ class Configuration:
         self._parent = parent
         self._include = include
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> str:
         # First check this configuration to see if it has the requested attribute
         values = self._data_table.getrows(attr)
         if values:
@@ -167,7 +165,7 @@ class Configuration:
         # Next check the include configuration without considering its parents
         if self._include:
             include_parent_value = self._include._parent  # pylint: disable=protected-access
-            self._include._parent = False  # pylint: disable=protected-access
+            self._include._parent = None  # pylint: disable=protected-access
             if hasattr(self._include, attr):
                 self._include._parent = include_parent_value  # pylint: disable=protected-access
                 return getattr(self._include, attr)
@@ -186,7 +184,7 @@ class Configuration:
         # The attribute wasn't found
         raise AttributeError(f'Unknown parameter ({attr}) for configuration: {self._name}')
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: str) -> None:
         if attr.startswith('_'):
             super().__setattr__(attr, value)
             return

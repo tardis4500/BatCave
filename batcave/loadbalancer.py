@@ -23,6 +23,10 @@ from .servermgr import _get_server_object, Server
 
 _STATUS_CHECK_INTERVAL = 2
 
+LbServerSignal = Enum('LbServerSignal', ('enable', 'disable'))
+LbType = Enum('LbType', ('netscaler',))
+LbVipType = Enum('LbVipType', ('HTTP', 'SSL', 'SSL_OFFLOAD'))
+
 
 class LoadBalancerError(BatCaveException):
     """Loadbalancer Exceptions.
@@ -36,16 +40,7 @@ class LoadBalancerError(BatCaveException):
 
 
 class LoadBalancer:
-    """Class to create a universal abstract interface for a load balancer.
-
-    Attributes:
-        LB_SERVER_SIGNALS: The signals that can be sent to a load balancer to control a server in a VIP.
-        LB_TYPES: The supported load balancer types.
-        LB_VIP_TYPES: The supported load balancer VIP types.
-    """
-    LB_SERVER_SIGNALS = Enum('lb_server_signals', ('enable', 'disable'))
-    LB_TYPES = Enum('lb_types', ('netscaler',))
-    LB_VIP_TYPES = Enum('lb_vip_types', ('HTTP', 'SSL', 'SSL_OFFLOAD'))
+    """Class to create a universal abstract interface for a load balancer."""
 
     def __init__(self, lb_type, ip_address, user, password):
         """
@@ -95,15 +90,15 @@ class LoadBalancer:
         NetScalerServer.add(self._api, ns_server)
         return self.get_server(server_info)
 
-    def add_virtual_server(self, server_info, service_type=LB_VIP_TYPES.HTTP, port=None, servers=tuple(), services=tuple(), certificates=tuple(), responder_policies=tuple()):
+    def add_virtual_server(self, server_info, service_type=LbVipType.HTTP, port=None, servers=tuple(), services=tuple(), certificates=tuple(), responder_policies=tuple()):
         """Add a virtual server to the load balancer.
 
         Args:
             server_info: The info about the virtual server to add.
-            service_type (optional, default=LB_VIP_TYPES.HTTP): The service type for the virtual server.
+            service_type (optional, default=LbVipType.HTTP): The service type for the virtual server.
             port (optional, default=None): The port for the virtual server, if None the default is based on the service_type.
-                self.LB_VIP_TYPES.HTTP, self.LB_VIP_TYPES.SSL_OFFLOAD: 80
-                self.LB_VIP_TYPES.SSL: 443
+                LbVipType.HTTP, LbVipType.SSL_OFFLOAD: 80
+                LbVipType.SSL: 443
             servers (optional, default=[]): The list of servers to add to the virtual server.
             certificates (optional, default=[]): The list of certificates to add to the virtual server.
             responder_policies (optional, default=[]): The list of responder policies to add to the virtual server.
@@ -113,9 +108,9 @@ class LoadBalancer:
         """
         if port is not None:
             port_value = port
-        elif service_type in (self.LB_VIP_TYPES.HTTP, self.LB_VIP_TYPES.SSL_OFFLOAD):
+        elif service_type in (LbVipType.HTTP, LbVipType.SSL_OFFLOAD):
             port_value = 80
-        elif service_type == self.LB_VIP_TYPES.SSL:
+        elif service_type == LbVipType.SSL:
             port_value = 443
         else:
             port_value = port
@@ -128,7 +123,7 @@ class LoadBalancer:
         server_object = _get_server_object(server_info)
         ns_virtual_server = NetScalerVirtualServer()
         ns_virtual_server.name = server_object.hostname
-        ns_virtual_server.servicetype = 'HTTP' if (service_type == self.LB_VIP_TYPES.SSL_OFFLOAD) else service_type.name
+        ns_virtual_server.servicetype = 'HTTP' if (service_type == LbVipType.SSL_OFFLOAD) else service_type.name
         ns_virtual_server.ipv46 = server_object.ip
         ns_virtual_server.port = port_value
         NetScalerVirtualServer.add(self._api, ns_virtual_server)
@@ -145,12 +140,12 @@ class LoadBalancer:
             virtual_server.bind_service(service)
         for policy in responder_policies:
             virtual_server.bind_responder_policy(policy)
-        if service_type == self.LB_VIP_TYPES.SSL:
+        if service_type == LbVipType.SSL:
             for cert in certificates:
                 virtual_server.bind_certificate(cert)
-        elif service_type == self.LB_VIP_TYPES.SSL_OFFLOAD:
+        elif service_type == LbVipType.SSL_OFFLOAD:
             offload_server_object = Server(f'{server_info.hostname}_offload', ip=server_info.ip)
-            offload_server = self.add_virtual_server(offload_server_object, service_type=self.LB_VIP_TYPES.SSL, services=service_objects, certificates=certificates)
+            offload_server = self.add_virtual_server(offload_server_object, service_type=LbVipType.SSL, services=service_objects, certificates=certificates)
 
         return (virtual_server, offload_server) if offload_server else virtual_server
 
@@ -259,7 +254,7 @@ class LoadBalancer:
         Raises:
             LoadBalancerError.BAD_OBJECT: If the requested virtual server could not be found.
         """
-        if signal not in (self.LB_SERVER_SIGNALS.enable, self.LB_SERVER_SIGNALS.disable):
+        if signal not in (LbServerSignal.enable, LbServerSignal.disable):
             raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
         if not (isinstance(servers, tuple) or isinstance(servers, list)):

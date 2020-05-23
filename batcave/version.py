@@ -2,7 +2,7 @@
 
 Attributes:
     PYQT_LOADED (bool/str): If not False then it is the string version of the PyQt API.
-    VERSION_STYLES (Enum): The version output styles.
+    VersionStyle (Enum): The version output styles.
 """
 
 # Import standard modules
@@ -13,7 +13,7 @@ from sys import version as sys_version
 from . import __copyright__, __title__, __version__, __builddate__, __buildname__
 from .platarch import Platform
 
-VERSION_STYLES = Enum('version_styles', ('full', 'brief', 'oneline', 'aboutbox'))
+VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
 
 
 # Import third-party modules
@@ -25,7 +25,7 @@ else:
     PYQT_LOADED = pyqt.__dict__['PYQT_VERSION_STR']
 
 
-def get_version_info(style=VERSION_STYLES.full, plattype='batcave_run', extra_info=''):
+def get_version_info(style=VersionStyle.full, plattype='batcave_run', extra_info=''):
     """Get the version information about the currently running application.
 
     Args:
@@ -37,12 +37,12 @@ def get_version_info(style=VERSION_STYLES.full, plattype='batcave_run', extra_in
         Returns the version string.
     """
     plat = getattr(Platform(), plattype)
-    if style == VERSION_STYLES.brief:
+    if style == VersionStyle.brief:
         return f'{__title__} {__version__}{extra_info} on {plat}'
-    if style == VERSION_STYLES.oneline:
+    if style == VersionStyle.oneline:
         return f'{__title__} {__version__}{extra_info} (Build: {__buildname__}) [{__builddate__}] on {plat}'
 
-    info = ['' if (style == VERSION_STYLES.aboutbox) else f'{__title__} {__version__}',
+    info = ['' if (style == VersionStyle.aboutbox) else f'{__title__} {__version__}',
             'Build: ' + __buildname__,
             'Date: ' + __builddate__,
             'Platform: ' + plat,

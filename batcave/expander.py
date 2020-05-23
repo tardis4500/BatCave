@@ -52,6 +52,8 @@ from xml.etree.ElementTree import fromstringlist as xmlparse
 from .fileutil import slurp
 from .lang import is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, WIN32
 
+OutputFormat = Enum('OutputFormat', ('text', 'html', 'csv'))
+
 
 class ExpanderError(BatCaveException):
     """Expansion Exceptions.
@@ -87,12 +89,9 @@ class Formatter:
     """Class to hold formatting information.
 
     Attributes:
-        OUTPUT_FORMATS: The valid output formats.
         _LINK_PRELIM: The prefix to indicate a hyperlink during formatting.
     """
     _LINK_PRELIM = '{link:'
-
-    OUTPUT_FORMATS = Enum('output_formats', ('text', 'html', 'csv'))
 
     def __init__(self, output_format):
         """
@@ -118,13 +117,13 @@ class Formatter:
         self.link_regex = re_compile(f'\\{self._LINK_PRELIM}(.+?)(\\|(.+))?\\}}')
 
         for case in switch(self.format):
-            if case(self.OUTPUT_FORMATS.csv):
+            if case(OutputFormat.csv):
                 pass
-            if case(self.OUTPUT_FORMATS.text):
+            if case(OutputFormat.text):
                 self.bos = self.eos = self._bol = ''
                 self.eol = '\n'
                 break
-            if case(self.OUTPUT_FORMATS.html):
+            if case(OutputFormat.html):
                 self.bos = '<ul>'
                 self.eos = '</ul>'
                 self._bol = '<h2><li>'
@@ -137,18 +136,18 @@ class Formatter:
     def bol(self):
         """A read-only property which returns the beginning of line formatting."""
         if self.level == 0:
-            sep = ',' if (self.format == self.OUTPUT_FORMATS.csv) else '. '
+            sep = ',' if (self.format == OutputFormat.csv) else '. '
             for case in switch(self.format):
-                if case(self.OUTPUT_FORMATS.csv):
+                if case(OutputFormat.csv):
                     pass
-                if case(self.OUTPUT_FORMATS.text):
+                if case(OutputFormat.text):
                     return chr(64 + self.count) + sep
-                if case(self.OUTPUT_FORMATS.html):
+                if case(OutputFormat.html):
                     return self._bol
                 if case():
                     raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         else:
-            if self.format == self.OUTPUT_FORMATS.csv:
+            if self.format == OutputFormat.csv:
                 space = ''
                 sep = ','
             else:
@@ -176,13 +175,13 @@ class Formatter:
         link = match.group(1)
         text = match.group(3) if (len(match.groups()) == 3) else ''
         for case in switch(self.format):
-            if case(self.OUTPUT_FORMATS.csv):
+            if case(OutputFormat.csv):
                 replace_with = f'"=HYPERLINK(""{link}"", ""{text}"")"' if text else link
                 break
-            if case(self.OUTPUT_FORMATS.text):
+            if case(OutputFormat.text):
                 replace_with = f'{text} ({link})' if text else link
                 break
-            if case(self.OUTPUT_FORMATS.html):
+            if case(OutputFormat.html):
                 text = text if text else link
                 replace_with = f'<a href="{link}">{text}</a>'
                 break
@@ -207,7 +206,7 @@ class Formatter:
         self.keeper.append((self.count, self.prefix))
         if self.level > 0:
             self.prefix = f'{self.keeper[-1][1]}{self.count}.'
-        elif self.format == self.OUTPUT_FORMATS.html:
+        elif self.format == OutputFormat.html:
             self._bol = '<li style="color:white"><span style="color:black">'
             self.eol = '</span></li>'
         self.level += 1
@@ -223,7 +222,7 @@ class Formatter:
         (self.count, self.prefix) = self.keeper.pop()
         if self.level > 0:
             self.count += 1
-        elif self.format == self.OUTPUT_FORMATS.html:
+        elif self.format == OutputFormat.html:
             self._bol = '<h2><li>'
             self.eol = '</li></h2>'
 
@@ -457,7 +456,7 @@ class Procedure:
     _SCHEMA_ATTR = 'schema'
     _STEPS_TAG = 'steps'
 
-    def __init__(self, procfile, output_format=Formatter.OUTPUT_FORMATS.html, variable_overrides=None):
+    def __init__(self, procfile, output_format=OutputFormat.html, variable_overrides=None):
         """
         Args:
             procfile: The procedure file.
@@ -620,15 +619,15 @@ class Procedure:
         self.formatter = Formatter(self.output_format)
         self.setup_expander(env)
         for case in switch(self.output_format):
-            if case(Formatter.OUTPUT_FORMATS.csv):
+            if case(OutputFormat.csv):
                 header = f',{self.header.strip()} for {{var:Environment}}\n'
                 footer = ''
                 break
-            if case(Formatter.OUTPUT_FORMATS.text):
+            if case(OutputFormat.text):
                 header = f'{self.header.strip()} for {{var:Environment}}\n'
                 footer = ''
                 break
-            if case(Formatter.OUTPUT_FORMATS.html):
+            if case(OutputFormat.html):
                 header = '<html><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><body><center>'
                 header += f'<h1>{self.header} for {{var:Environment}}</h1></center><ol type="A">'
                 footer = '</ol></body></html>'

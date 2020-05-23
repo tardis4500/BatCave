@@ -2,7 +2,7 @@
 
 
 Attributes:
-    _MESSAGE_TYPES (Enum): The message types supported by the MessageBox class.
+    MessageType (Enum): The message types supported by the MessageBox class.
 """
 
 # pylint: disable=C0103
@@ -23,7 +23,7 @@ from . import __title__
 from .lang import MsgStr, FROZEN, BATCAVE_HOME
 from .version import get_version_info, VERSION_STYLES
 
-_MESSAGE_TYPES = Enum('message_types', ('about', 'info', 'question', 'warning', 'error', 'results'))
+MessageType = Enum('MessageType', ('about', 'info', 'question', 'warning', 'error', 'results'))
 
 
 class Title(MsgStr):
@@ -246,24 +246,21 @@ class MessageBox(QMessageBox):
     """This class provides functionality for a simplified message box.
 
     Attributes:
-        MESSAGE_TYPES: The supported message types.
         _MESSAGE_ICONS: The supported message box icons.
     """
-    _MESSAGE_ICONS = {_MESSAGE_TYPES.about: QMessageBox.Information,
-                      _MESSAGE_TYPES.info: QMessageBox.Information,
-                      _MESSAGE_TYPES.question: QMessageBox.Question,
-                      _MESSAGE_TYPES.warning: QMessageBox.Warning,
-                      _MESSAGE_TYPES.error: QMessageBox.Critical,
-                      _MESSAGE_TYPES.results: QMessageBox.Information}
+    _MESSAGE_ICONS = {MessageType.about: QMessageBox.Information,
+                      MessageType.info: QMessageBox.Information,
+                      MessageType.question: QMessageBox.Question,
+                      MessageType.warning: QMessageBox.Warning,
+                      MessageType.error: QMessageBox.Critical,
+                      MessageType.results: QMessageBox.Information}
 
-    MESSAGE_TYPES = _MESSAGE_TYPES
-
-    def __init__(self, parent, message, msg_type=_MESSAGE_TYPES.info, detail=None, image=None):
+    def __init__(self, parent, message, msg_type=MessageType.info, detail=None, image=None):
         """
         Args:
             parent: The parent for the message box.
             message: The message for the message box.
-            msg_type (optional, default=_MESSAGE_TYPES.info): The message type to display in the message box.
+            msg_type (optional, default=MessageType.info): The message type to display in the message box.
             detail (optional, default=None): The detail information to put in the message box.
             image (optional, default=None): The image to display in the message box.
         """

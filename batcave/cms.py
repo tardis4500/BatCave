@@ -81,11 +81,8 @@ class CMSError(BatCaveException):
 
 
 class Label:
-    """Class to create a universal abstract interface for a CMS system label.
+    """Class to create a universal abstract interface for a CMS system label."""
 
-    Attributes:
-        LabelType: The label providers currently supported by this class.
-    """
     def __init__(self, name: str, label_type: LabelType, client: 'Client', description: str = '', selector: str = '', lock: bool = False):
         """
         Args:
@@ -281,11 +278,8 @@ class Client:
     """Class to create a universal abstract interface for a CMS system client.
 
     Attributes:
-        CLIENT_TYPES: The CMS providers currently supported by this class.
-        LineStyle = The line ending styles.
-        CleanType = The types cleanup that can be performed on a client when disposing of an instance.
-        InfoType = The types of information clients.
-        ObjectType = The types of objects that can be reported on by a client.
+        _DEFAULT_P4PORT: The default Perforce port.
+        _INFO_DUMMY_CLIENT: The default name for a dummy client.
     """
     _DEFAULT_P4PORT = 'perforce:1666'
     _INFO_DUMMY_CLIENT = 'BatCave_info_dummy_client'

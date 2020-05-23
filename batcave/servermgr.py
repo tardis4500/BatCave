@@ -36,6 +36,13 @@ else:
 
 _STATUS_CHECK_INTERVAL = 2
 
+OsType = Enum('OsType', ('linux', 'windows'))
+ProcessSignal = Enum('ProcessSignal', ('stop', 'kill'))
+ServiceSignal = Enum('ServiceSignal', ('disable', 'enable', 'start', 'stop', 'pause', 'resume', 'restart'))
+ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running', 'StopPending', 'Stopped', 'PausePending', 'Paused'))
+ServiceType = Enum('ServiceType', ('systemd', 'sysv', 'upstart', 'windows'))
+TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
+
 
 class ServerObjectManagementError(BatCaveException):
     """Server Exceptions.
@@ -70,7 +77,6 @@ class Server:
     """Class to create a universal abstract interface for a server.
 
     Attributes:
-        OS_TYPES: The supported server OS types.
         _WSA_NAME_OR_SERVICE_NOT_KNOWN: Error code indicating the service is unknown.
         _WSAHOST_NOT_FOUND: Error code indicating the host was not found.
         _WMI_SERVICE_CREATE_ERRORS: A dictionary to map WMI errors to errors messages.
@@ -102,9 +108,7 @@ class Server:
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
 
-    OS_TYPES = Enum('os_types', ('linux', 'windows'))
-
-    def __init__(self, hostname=None, domain=None, auth=None, defer_wmi=True, ip=None, os_type=OS_TYPES.windows if WIN32 else OS_TYPES.linux):
+    def __init__(self, hostname=None, domain=None, auth=None, defer_wmi=True, ip=None, os_type=OsType.windows if WIN32 else OsType.linux):
         """
         Args:
             hostname (optional): The server hostname. If not specified, will default to the name of the localhost.
@@ -277,7 +281,7 @@ class Server:
         task_object = self.get_scheduled_task(task)
 
         if disable:
-            task_object.manage(ScheduledTask.TASK_SIGNALS.disable)
+            task_object.manage(ScheduledTask.TaskSignal.disable)
 
         if start_in is None:
             start_in = Path(exe).parent
@@ -310,7 +314,7 @@ class Server:
         """
         service_obj = self.create_management_object('Service', service, PathName=str(exe), StartName=user, StartPassword=password, error_if_exists=error_if_exists)
         if start:
-            service_obj.manage(Service.SERVICE_SIGNALS.start, timeout=timeout)
+            service_obj.manage(Service.ServiceSignal.start, timeout=timeout)
         return service_obj
 
     def get_iis_instance(self):
@@ -419,13 +423,13 @@ class Server:
         """
         if 'service_type' not in key_args:
             if self.os_type == self.OS_TYPES.windows:
-                service_type = Service.SERVICE_TYPES.windows
+                service_type = Service.ServiceType.windows
             elif self.get_path('/sbin/initctl').exists():
-                service_type = Service.SERVICE_TYPES.upstart
+                service_type = Service.ServiceType.upstart
             elif self.get_path('/bin/systemctl').exists():
-                service_type = Service.SERVICE_TYPES.systemd
+                service_type = Service.ServiceType.systemd
             else:
-                service_type = Service.SERVICE_TYPES.sysv
+                service_type = Service.ServiceType.sysv
             key_args['service_type'] = service_type
         return self.get_object_by_name('Service', service, **key_args)
 
@@ -440,13 +444,13 @@ class Server:
         """
         if service_type is None:
             if self.os_type == self.OS_TYPES.windows:
-                service_type = Service.SERVICE_TYPES.windows
+                service_type = Service.ServiceType.windows
             elif self.get_path('/sbin/initctl').exists():
-                service_type = Service.SERVICE_TYPES.upstart
+                service_type = Service.ServiceType.upstart
             elif self.get_path('/bin/systemctl').exists():
-                service_type = Service.SERVICE_TYPES.systemd
+                service_type = Service.ServiceType.systemd
             else:
-                service_type = Service.SERVICE_TYPES.sysv
+                service_type = Service.ServiceType.sysv
         return self.get_management_objects('Service', service_type=service_type)
 
     def get_unique_object(self, item_type, wmi=True if WIN32 else False, **filters):
@@ -673,8 +677,8 @@ class LinuxService(NamedOSObject):
         Returns:
             The result of the management command.
         """
-        control_command = ['service', self.Name, command] if (self.type == Service.SERVICE_TYPES.sysv) \
-            else ['systemctl' if (self.type == Service.SERVICE_TYPES.systemd) else 'initctl', command, self.Name]
+        control_command = ['service', self.Name, command] if (self.type == Service.ServiceType.sysv) \
+            else ['systemctl' if (self.type == Service.ServiceType.systemd) else 'initctl', command, self.Name]
         try:
             return syscmd(*control_command, use_shell=True, ignore_stderr=True, remote=self.computer, remote_auth=self.auth)
         except CMDError as err:
@@ -749,7 +753,7 @@ class LinuxService(NamedOSObject):
         try:
             self.state
         except CMDError as err:
-            if not err.vars['returncode'] == (4 if (self.type == Service.SERVICE_TYPES.systemd) else 1):
+            if not err.vars['returncode'] == (4 if (self.type == Service.ServiceType.systemd) else 1):
                 raise
             not_found = True
         if not_found:
@@ -839,16 +843,16 @@ class Win32_ScheduledTask(NamedOSObject):
             ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the signal is unknown.
         """
         for case in switch(signal):
-            if case(ScheduledTask.TASK_SIGNALS.enable):
+            if case(ScheduledTask.TaskSignal.enable):
                 control_args = ('/Change', '/ENABLE')
                 break
-            if case(ScheduledTask.TASK_SIGNALS.disable):
+            if case(ScheduledTask.TaskSignal.disable):
                 control_args = ('/Change', '/DISABLE')
                 break
-            if case(ScheduledTask.TASK_SIGNALS.run):
+            if case(ScheduledTask.TaskSignal.run):
                 control_args = ('/Run',)
                 break
-            if case(ScheduledTask.TASK_SIGNALS.end):
+            if case(ScheduledTask.TaskSignal.end):
                 control_args = ('/End',)
                 break
             if case():
@@ -1000,20 +1004,11 @@ class ManagementObject:
 
 
 class Service(ManagementObject):
-    """Class to create a universal abstract interface for an OS service.
-
-    Attributes:
-        SERVICE_SIGNALS: The possible signals to send to a service.
-        SERVICE_STATES: The possible service status.
-        SERVICE_TYPES: The valid service types.
-    """
-    SERVICE_SIGNALS = Enum('service_signals', ('disable', 'enable', 'start', 'stop', 'pause', 'resume', 'restart'))
-    SERVICE_STATES = Enum('service_states', ('StartPending', 'ContinuePending', 'Running', 'StopPending', 'Stopped', 'PausePending', 'Paused'))
-    SERVICE_TYPES = Enum('linux_service_types', ('systemd', 'sysv', 'upstart', 'windows'))
+    """Class to create a universal abstract interface for an OS service."""
 
     def __getattr__(self, attr):
         if attr == 'state':
-            return self.SERVICE_STATES[super().__getattr__(attr).replace(' ', '')]
+            return self.ServiceState[super().__getattr__(attr).replace(' ', '')]
         return super().__getattr__(attr)
 
     def manage(self, signal, wait=True, ignore_state=False, timeout=False):
@@ -1035,55 +1030,55 @@ class Service(ManagementObject):
             ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
         """
         for case in switch(signal):
-            if case(self.SERVICE_SIGNALS.enable, self.SERVICE_SIGNALS.start, self.SERVICE_SIGNALS.resume, self.SERVICE_SIGNALS.restart):
+            if case(self.ServiceSignal.enable, self.ServiceSignal.start, self.ServiceSignal.resume, self.ServiceSignal.restart):
                 for signal_case in switch(signal):
-                    if signal_case(self.SERVICE_SIGNALS.enable):
+                    if signal_case(self.ServiceSignal.enable):
                         control_method = 'EnableService'
                         break
-                    if signal_case(self.SERVICE_SIGNALS.start):
+                    if signal_case(self.ServiceSignal.start):
                         control_method = 'StartService'
                         break
-                    if signal_case(self.SERVICE_SIGNALS.resume):
+                    if signal_case(self.ServiceSignal.resume):
                         control_method = 'ResumeService'
                         break
-                    if signal_case(self.SERVICE_SIGNALS.restart):
+                    if signal_case(self.ServiceSignal.restart):
                         control_method = 'RestartService'
                         break
-                final_state = self.SERVICE_STATES.Running
+                final_state = self.ServiceState.Running
                 break
-            if case(self.SERVICE_SIGNALS.disable, self.SERVICE_SIGNALS.stop):
-                control_method = 'StopService' if self.SERVICE_SIGNALS.stop else 'DisableService'
-                final_state = self.SERVICE_STATES.Stopped
+            if case(self.ServiceSignal.disable, self.ServiceSignal.stop):
+                control_method = 'StopService' if self.ServiceSignal.stop else 'DisableService'
+                final_state = self.ServiceState.Stopped
                 break
-            if case(self.SERVICE_SIGNALS.pause):
+            if case(self.ServiceSignal.pause):
                 control_method = 'PauseService'
-                final_state = self.SERVICE_STATES.Paused
+                final_state = self.ServiceState.Paused
                 break
             if case():
                 raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         if not ignore_state:
             for case in switch(self.state):
-                if case(self.SERVICE_STATES.StartPending, self.SERVICE_STATES.Running, self.SERVICE_STATES.ContinuePending):
-                    waitfor = self.SERVICE_STATES.Running
-                    if signal in (self.SERVICE_SIGNALS.enable, self.SERVICE_SIGNALS.start, self.SERVICE_SIGNALS.resume):
+                if case(self.ServiceState.StartPending, self.ServiceState.Running, self.ServiceState.ContinuePending):
+                    waitfor = self.ServiceState.Running
+                    if signal in (self.ServiceSignal.enable, self.ServiceSignal.start, self.ServiceSignal.resume):
                         control_method = None
                     break
-                if case(self.SERVICE_STATES.StopPending, self.SERVICE_STATES.Stopped):
-                    waitfor = self.SERVICE_STATES.Stopped
+                if case(self.ServiceState.StopPending, self.ServiceState.Stopped):
+                    waitfor = self.ServiceState.Stopped
                     for signal_case in switch(signal):
-                        if signal_case(self.SERVICE_SIGNALS.disable, self.SERVICE_SIGNALS.stop):
+                        if signal_case(self.ServiceSignal.disable, self.ServiceSignal.stop):
                             control_method = None
                             break
-                        if signal_case(self.SERVICE_SIGNALS.resume, self.SERVICE_SIGNALS.restart):
+                        if signal_case(self.ServiceSignal.resume, self.ServiceSignal.restart):
                             control_method = 'StartService'
                             break
-                        if signal_case(self.SERVICE_SIGNALS.pause):
+                        if signal_case(self.ServiceSignal.pause):
                             raise ServerObjectManagementError(ServerObjectManagementError.BAD_TRANSITION, from_state='stopped', to_state='paused')
                     break
-                if case(self.SERVICE_STATES.PausePending, self.SERVICE_STATES.Paused):
-                    waitfor = self.SERVICE_STATES.Paused
-                    if signal == self.SERVICE_SIGNALS.start:
+                if case(self.ServiceState.PausePending, self.ServiceState.Paused):
+                    waitfor = self.ServiceState.Paused
+                    if signal == self.ServiceSignal.start:
                         control_method = 'ResumeService'
                     break
                 if case():
@@ -1097,8 +1092,8 @@ class Service(ManagementObject):
 
         if control_method:
             if WIN32 and control_method == 'RestartService':
-                self.manage(self.SERVICE_SIGNALS.stop, wait, ignore_state)
-                self.manage(self.SERVICE_SIGNALS.start, wait, ignore_state)
+                self.manage(self.ServiceSignal.stop, wait, ignore_state)
+                self.manage(self.ServiceSignal.start, wait, ignore_state)
             else:
                 getattr(self, control_method)()
                 sleep(_STATUS_CHECK_INTERVAL)
@@ -1111,12 +1106,7 @@ class Service(ManagementObject):
 
 
 class Process(ManagementObject):
-    """Class to create a universal abstract interface for an OS process.
-
-    Attributes:
-        PROCESS_SIGNALS: The possible signals to send to a process.
-    """
-    PROCESS_SIGNALS = Enum('process_signals', ('stop', 'kill'))
+    """Class to create a universal abstract interface for an OS process."""
 
     def manage(self, signal, wait=True, timeout=False):
         """Manage the process.
@@ -1134,10 +1124,10 @@ class Process(ManagementObject):
             ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
         """
         for case in switch(signal):
-            if case(self.PROCESS_SIGNALS.stop):
+            if case(self.ProcessSignal.stop):
                 control_method = 'Terminate'
                 break
-            if case(self.PROCESS_SIGNALS.kill):
+            if case(self.ProcessSignal.kill):
                 control_method = 'Terminate' if WIN32 else 'Kill'
                 break
             if case():
@@ -1160,12 +1150,9 @@ class ScheduledTask(ManagementObject):
     Attributes:
         TASK_HOME: The directory where task definitions are stored.
         TASK_NAMESPACE: The Windows task namespace needed to parse the XML task definitions.
-        TASK_SIGNALS: The possible signals to send to a task.
     """
     TASK_HOME = Path(getenv('SystemRoot'), 'system32/Tasks') if WIN32 else Path('/opt/cronjobs')
     TASK_NAMESPACE = 'http://schemas.microsoft.com/windows/2004/02/mit/task'
-    TASK_SIGNALS = Enum('task_signals', ('enable', 'disable', 'run', 'end'))
-
 
 def _get_server_object(server):
     """Get a server object for the specific fqdn.

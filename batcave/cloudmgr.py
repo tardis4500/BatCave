@@ -40,11 +40,8 @@ class CloudError(BatCaveException):
 
 
 class Cloud:
-    """Class to create a universal abstract interface for a cloud instance.
+    """Class to create a universal abstract interface for a cloud instance."""
 
-    Attributes:
-        CLOUD_TYPES: The cloud providers currently supported by this class.
-    """
     def __init__(self, ctype: CloudType, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
         """
         Args:

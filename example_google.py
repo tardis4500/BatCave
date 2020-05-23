@@ -11,13 +11,14 @@
 # Step7: Add class method docstrings.
 # Step8: Add class private method docstrings.
 # Step9: Reorder Classes: private, protected, properties, methods.
-# Step10: Add PEP484 type hints.
+# Step10: Fix enums.
 
-# Finished adding PEP484 type hints to commander module. (GitLab #29)
+# Step11: Add PEP484 type hints.
 
-# Step11: Add PEP526 variable type annotations
-# Step12: Add linting and type checking to build pipeline.
-# Step13: Fix enums (if not other ticket)
+# Added PEP484 type hints to configmgr module. (GitLab #29)
+
+# Step12: Add PEP526 variable type annotations
+# Step13: Add linting and type checking to build pipeline.
 
 # -*- coding: utf-8 -*-
 """Example Google style docstrings.
