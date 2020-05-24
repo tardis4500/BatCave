@@ -59,10 +59,10 @@ from enum import Enum
 from pathlib import Path, PurePath
 from pickle import dump as pickle_dump, load as pickle_load
 from string import Template
-from typing import cast, Any, Dict, IO, List, Optional, Union
+from typing import cast, Any, IO, List, Optional, Union
 from urllib.request import urlopen
 from xml.parsers import expat
-from xml.etree.ElementTree import Element, ElementTree
+from xml.etree.ElementTree import ElementTree
 import xml.etree.ElementTree as xml_etree
 
 # Import internal modules
@@ -151,10 +151,10 @@ class DataSource:
         self.type = data_type
         self.name = name
         self._schema = schema
-        self._source = None  # type: Optional[Union[List[str], Dict[str, Any], RawConfigParser, Element]]
+        self._source = None  # type: Any
         self._connectinfo = connectinfo
-        self._connection = None  # type: Optional[ElementTree]
-        self._closer = None
+        self._connection = None  # type: Optional[Union[IO, ElementTree]]
+        self._closer = None  # type: Optional[IO]
         self._validate_type()
         try:
             self._load()
@@ -247,7 +247,7 @@ class DataSource:
                 else:
                     if isinstance(self._connectinfo, str) or isinstance(self._connectinfo, PurePath):
                         if str(self._connectinfo).startswith('http:') or str(self._connectinfo).startswith('file:'):
-                            self._closer = urlopen(self._connectinfo)
+                            self._closer = urlopen(cast(str, self._connectinfo))
                         else:
                             self._closer = open(self._connectinfo)
                     else:
@@ -310,7 +310,7 @@ class DataSource:
                 raise
             return 0
 
-    def addtable(self, name):
+    def addtable(self, name: str) -> 'DataTable':
         """Create a new table with the specified name.
 
         Args:
@@ -342,7 +342,7 @@ class DataSource:
                 break
         return self.gettable(name)
 
-    def close(self):
+    def close(self) -> None:
         """Close the data source.
 
         Returns:
@@ -350,9 +350,10 @@ class DataSource:
         """
         if self._closer:
             self._closer.close()
-            self._connectinfo = self._closer = self._source = self._connection = None
+            self._connectinfo = ''
+            self._closer = self._source = self._connection = None
 
-    def commit(self):
+    def commit(self) -> None:
         """Commit any changes in memory to the source.
 
         Returns:
@@ -369,7 +370,7 @@ class DataSource:
                 break
             if case(SourceType.pickle):
                 self._connection = open(self._connectinfo, 'w')
-                pickle_dump(self._source, self._connection)
+                pickle_dump(self._source, cast(IO, self._connection))
                 self._connection.close()
                 break
             if case(SourceType.ini):
@@ -382,10 +383,10 @@ class DataSource:
             if case(SourceType.xml_flat):
                 pass
             if case(SourceType.xml):
-                self._connection.write(self._connectinfo, 'ISO-8859-1')
+                cast(ElementTree, self._connection).write(cast(str, self._connectinfo), 'ISO-8859-1')
                 break
 
-    def gettable(self, name):
+    def gettable(self, name: str) -> 'DataTable':
         """Get the requested data table.
 
         Args:
@@ -427,7 +428,7 @@ class DataSource:
             raise DataError(DataError.BAD_TABLE, table_name=name, source_name=self.name)
         return DataTable(self.type, name, table, self._source)
 
-    def gettables(self):
+    def gettables(self) -> List['DataTable']:
         """Get all the tables from the data source.
 
         Returns:
@@ -453,7 +454,7 @@ class DataSource:
                 break
         return [self.gettable(t) for t in table_names]
 
-    def hastable(self, name):
+    def hastable(self, name: str) -> bool:
         """Determine if the named table exists in the data source.
 
         Args:
@@ -490,7 +491,7 @@ class DataSource:
 class DataRow:
     """Class to create a universal abstract interface for a data row."""
 
-    def __init__(self, data_type, raw, parent):
+    def __init__(self, data_type: SourceType, raw: Any, parent: Any):
         """
         Args:
             data_type: The data source type.
@@ -512,12 +513,12 @@ class DataRow:
     def __exit__(self, *exc_info: Any):
         return False
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> str:
         return self.getvalue(attr)
 
     raw = property(lambda s: s._row, doc='A read-only property which returns the raw contents of the data row.')
 
-    def delcolumn(self, col):
+    def delcolumn(self, col: str) -> None:
         """Delete the named column from the row.
 
         Args:
@@ -549,7 +550,7 @@ class DataRow:
                 del self._row.attrib[col]
                 break
 
-    def delete(self):
+    def delete(self) -> None:
         """Delete this data row.
 
         Returns:
@@ -562,7 +563,7 @@ class DataRow:
             if case():
                 self._parent.remove(self._row)
 
-    def getcolumns(self):
+    def getcolumns(self) -> List[str]:
         """Get all the columns from the row.
 
         Returns:
@@ -584,9 +585,9 @@ class DataRow:
                 return list(self._row.attrib.keys())
             if case(SourceType.xml):
                 return [e.tag for e in list(self._row) if e.tag != self._XML_ROW_TAG]
-        return None
+        return list()
 
-    def getvalue(self, col):
+    def getvalue(self, col: str) -> str:
         """Get the value of the specified column.
 
         Args:
@@ -614,9 +615,9 @@ class DataRow:
                 return self._row.get(col)
             if case(SourceType.xml):
                 return self._row.findtext(col)
-        return None
+        return ''
 
-    def hascol(self, col):
+    def hascol(self, col: str) -> bool:
         """Determine if the named column exists in the row.
 
         Args:
@@ -641,8 +642,9 @@ class DataRow:
                 return False
             if case(SourceType.xml_flat):
                 return bool(self._row.get(col))
+        return False
 
-    def setvalue(self, col, value):
+    def setvalue(self, col: str, value: str) -> None:
         """Set the value of the specified column.
 
         Args:
@@ -693,7 +695,7 @@ class DataTable:
     _XML_ROW_TAG = 'ROW'
     _XML_SINGLE_ROW_TAG = 'environment'
 
-    def __init__(self, data_type, name, raw, parent):
+    def __init__(self, data_type: SourceType, name: str, raw: Any, parent: Any):
         """
         Args:
             data_type: The data source type.
@@ -718,7 +720,7 @@ class DataTable:
     def __exit__(self, *exc_info: Any):
         return False
 
-    def _get_row_parent(self):
+    def _get_row_parent(self) -> Any:
         """Get the parent of a row in this table.
 
         Returns:
@@ -740,7 +742,7 @@ class DataTable:
 
     raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
 
-    def addrow(self, **values):
+    def addrow(self, **values) -> None:
         """Create a new row with the specified values.
 
         Args:
@@ -749,17 +751,18 @@ class DataTable:
         Returns:
             Nothing.
         """
+        row = None  # type: Any
         for case in switch(self.type):
             if case(SourceType.text):
                 pass
             if case(SourceType.pickle):
                 pass
             if case(SourceType.ini):
-                row = (int(self._table[-1]) + 1) if self._table else 1
-                self._parent.add_section(self._INI_ROW_FORMAT % (self.name, row))
-                self._table.append(row)
+                row_num = (int(self._table[-1]) + 1) if self._table else 1
+                self._parent.add_section(self._INI_ROW_FORMAT % (self.name, row_num))
+                self._table.append(row_num)
                 self._parent.set(self.name, DataSource.INI_ROWLIST_OPT, ','.join([str(r) for r in self._table]))
-                row = self._INI_ROW_FORMAT % (self.name, row)
+                row = self._INI_ROW_FORMAT % (self.name, row_num)
                 break
             if case(SourceType.xml_single):
                 row = xml_etree.SubElement(self._parent, self._XML_SINGLE_ROW_TAG)
@@ -775,7 +778,7 @@ class DataTable:
             row.setvalue(var, val)
         return row
 
-    def delrow(self, col, value):
+    def delrow(self, col: str, value: str) -> None:
         """Delete the rows with the specified column value.
 
         Args:
@@ -788,7 +791,7 @@ class DataTable:
         for row in self.getrows(col, value):
             row.delete()
 
-    def getrows(self, col=None, value=None):
+    def getrows(self, col: Optional[str] = None, value: Optional[str] = None) -> List[DataRow]:
         """Get all the rows matching the specified selector.
 
         Args:
@@ -803,5 +806,5 @@ class DataTable:
         if (col is None) and (value is None):
             return allrows
         if value is None:
-            return [r for r in allrows if r.hascol(col)]
-        return [r for r in allrows if r.getvalue(col) == value]
+            return [r for r in allrows if r.hascol(str(col))]
+        return [r for r in allrows if r.getvalue(str(col)) == value]

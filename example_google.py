@@ -12,10 +12,9 @@
 # Step8: Add class private method docstrings.
 # Step9: Reorder Classes: private, protected, properties, methods.
 # Step10: Fix enums.
-
 # Step11: Add PEP484 type hints.
 
-# Added PEP484 type hints to configmgr module. (GitLab #29)
+# Finished adding PEP484 type hints to data module. (GitLab #29)
 
 # Step12: Add PEP526 variable type annotations
 # Step13: Add linting and type checking to build pipeline.
