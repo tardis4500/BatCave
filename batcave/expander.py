@@ -45,8 +45,8 @@ from pathlib import Path
 from re import compile as re_compile
 from shutil import copyfile
 from string import Template
-from typing import Any
-from xml.etree.ElementTree import fromstringlist as xmlparse
+from typing import cast, Any, Dict, List, Match, Optional, Sequence, Tuple, Union
+from xml.etree.ElementTree import fromstringlist as xmlparse, Element
 
 # Import BatCave packages
 from .fileutil import slurp
@@ -93,7 +93,7 @@ class Formatter:
     """
     _LINK_PRELIM = '{link:'
 
-    def __init__(self, output_format):
+    def __init__(self, output_format: OutputFormat):
         """
         Args:
             output_format: The output format.
@@ -112,7 +112,7 @@ class Formatter:
         self.format = output_format
         self.level = 0
         self.count = 1
-        self.keeper = list()
+        self.keeper = list()  # type: List[Tuple[int, str]]
         self.prefix = ''
         self.link_regex = re_compile(f'\\{self._LINK_PRELIM}(.+?)(\\|(.+))?\\}}')
 
@@ -133,7 +133,7 @@ class Formatter:
                 raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
 
     @property
-    def bol(self):
+    def bol(self) -> str:
         """A read-only property which returns the beginning of line formatting."""
         if self.level == 0:
             sep = ',' if (self.format == OutputFormat.csv) else '. '
@@ -144,8 +144,7 @@ class Formatter:
                     return chr(64 + self.count) + sep
                 if case(OutputFormat.html):
                     return self._bol
-                if case():
-                    raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
+                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         else:
             if self.format == OutputFormat.csv:
                 space = ''
@@ -154,8 +153,9 @@ class Formatter:
                 space = '    ' * self.level
                 sep = ': '
             return f'{self._bol}{space}{self.prefix}{self.count}{sep}'
+        raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
 
-    def format_hyperlinks(self, line):
+    def format_hyperlinks(self, line: str) -> str:
         """Format the hyperlinks in a line.
 
         Args:
@@ -171,6 +171,8 @@ class Formatter:
             return line
 
         match = self.link_regex.search(line)
+        if not match:
+            raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         replace_what = match.group(0)
         link = match.group(1)
         text = match.group(3) if (len(match.groups()) == 3) else ''
@@ -189,7 +191,7 @@ class Formatter:
                 raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         return line.replace(replace_what, replace_with)
 
-    def increment(self):
+    def increment(self) -> None:
         """Increment the counter at the current indentation level.
 
         Returns:
@@ -197,7 +199,7 @@ class Formatter:
         """
         self.count += 1
 
-    def indent(self):
+    def indent(self) -> None:
         """Increment the indentation level.
 
         Returns:
@@ -212,7 +214,7 @@ class Formatter:
         self.level += 1
         self.count = 1
 
-    def outdent(self):
+    def outdent(self) -> None:
         """Decrement the indentation level.
 
         Returns:
@@ -237,7 +239,7 @@ class Expander:
     _PRELIM_DEFAULT = '{var:'
     _POSTLIM_DEFAULT = '}'
 
-    def __init__(self, vardict=None, varprops=None, prelim=_PRELIM_DEFAULT, postlim=_POSTLIM_DEFAULT):
+    def __init__(self, vardict: Optional[Dict[str, str]] = None, varprops: Any = None, prelim: str = _PRELIM_DEFAULT, postlim: str = _POSTLIM_DEFAULT):
         """
         Args:
             vardict: A dictionary of expansion variables.
@@ -263,7 +265,7 @@ class Expander:
             postlim_re = postlim_re.replace(spec, '\\' + spec)
         self.re_var = re_compile(f'{prelim_re}([.a-zA-Z0-9_:]+){postlim_re}')
 
-    def evaluate_expression(self, expression):
+    def evaluate_expression(self, expression: str) -> bool:
         """Evaluate an expression in the expansion.
 
         Args:
@@ -305,7 +307,7 @@ class Expander:
             badvar = str(err)
         raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=badvar, thing=expression)
 
-    def expand(self, thing):
+    def expand(self, thing: Any) -> Any:
         """Perform an expansion on a Python object.
 
         Args:
@@ -333,7 +335,7 @@ class Expander:
         while self.prelim in thing:
             fail = False
             try:
-                var = self.re_var.search(thing).group(1)
+                var = cast(Match[str], self.re_var.search(thing)).group(1)
             except AttributeError:
                 prelim_index = thing.index(self.prelim)
                 substr = thing[prelim_index:prelim_index + 200]
@@ -358,7 +360,8 @@ class Expander:
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
 
-    def expand_directory(self, source_dir, target_dir=None, ignore_files=tuple(), no_expand_files=tuple(), err_if_exists=True):
+    def expand_directory(self, source_dir: Union[str, Path], target_dir: Optional[Union[str, Path]] = None,
+                         ignore_files: Sequence[str] = tuple(), no_expand_files: Sequence[str] = tuple(), err_if_exists: bool = True) -> None:
         """Perform an expansion on an entire directory tree.
 
         Args:
@@ -395,7 +398,7 @@ class Expander:
                         print(f'Expanding {source_file} to {target_file} (root={root})')
                     self.expand_file(source_file, target_file)
 
-    def expand_file(self, in_file, out_file):
+    def expand_file(self, in_file: Union[str, Path], out_file: Union[str, Path]) -> None:
         """Perform an expansion on an entire file.
 
         Args:
@@ -413,7 +416,7 @@ class Expander:
                     outstream.write(line)
 
 
-def file_expander(in_file, out_file, vardict=None, varprops=None):
+def file_expander(in_file: Union[str, Path], out_file: Union[str, Path], vardict: Optional[Dict[str, str]] = None, varprops: Any = None) -> None:
     """Quick function for one-time file expansion.
 
     Args:
@@ -456,7 +459,7 @@ class Procedure:
     _SCHEMA_ATTR = 'schema'
     _STEPS_TAG = 'steps'
 
-    def __init__(self, procfile, output_format=OutputFormat.html, variable_overrides=None):
+    def __init__(self, procfile: Union[str, Path], output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):
         """
         Args:
             procfile: The procedure file.
@@ -477,20 +480,31 @@ class Procedure:
             ProcedureError.BAD_SCHEMA: If the schema of the procedure file is not supported.
         """
         self.output_format = output_format
-        self.formatter = None
-        self.expander = None
+        self.formatter: Formatter
+        self.expander: Expander
 
         xmlroot = xmlparse(slurp(procfile))
         schema = str_to_pythonval(xmlroot.get(self._SCHEMA_ATTR, 0))
         if schema != self._REQUIRED_PROCEDURE_SCHEMA:
             raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
-        self.header = xmlroot.findtext(self._HEADER_TAG) if xmlroot.findtext(self._HEADER_TAG) else ''
-        flags = {f.tag: self.parse_flag(f.text) for f in list(xmlroot.find(self._FLAGS_TAG))} if xmlroot.find(self._FLAGS_TAG) else dict()
-        self.directories = [d.text for d in list(xmlroot.find(self._DIRECTORIES_TAG))] if xmlroot.find(self._DIRECTORIES_TAG) else list()
-        self.steps = [Step(s) for s in list(xmlroot.find(self._STEPS_TAG))] if xmlroot.find(self._STEPS_TAG) else list()
-        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(xmlroot.find(self._LIBRARY_TAG))} if xmlroot.find(self._LIBRARY_TAG) else dict()
-        self.environments = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(xmlroot.find(self._ENVIRONMENTS_TAG))} if xmlroot.find(self._ENVIRONMENTS_TAG) else dict()
+        self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
 
+        flags_element = xmlroot.find(self._FLAGS_TAG)
+        flags = {f.tag: self.parse_flag(str(f.text)) for f in list(flags_element)} if flags_element else dict()
+
+        directories_element = xmlroot.find(self._DIRECTORIES_TAG)
+        self.directories = [str(d.text) for d in list(directories_element)] if directories_element else list()
+
+        steps_element = xmlroot.find(self._STEPS_TAG)
+        self.steps = [Step(s) for s in list(steps_element)] if steps_element else list()
+
+        library_element = xmlroot.find(self._LIBRARY_TAG)
+        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if library_element else dict()
+
+        environments_element = xmlroot.find(self._ENVIRONMENTS_TAG)
+        self.environments = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else dict()  # type: Dict
+
+        common_environment: Dict
         if self._COMMON_ENVIRONMENT in self.environments:
             common_environment = self.environments[self._COMMON_ENVIRONMENT]
             del self.environments[self._COMMON_ENVIRONMENT]
@@ -524,13 +538,13 @@ class Procedure:
     def __exit__(self, *exc_info: Any):
         return False
 
-    def dump(self):
+    def dump(self) -> Dict[str, Union[str, Sequence, Dict]]:
         """Dump out the procedure contents.
 
         Returns:
             The contents of the procedure as an ordered dictionary.
         """
-        result = odict()
+        result = odict()  # type: Dict
         result[self._HEADER_TAG] = self.header
         result[self._DIRECTORIES_TAG] = self.directories
         result[self._ENVIRONMENTS_TAG] = {e: v for (e, v) in self.environments.items()}
@@ -538,7 +552,7 @@ class Procedure:
         result[self._STEPS_TAG] = [s.dump() for s in self.steps]
         return result
 
-    def expand(self, text):
+    def expand(self, text: str) -> str:
         """Expand the Procedure.
 
         Args:
@@ -557,7 +571,7 @@ class Procedure:
                 raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text)
             raise
 
-    def expand_directories(self, env, destination_root, source_root=None, err_if_exists=True):
+    def expand_directories(self, env: str, destination_root: Union[str, Path], source_root: Union[str, Path] = Path(), err_if_exists: bool = True) -> None:
         """Perform variable expansion on the directories defined in the procedure.
 
         Args:
@@ -576,7 +590,7 @@ class Procedure:
                 dirpath = source_root / dirpath
             self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
 
-    def format(self, text):
+    def format(self, text: str) -> str:
         """Format an output line including hyperlinks.
 
         Args:
@@ -587,7 +601,7 @@ class Procedure:
         """
         return self.formatter.format_hyperlinks(self.expand(text))
 
-    def parse_flag(self, flag):
+    def parse_flag(self, flag: str) -> Any:
         """Evaluate a parsing flag.
 
         Args:
@@ -604,7 +618,7 @@ class Procedure:
             raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
         return value
 
-    def realize(self, env):
+    def realize(self, env: str) -> str:
         """Realize the procedure for the specified environments based on the variables.
 
         Args:
@@ -643,7 +657,7 @@ class Procedure:
                 self.formatter.increment()
         return self.format(header) + content + footer
 
-    def realize_step(self, step):
+    def realize_step(self, step: 'Step') -> str:
         """Realize a step in the procedure.
 
         Args:
@@ -677,10 +691,10 @@ class Procedure:
 
         output = ''
         if step.repeat:
-            (variable, values) = step.repeat.split('=')
-            values = [v.strip() for v in self.expand(values).split(',')]
+            (variable, values_as_str) = step.repeat.split('=')
+            values = [v.strip() for v in self.expand(values_as_str).split(',')]
             step_copy = deepcopy(step)
-            step_copy.repeat = False
+            step_copy.repeat = ''
             for value in values:
                 step_copy.vars[variable] = value
                 output += self.realize_step(step_copy)
@@ -702,7 +716,7 @@ class Procedure:
             self.expander.vardict = expander_vars_keeper
         return output
 
-    def setup_expander(self, environment):
+    def setup_expander(self, environment: str) -> None:
         """Setup the Expander for the requested environment.
 
         Args:
@@ -736,7 +750,7 @@ class Step:
 
     NAME_ATTR = 'name'
 
-    def __init__(self, step_def):
+    def __init__(self, step_def: Element):
         """
         Args:
             step_def: The dictionary which defined the step.
@@ -750,21 +764,21 @@ class Step:
             text: The text emitted for the step.
             vars: The dictionary of variables defined for the step.
         """
-        self.condition = step_def.get(self._CONDITION_ATTR)
-        self.libimport = step_def.get(self._IMPORT_ATTR)
-        self.name = step_def.get(self.NAME_ATTR)
-        self.repeat = step_def.get(self._REPEAT_ATTR)
+        self.condition = step_def.get(self._CONDITION_ATTR, '')
+        self.libimport = step_def.get(self._IMPORT_ATTR, '')
+        self.name = step_def.get(self.NAME_ATTR, '')
+        self.repeat = step_def.get(self._REPEAT_ATTR, '')
         self.text = step_def.text.strip() if step_def.text else ''
         self.substeps = [Step(s) for s in list(step_def)]
-        var = step_def.get(self._VARS_ATTR)
+        var = step_def.get(self._VARS_ATTR, '')
         self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if var else dict()
 
-    def dump(self):
+    def dump(self) -> List:
         """Dump out the step contents.
 
         Returns:
             The contents of the step as an list.
         """
-        return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [s.dump() for s in self.substeps]
+        return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [str(s.dump()) for s in self.substeps]
 
 # cSpell:ignore odict

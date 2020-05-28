@@ -14,7 +14,7 @@
 # Step10: Fix enums.
 # Step11: Add PEP484 type hints.
 
-# Finished adding PEP484 type hints to data module. (GitLab #29)
+# Added PEP484 type hints to expander module. (GitLab #29)
 
 # Step12: Add PEP526 variable type annotations
 # Step13: Add linting and type checking to build pipeline.
