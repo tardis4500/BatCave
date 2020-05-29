@@ -16,6 +16,7 @@ from pathlib import Path
 from shutil import copy
 from string import Template
 from tarfile import open as tar_open
+from typing import Any, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Import internal modules
@@ -52,7 +53,7 @@ ConversionMode = Enum('ConversionMode', ('to_unix', 'to_dos'))
 class CompressedFile:
     """Class to add support for compressed file types which are missing some methods."""
 
-    def __init__(self, filename, **attr):
+    def __init__(self, filename: Union[str, Path], **_unused_attr):
         """
         Args:
             filename: The name of the compressed file.
@@ -61,10 +62,9 @@ class CompressedFile:
         Attributes:
             _filename: The value of the filename argument.
         """
-        super().__init__(filename, **attr)
         self._filename = Path(filename)
 
-    def namelist(self):
+    def namelist(self) -> Tuple[str]:
         """Return the name of the file as the first item in a tuple.
 
         Returns:
@@ -76,15 +76,37 @@ class CompressedFile:
 class BatCaveGzipFile(GzipFile, CompressedFile):
     """Add CompressedFile class methods to the GzipFile class."""
 
+    def __init__(self, filename: Union[str, Path], **attr):
+        """
+        Args:
+            filename: The name of the compressed file.
+            **attr: The list of attributes to pass to the base class.
 
-class BatCaveBZ2File(BZ2File, CompressedFile):
+        Attributes:
+            _filename: The value of the filename argument.
+        """
+        super().__init__(filename, **attr)
+
+
+class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore
     """Add CompressedFile class methods to the BZ2File class."""
+
+    def __init__(self, filename: Union[str, Path], **attr):
+        """
+        Args:
+            filename: The name of the compressed file.
+            **attr: The list of attributes to pass to the base class.
+
+        Attributes:
+            _filename: The value of the filename argument.
+        """
+        super().__init__(filename, **attr)
 
 
 PACKER_CLASSES = {'zip': ZipFile, 'gz': BatCaveGzipFile, 'bz2': BatCaveBZ2File, 'xz': LZMAFile}
 
 
-def eol_convert(filename, mode, backup=True):
+def eol_convert(filename: Union[str, Path], mode: ConversionMode, backup: bool = True) -> None:
     """Perform end-of-line conversions from Windows to UNIX or vice versa.
 
     Attributes:
@@ -98,8 +120,9 @@ def eol_convert(filename, mode, backup=True):
     Raises:
         ConvertError.BACKUP_EXISTS: If backup is True and the backup file already exists.
     """
+    filename = Path(filename)
     if backup:
-        backupfile = Path(filename + '.bak')
+        backupfile = filename.parent / f'{filename.name}.bak'
         if backupfile.exists():
             raise ConvertError(ConvertError.BACKUP_EXISTS, file=backupfile)
         copy(filename, backupfile)
@@ -113,7 +136,7 @@ def eol_convert(filename, mode, backup=True):
         stream.write(data)
 
 
-def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
+def pack(arcfile: Union[str, Path], items: Iterable, itemloc: Optional[Union[str, Path]] = None, arctype: str = '', ignore_empty: bool = True) -> None:
     """Create a compressed archive.
 
     Attributes:
@@ -150,7 +173,7 @@ def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
         else:
             tar_name = archive
 
-        pkgfile = tar_open(tar_name, 'w:'+compression)
+        pkgfile = tar_open(tar_name, 'w:' + compression)
         adder = 'add'
 
     added = False
@@ -176,7 +199,7 @@ def pack(arcfile, items, itemloc=None, arctype=None, ignore_empty=True):
         popd()
 
 
-def slurp(filename):
+def slurp(filename: Union[str, Path]) -> List[str]:
     """Return all the lines of a file as a list.
 
     Args:
@@ -188,7 +211,7 @@ def slurp(filename):
     return [l for l in open(filename)]
 
 
-def spew(filename, outlines):
+def spew(filename: Union[str, Path], outlines: Iterable) -> None:
     """Write the list of lines to a file.
 
     Args:
@@ -201,7 +224,7 @@ def spew(filename, outlines):
     open(filename, 'w').writelines(outlines)
 
 
-def unpack(arcfile, dest=None, arctype=None):
+def unpack(arcfile: Union[str, Path], dest: Optional[Union[str, Path]] = None, arctype: str = '') -> None:
     """Extract the contents of a compressed file.
 
     Attributes:
@@ -216,17 +239,16 @@ def unpack(arcfile, dest=None, arctype=None):
     Raises:
         PackError.INVALID_TYPE: If the arctype is unknown.
     """
-    archive = Path(arcfile).resolve() if isinstance(arcfile, str) else arcfile
-    if dest:
-        dest = Path(dest)
+    archive = Path(arcfile).resolve()
     if not arctype:
         arctype = 'tar' if ('.tar.' in archive.name) else archive.suffix.lstrip('.')
 
     if dest:
-        dest.mkdir(parents=True, exist_ok=True)
-        pushd(dest)
+        use_dest = Path(dest)
+        use_dest.mkdir(parents=True, exist_ok=True)
+        pushd(use_dest)
 
-    pkgfile = None
+    pkgfile = None  # type: Any
     for case in switch(arctype):
         if case('bz2', 'gz', 'xz', 'zip'):
             pkgfile = PACKER_CLASSES[arctype](archive)
@@ -234,7 +256,7 @@ def unpack(arcfile, dest=None, arctype=None):
             extractor = 'read'
             break
         if case('tar'):
-            pkgfile = tar_open(archive) if isinstance(archive, Path) else tar_open(fileobj=archive)
+            pkgfile = tar_open(archive)
             lister = 'getmembers'
             extractor = 'extract'
             break
