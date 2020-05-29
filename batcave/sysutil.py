@@ -22,6 +22,7 @@ from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
+from typing import Any
 
 # Import internal modules
 from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, WIN32
@@ -32,7 +33,7 @@ if WIN32:
 else:
     from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=E0401
     from grp import getgrnam  # pylint: disable=E0401
-    from os import geteuid  # pylint: disable=E0611,C0412
+    from os import geteuid  # type: ignore # pylint: disable=E0611,C0412
     from pwd import getpwnam  # pylint: disable=E0401
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
