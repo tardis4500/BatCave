@@ -5,7 +5,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, HelpFormatte
 from typing import cast, Any, Callable, Iterable, Optional, Sequence, Type, Union
 
 # Import internal modules
-from .version import get_version_info, VERSION_STYLES
+from .version import get_version_info, VersionStyle
 from .lang import str_to_pythonval
 
 
@@ -52,7 +52,7 @@ class Commander:
     def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),
                  subparser_common_args: Sequence[Argument] = tuple(), default: Optional[SubParser] = None, parents: Sequence[ArgumentParser] = tuple(),
                  parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, add_version: bool = True,
-                 version_style: VERSION_STYLES = VERSION_STYLES.oneline, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):
+                 version_style: VersionStyle = VersionStyle.oneline, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):
         """
         Args:
             description: The subcommand name for the subparser.

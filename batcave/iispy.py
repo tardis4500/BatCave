@@ -4,7 +4,7 @@
 from os import getenv
 from pathlib import Path
 from string import Template
-from typing import Any
+from typing import Dict, List, Optional, Type, Union
 from xml.etree.ElementTree import fromstring as xmlparse_str, fromstringlist as xmlparse_list
 
 # Import internal modules
@@ -44,7 +44,7 @@ class IISAdvancedLogError(BatCaveException):
 class IISObject:
     """Class to create a universal abstract interface for an IIS object."""
 
-    def __init__(self, name, iis_ref):
+    def __init__(self, name: str, iis_ref: 'IISInstance'):
         """
         Args:
             name: The name of the object.
@@ -60,10 +60,10 @@ class IISObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
-    def manage_item(self, action):
+    def manage_item(self, action: str) -> None:
         """Perform action on this object.
 
         Args:
@@ -74,7 +74,7 @@ class IISObject:
         """
         self.iis_ref.manage_item(action, type(self), self.name)
 
-    def start(self):
+    def start(self) -> None:
         """Start this object.
 
         Returns:
@@ -82,7 +82,7 @@ class IISObject:
         """
         self.manage_item('start')
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop this object.
 
         Returns:
@@ -122,7 +122,7 @@ class IISInstance:
                      WebApplicationPool: 'APPPOOL',
                      WebSite: 'SITE'}
 
-    def __init__(self, hostname=None, remote_powershell=None):
+    def __init__(self, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             hostname (optional, default=localhost): The name of the IIS server hosting the instance.
@@ -139,17 +139,17 @@ class IISInstance:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> List[str]:
         tag = attr.upper()[0:-1]
         result = [i.attrib[f'{tag}.NAME'].rstrip('/') for i in xmlparse_list(appcmd('list', attr, hostname=self.hostname, remote_powershell=self._remote_powershell)).findall(tag)]
         if not result:
             raise AttributeError(attr)
         return result
 
-    def create_virtual_dir(self, vdir_name, vdir_location, website):
+    def create_virtual_dir(self, vdir_name: str, vdir_location: Union[str, Path], website: str) -> VirtualDirectory:
         """Create the specified virtual directory in the IIS instance.
 
         Args:
@@ -163,7 +163,7 @@ class IISInstance:
         self.manage_item('add', VirtualDirectory, f'/app.name:{website}/', f'/path:/{vdir_name}', f'/physicalPath:{vdir_location}')
         return self.get_virtual_dir(vdir_name)
 
-    def create_webapp(self, app_name, appdir, website, pool=None):
+    def create_webapp(self, app_name: str, appdir: Union[str, Path], website: str, pool: Optional[WebApplicationPool] = None) -> WebApplication:
         """Create the specified web application in the IIS instance.
 
         Args:
@@ -178,7 +178,7 @@ class IISInstance:
         self.manage_item('add', WebApplication, f'/site.name:{website}', f'/path:/{app_name}/', f'/physicalPath:{appdir}', f'/applicationPool:{pool}' if pool else '')
         return self.get_webapp(app_name)
 
-    def create_webapp_pool(self, pool_name):
+    def create_webapp_pool(self, pool_name: str) -> WebApplicationPool:
         """Create the specified web application pool in the IIS instance.
 
         Args:
@@ -190,7 +190,7 @@ class IISInstance:
         self.manage_item('add', WebApplicationPool, f'/name:{pool_name}')
         return self.get_webapp_pool(pool_name)
 
-    def exists(self):
+    def exists(self) -> bool:
         """Test for existence of the IIS instance.
 
         Returns:
@@ -204,7 +204,7 @@ class IISInstance:
             raise
         return True
 
-    def get_advanced_logger(self, path=None, logtype='server', set_location='apphost'):
+    def get_advanced_logger(self, path: Optional[Union[str, Path]] = None, logtype: str = 'server', set_location: str = 'apphost') -> 'IISAdvancedLogger':
         """Get the advanced logger object from the IIS instance.
 
         Args:
@@ -219,7 +219,7 @@ class IISInstance:
 
     advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
-    def get_configuration_section(self, name, path=None, set_location='apphost'):
+    def get_configuration_section(self, name: str, path: Optional[Union[str, Path]] = None, set_location: str = 'apphost') -> 'IISConfigurationSection':
         """Get the named configuration section from the IIS configuration files.
 
         Args:
@@ -232,7 +232,7 @@ class IISInstance:
         """
         return IISConfigurationSection(name=name, path=path, set_location=set_location, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
-    def get_virtual_dir(self, vdir_name):
+    def get_virtual_dir(self, vdir_name: str) -> VirtualDirectory:
         """Get the specified virtual directory from the IIS instance.
 
         Args:
@@ -243,7 +243,7 @@ class IISInstance:
         """
         return VirtualDirectory(vdir_name, self)
 
-    def get_webapp(self, app_name):
+    def get_webapp(self, app_name: str) -> WebApplication:
         """Get the specified web application from the IIS instance.
 
         Args:
@@ -254,7 +254,7 @@ class IISInstance:
         """
         return WebApplication(app_name, self)
 
-    def get_webapp_pool(self, pool_name):
+    def get_webapp_pool(self, pool_name: str) -> WebApplicationPool:
         """Get the specified web application pool from the IIS instance.
 
         Args:
@@ -265,7 +265,7 @@ class IISInstance:
         """
         return WebApplicationPool(pool_name, self)
 
-    def get_website(self, site_name):
+    def get_website(self, site_name: str) -> WebSite:
         """Get the specified website from the IIS instance.
 
         Args:
@@ -276,7 +276,7 @@ class IISInstance:
         """
         return WebSite(site_name, self)
 
-    def has_item(self, item_type, item_name):
+    def has_item(self, item_type: Type[IISObject], item_name: str) -> bool:
         """Determine if the specified item of the specified type exists in the IIS instance.
 
         Args:
@@ -288,7 +288,7 @@ class IISInstance:
         """
         return item_name in getattr(self, f'{self._IIS_TYPE_MAP[item_type]}s')
 
-    def has_virtual_dir(self, vdir_name):
+    def has_virtual_dir(self, vdir_name: str) -> bool:
         """Determine if the IIS instance has the specified virtual directory.
 
         Args:
@@ -299,7 +299,7 @@ class IISInstance:
         """
         return self.has_item(VirtualDirectory, vdir_name)
 
-    def has_webapp(self, app_name):
+    def has_webapp(self, app_name: str) -> bool:
         """Determine if the IIS instance has the specified web application.
 
         Args:
@@ -310,7 +310,7 @@ class IISInstance:
         """
         return self.has_item(WebApplication, app_name)
 
-    def has_webapp_pool(self, pool_name):
+    def has_webapp_pool(self, pool_name: str) -> bool:
         """Determine if the IIS instance has the specified web application pool.
 
         Args:
@@ -321,7 +321,7 @@ class IISInstance:
         """
         return self.has_item(WebApplicationPool, pool_name)
 
-    def has_website(self, site_name):
+    def has_website(self, site_name: str) -> bool:
         """Determine if the IIS instance has the specified website.
 
         Args:
@@ -332,7 +332,7 @@ class IISInstance:
         """
         return self.has_item(WebSite, site_name)
 
-    def manage_item(self, action, item_type, *args):
+    def manage_item(self, action: str, item_type: Type[IISObject], *args) -> str:
         """Manage an IIS object using the standard IIS appcmd.
 
         Args:
@@ -345,7 +345,7 @@ class IISInstance:
         """
         return appcmd(action, self._IIS_TYPE_MAP[item_type], *args, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
-    def remove_webapp(self, appname):
+    def remove_webapp(self, appname: str) -> None:
         """Remove the specified web application from the IIS instance.
 
         Args:
@@ -356,7 +356,7 @@ class IISInstance:
         """
         self.manage_item('delete', WebApplication, appname)
 
-    def remove_webapp_pool(self, pool_name):
+    def remove_webapp_pool(self, pool_name: str) -> None:
         """Remove the specified web application pool from the IIS instance.
 
         Args:
@@ -367,7 +367,7 @@ class IISInstance:
         """
         self.manage_item('delete', WebApplicationPool, pool_name)
 
-    def reset(self, verbose=True):
+    def reset(self, verbose: bool = True) -> str:
         """Reset the IIS instance.
 
         Args:
@@ -378,7 +378,7 @@ class IISInstance:
         """
         return syscmd('iisreset', remote=self.hostname, show_stdout=not verbose)
 
-    def start(self, quiet=False):
+    def start(self, quiet: bool = False) -> str:
         """Start the IIS instance.
 
         Args:
@@ -389,7 +389,7 @@ class IISInstance:
         """
         return syscmd('iisreset', '/start', remote=self.hostname, show_stdout=not quiet)
 
-    def stop(self, quiet=False):
+    def stop(self, quiet: bool = False) -> str:
         """Stop the IIS instance.
 
         Args:
@@ -404,7 +404,7 @@ class IISInstance:
 class IISConfigurationSection:
     """Class to create a universal abstract interface for an IIS configuration section."""
 
-    def __init__(self, name, path, set_location=None, hostname=None, remote_powershell=None):
+    def __init__(self, name: str, path: Optional[Union[str, Path]], set_location: Optional[str] = None, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             name: The name of the IIS configuration section.
@@ -430,27 +430,31 @@ class IISConfigurationSection:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     def __str__(self):
         return ''.join([l for l in self._run_appcmd('list', 'config', self._path, f'/section:{self._name}') if l.strip()])
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> str:
         config = xmlparse_str(str(self))[0]
         if config.attrib['CONFIG.SECTION'] != self._name:
             raise IISConfigurationError(IISConfigurationError.PARSE_ERROR, expected=self._name)
+        result = None
         cfg_section = config.find(self._name.replace('/', '-'))
-        if attr in cfg_section.attrib:
-            return str_to_pythonval(cfg_section.attrib[attr])
-        if attr.endswith('s') and cfg_section.findall('.//' + attr.rstrip('s')):
-            return cfg_section.findall('.//' + attr.rstrip('s'))
-        result = cfg_section.find(f'./[@{attr}]')
+        if cfg_section:
+            if attr in cfg_section.attrib:
+                return str_to_pythonval(cfg_section.attrib[attr])
+            if attr.endswith('s'):
+                cfg_section_plural = cfg_section.findall('.//' + attr.rstrip('s'))[0]
+                if cfg_section_plural:
+                    return str(cfg_section_plural.text)
+            result = cfg_section.find(f'./[@{attr}]')
         if not result:
             raise AttributeError(attr)
-        return result.text
+        return str(result.text)
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: str) -> None:
         if attr.startswith('_'):
             super().__setattr__(attr, value)
             return
@@ -458,20 +462,20 @@ class IISConfigurationSection:
             value = bool_to_str(value)
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/{attr}:{value}')
 
-    def _run_appcmd(self, *cmd_args):
+    def _run_appcmd(self, *args) -> str:
         """Run the IIS appcmd against this IIS configuration section.
 
         Args:
-            *cmd_args: The arguments to pass to appcmd.
+            *args: The arguments to pass to appcmd.
 
         Returns:
             The output from appcmd.
         """
         if self._set_location:
-            cmd_args += [f'/commit:{self._set_location}']
+            cmd_args = list(args) + [f'/commit:{self._set_location}']
         return appcmd(*cmd_args, hostname=self._hostname, remote_powershell=self._remote_powershell)
 
-    def add_collection_member(self, collection, properties, changes):
+    def add_collection_member(self, collection: str, properties: Dict, changes: Optional[Dict]) -> None:
         """Add the specified properties to the collection.
 
         Args:
@@ -486,7 +490,7 @@ class IISConfigurationSection:
             properties.update(changes)
         self.add_property(collection, dict2expat(properties))
 
-    def add_property(self, propname, value):
+    def add_property(self, propname: str, value: str) -> None:
         """Add a property with the specified value.
 
         Args:
@@ -498,7 +502,7 @@ class IISConfigurationSection:
         """
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/+{propname}.{value}')
 
-    def has_collection_member(self, collection, filter_on, value):
+    def has_collection_member(self, collection: str, filter_on: str, value: str) -> bool:
         """Determine if a collection has a specified member.
 
         Args:
@@ -511,7 +515,7 @@ class IISConfigurationSection:
         """
         return bool([m for m in getattr(self, collection) if m.attrib[filter_on] == value])
 
-    def rm_collection_member(self, collection, selectors):
+    def rm_collection_member(self, collection: str, selectors: Dict) -> None:
         """Remove the specified properties from the collection.
 
         Args:
@@ -523,7 +527,7 @@ class IISConfigurationSection:
         """
         self.rm_property(collection, dict2expat(selectors))
 
-    def rm_property(self, propname, value=None):
+    def rm_property(self, propname: str, value: Optional[str] = None) -> None:
         """Remove a property conditionally with the specified value.
 
         Args:
@@ -540,7 +544,7 @@ class IISConfigurationSection:
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path, logtype, set_location, hostname=None, remote_powershell=None):
+    def __init__(self, path: Optional[Union[str, Path]], logtype: str, set_location: str, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             path: The path to AdvancedLogger configuration section.
@@ -552,7 +556,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
 
-    def _run_appcmd(self, *cmd_args):
+    def _run_appcmd(self, *cmd_args) -> str:
         """Run the IIS appcmd against this IIS advanced logger configuration.
 
         Args:
@@ -568,12 +572,12 @@ class IISAdvancedLogger(IISConfigurationSection):
                 raise
         raise IISAdvancedLogError(IISAdvancedLogError.NOT_INSTALLED)
 
-    def add_field(self, field_id, field_values=None):
+    def add_field(self, field_id: str, field_values: Optional[Dict] = None) -> None:
         """Add a field to the advanced logger configuration.
 
         Args:
             field_id: The field ID to add.
-            field_values (optional, default=None): Any field values to add to override the default values.
+            field_values (optional, default=dict()): Any field values to add to override the default values.
 
         Returns:
             Nothing.
@@ -586,11 +590,11 @@ class IISAdvancedLogger(IISConfigurationSection):
                           'description': '',
                           'defaultValue': '',
                           'loggingDataType': 'TypeLPCSTR'}
-        if 'sourceName' not in field_values:
+        if field_values and 'sourceName' not in field_values:
             default_values['sourceName'] = field_id
         self.add_collection_member('fields', default_values, field_values)
 
-    def add_log(self, log_name, log_values=None, fields=None):
+    def add_log(self, log_name: str, log_values: Optional[Dict] = None, fields: Optional[Dict] = None) -> None:
         """Add a log definition to the advanced logger configuration.
 
         Args:
@@ -618,8 +622,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         for (field, values) in fields.items():
             self.add_logfield(log_name, field, values)
 
-    def add_logfield(self, log_name, field_name, field_values=None):
-        'Adds a field to a log definition'
+    def add_logfield(self, log_name: str, field_name: str, field_values: Optional[Dict] = None) -> None:
         """Add a field to an advanced logger log definition.
 
         Args:
@@ -639,7 +642,7 @@ class IISAdvancedLogger(IISConfigurationSection):
                                     'defaultValue': ''},
                                    field_values)
 
-    def has_field(self, field_id):
+    def has_field(self, field_id: str) -> bool:
         """Determine if the advanced logger configuration has the specified field.
 
         Args:
@@ -650,7 +653,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         return self.has_collection_member('fields', 'id', field_id)
 
-    def rm_field(self, field_id):
+    def rm_field(self, field_id: str) -> None:
         """Remove a field from the advanced logger configuration.
 
         Args:
@@ -661,7 +664,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         self.rm_collection_member('fields', {'id': field_id})
 
-    def rm_log(self, log_name):
+    def rm_log(self, log_name: str) -> None:
         """Remove a log definition to the advanced logger configuration.
 
         Args:
@@ -673,7 +676,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         self.rm_collection_member('logDefinitions', {'baseFileName': log_name})
 
 
-def appcmd(*cmd_args, hostname, **sys_cmd_args):
+def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> str:
     """Interface to run the standard IIS appcmd command-line tool.
 
     Args:
@@ -682,7 +685,7 @@ def appcmd(*cmd_args, hostname, **sys_cmd_args):
         **sys_cmd_args: The arguments to pass to syscmd when running appcmd.
 
     Returns:
-        Nothing.
+        The result of the appcmd call.
 
     Raises:
         AppCmdError.APPCMD_ERROR: If there are errors reported by appcmd.
@@ -707,7 +710,7 @@ def appcmd(*cmd_args, hostname, **sys_cmd_args):
     raise err_object
 
 
-def dict2expat(py_dict):
+def dict2expat(py_dict: Dict) -> str:
     """Converts Python dictionaries to the syntax understood by the IIS appcmd command-line tool.
 
     Args:
