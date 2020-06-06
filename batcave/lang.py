@@ -13,12 +13,15 @@ from pathlib import Path
 from string import Template
 import sys
 from sys import executable, platform, version_info, path as sys_path
+from typing import Union
 
 # Useful contants
 FROZEN = getattr(sys, 'frozen', False)
 BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
 VALIDATE_PYTHON = True
 WIN32 = (platform == 'win32')
+
+PathName = Union[str, Path]
 
 
 class MsgStr:

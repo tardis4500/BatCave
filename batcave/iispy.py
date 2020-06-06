@@ -4,12 +4,12 @@
 from os import getenv
 from pathlib import Path
 from string import Template
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type
 from xml.etree.ElementTree import fromstring as xmlparse_str, fromstringlist as xmlparse_list
 
 # Import internal modules
 from .sysutil import syscmd, CMDError
-from .lang import bool_to_str, str_to_pythonval, BatCaveError, BatCaveException
+from .lang import bool_to_str, str_to_pythonval, BatCaveError, BatCaveException, PathName
 
 
 class AppCmdError(BatCaveException):
@@ -149,7 +149,7 @@ class IISInstance:
             raise AttributeError(attr)
         return result
 
-    def create_virtual_dir(self, vdir_name: str, vdir_location: Union[str, Path], website: str) -> VirtualDirectory:
+    def create_virtual_dir(self, vdir_name: str, vdir_location: PathName, website: str) -> VirtualDirectory:
         """Create the specified virtual directory in the IIS instance.
 
         Args:
@@ -163,7 +163,7 @@ class IISInstance:
         self.manage_item('add', VirtualDirectory, f'/app.name:{website}/', f'/path:/{vdir_name}', f'/physicalPath:{vdir_location}')
         return self.get_virtual_dir(vdir_name)
 
-    def create_webapp(self, app_name: str, appdir: Union[str, Path], website: str, pool: Optional[WebApplicationPool] = None) -> WebApplication:
+    def create_webapp(self, app_name: str, appdir: PathName, website: str, pool: Optional[WebApplicationPool] = None) -> WebApplication:
         """Create the specified web application in the IIS instance.
 
         Args:
@@ -204,7 +204,7 @@ class IISInstance:
             raise
         return True
 
-    def get_advanced_logger(self, path: Optional[Union[str, Path]] = None, logtype: str = 'server', set_location: str = 'apphost') -> 'IISAdvancedLogger':
+    def get_advanced_logger(self, path: Optional[PathName] = None, logtype: str = 'server', set_location: str = 'apphost') -> 'IISAdvancedLogger':
         """Get the advanced logger object from the IIS instance.
 
         Args:
@@ -219,7 +219,7 @@ class IISInstance:
 
     advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
-    def get_configuration_section(self, name: str, path: Optional[Union[str, Path]] = None, set_location: str = 'apphost') -> 'IISConfigurationSection':
+    def get_configuration_section(self, name: str, path: Optional[PathName] = None, set_location: str = 'apphost') -> 'IISConfigurationSection':
         """Get the named configuration section from the IIS configuration files.
 
         Args:
@@ -404,7 +404,7 @@ class IISInstance:
 class IISConfigurationSection:
     """Class to create a universal abstract interface for an IIS configuration section."""
 
-    def __init__(self, name: str, path: Optional[Union[str, Path]], set_location: Optional[str] = None, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
+    def __init__(self, name: str, path: Optional[PathName], set_location: Optional[str] = None, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             name: The name of the IIS configuration section.
@@ -544,7 +544,7 @@ class IISConfigurationSection:
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path: Optional[Union[str, Path]], logtype: str, set_location: str, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
+    def __init__(self, path: Optional[PathName], logtype: str, set_location: str, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             path: The path to AdvancedLogger configuration section.

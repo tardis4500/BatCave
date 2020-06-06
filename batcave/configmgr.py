@@ -3,11 +3,11 @@
 # Import standard modules
 from pathlib import Path
 from string import Template
-from typing import Optional, Union
+from typing import Optional
 from xml.etree.ElementTree import ParseError
 
-from .data import DataError, DataSource
-from .lang import switch, BatCaveError, BatCaveException
+from .data import DataError, DataSource, SourceType
+from .lang import switch, BatCaveError, BatCaveException, PathName
 
 
 class ConfigurationError(BatCaveException):
@@ -40,7 +40,7 @@ class ConfigCollection:
 
     INCLUDE_CONFIG_TAG = 'include'
 
-    def __init__(self, name: Union[str, Path], create: bool = False, suffix: str = '_config.xml'):
+    def __init__(self, name: PathName, create: bool = False, suffix: str = '_config.xml'):
         """
         Args:
             name: The configuration collection name.
@@ -68,7 +68,7 @@ class ConfigCollection:
         self._config_filename = path_name.parent / (path_name.name + suffix)
         failure = None
         try:
-            self._data_source = DataSource(DataSource.SOURCE_TYPES.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
+            self._data_source = DataSource(SourceType.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
         except DataError as err:
             for case in switch(err.code):
                 if case(DataError.FILE_OPEN.code):

@@ -56,7 +56,7 @@ Attributes:
 # Import standard modules
 from configparser import RawConfigParser
 from enum import Enum
-from pathlib import Path, PurePath
+from pathlib import PurePath
 from pickle import dump as pickle_dump, load as pickle_load
 from string import Template
 from typing import cast, Any, IO, List, Optional, Union
@@ -66,7 +66,7 @@ from xml.etree.ElementTree import ElementTree
 import xml.etree.ElementTree as xml_etree
 
 # Import internal modules
-from .lang import switch, BatCaveError, BatCaveException
+from .lang import switch, BatCaveError, BatCaveException, PathName
 
 SourceType = Enum('SourceType', ('text', 'ini', 'pickle', 'xml_single', 'xml_flat', 'xml'))
 
@@ -122,7 +122,7 @@ class DataSource:
     INI_ROW_TAG = ' ROW '
     INI_ROWLIST_OPT = 'ROWS'
 
-    def __init__(self, data_type: SourceType, connectinfo: Union[str, Path], name: str, schema: int, create: bool = False):
+    def __init__(self, data_type: SourceType, connectinfo: PathName, name: str, schema: int, create: bool = False):
         """
         Args:
             data_type: The data source type.

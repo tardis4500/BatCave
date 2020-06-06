@@ -50,7 +50,7 @@ from xml.etree.ElementTree import fromstringlist as xmlparse, Element
 
 # Import BatCave packages
 from .fileutil import slurp
-from .lang import is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, WIN32
+from .lang import is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, PathName, WIN32
 
 OutputFormat = Enum('OutputFormat', ('text', 'html', 'csv'))
 
@@ -360,7 +360,7 @@ class Expander:
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
 
-    def expand_directory(self, source_dir: Union[str, Path], target_dir: Optional[Union[str, Path]] = None,
+    def expand_directory(self, source_dir: PathName, target_dir: Optional[PathName] = None,
                          ignore_files: Sequence[str] = tuple(), no_expand_files: Sequence[str] = tuple(), err_if_exists: bool = True) -> None:
         """Perform an expansion on an entire directory tree.
 
@@ -398,7 +398,7 @@ class Expander:
                         print(f'Expanding {source_file} to {target_file} (root={root})')
                     self.expand_file(source_file, target_file)
 
-    def expand_file(self, in_file: Union[str, Path], out_file: Union[str, Path]) -> None:
+    def expand_file(self, in_file: PathName, out_file: PathName) -> None:
         """Perform an expansion on an entire file.
 
         Args:
@@ -416,7 +416,7 @@ class Expander:
                     outstream.write(line)
 
 
-def file_expander(in_file: Union[str, Path], out_file: Union[str, Path], vardict: Optional[Dict[str, str]] = None, varprops: Any = None) -> None:
+def file_expander(in_file: PathName, out_file: PathName, vardict: Optional[Dict[str, str]] = None, varprops: Any = None) -> None:
     """Quick function for one-time file expansion.
 
     Args:
@@ -459,7 +459,7 @@ class Procedure:
     _SCHEMA_ATTR = 'schema'
     _STEPS_TAG = 'steps'
 
-    def __init__(self, procfile: Union[str, Path], output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):
+    def __init__(self, procfile: PathName, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):
         """
         Args:
             procfile: The procedure file.
@@ -571,7 +571,7 @@ class Procedure:
                 raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text)
             raise
 
-    def expand_directories(self, env: str, destination_root: Union[str, Path], source_root: Union[str, Path] = Path(), err_if_exists: bool = True) -> None:
+    def expand_directories(self, env: str, destination_root: PathName, source_root: PathName = Path(), err_if_exists: bool = True) -> None:
         """Perform variable expansion on the directories defined in the procedure.
 
         Args:

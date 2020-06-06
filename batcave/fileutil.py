@@ -16,12 +16,12 @@ from pathlib import Path
 from shutil import copy
 from string import Template
 from tarfile import open as tar_open
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, Iterable, List, Optional, Tuple
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Import internal modules
 from .sysutil import popd, pushd
-from .lang import switch, BatCaveError, BatCaveException
+from .lang import switch, BatCaveError, BatCaveException, PathName
 
 
 class ConvertError(BatCaveException):
@@ -53,7 +53,7 @@ ConversionMode = Enum('ConversionMode', ('to_unix', 'to_dos'))
 class CompressedFile:
     """Class to add support for compressed file types which are missing some methods."""
 
-    def __init__(self, filename: Union[str, Path], **_unused_attr):
+    def __init__(self, filename: PathName, **_unused_attr):
         """
         Args:
             filename: The name of the compressed file.
@@ -76,7 +76,7 @@ class CompressedFile:
 class BatCaveGzipFile(GzipFile, CompressedFile):
     """Add CompressedFile class methods to the GzipFile class."""
 
-    def __init__(self, filename: Union[str, Path], **attr):
+    def __init__(self, filename: PathName, **attr):
         """
         Args:
             filename: The name of the compressed file.
@@ -91,7 +91,7 @@ class BatCaveGzipFile(GzipFile, CompressedFile):
 class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore
     """Add CompressedFile class methods to the BZ2File class."""
 
-    def __init__(self, filename: Union[str, Path], **attr):
+    def __init__(self, filename: PathName, **attr):
         """
         Args:
             filename: The name of the compressed file.
@@ -106,7 +106,7 @@ class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore
 PACKER_CLASSES = {'zip': ZipFile, 'gz': BatCaveGzipFile, 'bz2': BatCaveBZ2File, 'xz': LZMAFile}
 
 
-def eol_convert(filename: Union[str, Path], mode: ConversionMode, backup: bool = True) -> None:
+def eol_convert(filename: PathName, mode: ConversionMode, backup: bool = True) -> None:
     """Perform end-of-line conversions from Windows to UNIX or vice versa.
 
     Attributes:
@@ -136,7 +136,7 @@ def eol_convert(filename: Union[str, Path], mode: ConversionMode, backup: bool =
         stream.write(data)
 
 
-def pack(arcfile: Union[str, Path], items: Iterable, itemloc: Optional[Union[str, Path]] = None, arctype: str = '', ignore_empty: bool = True) -> None:
+def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None, arctype: str = '', ignore_empty: bool = True) -> None:
     """Create a compressed archive.
 
     Attributes:
@@ -199,7 +199,7 @@ def pack(arcfile: Union[str, Path], items: Iterable, itemloc: Optional[Union[str
         popd()
 
 
-def slurp(filename: Union[str, Path]) -> List[str]:
+def slurp(filename: PathName) -> List[str]:
     """Return all the lines of a file as a list.
 
     Args:
@@ -211,7 +211,7 @@ def slurp(filename: Union[str, Path]) -> List[str]:
     return [l for l in open(filename)]
 
 
-def spew(filename: Union[str, Path], outlines: Iterable) -> None:
+def spew(filename: PathName, outlines: Iterable) -> None:
     """Write the list of lines to a file.
 
     Args:
@@ -224,7 +224,7 @@ def spew(filename: Union[str, Path], outlines: Iterable) -> None:
     open(filename, 'w').writelines(outlines)
 
 
-def unpack(arcfile: Union[str, Path], dest: Optional[Union[str, Path]] = None, arctype: str = '') -> None:
+def unpack(arcfile: PathName, dest: Optional[PathName] = None, arctype: str = '') -> None:
     """Extract the contents of a compressed file.
 
     Attributes:

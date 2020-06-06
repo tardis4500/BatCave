@@ -9,6 +9,7 @@ from datetime import datetime as dt, timedelta
 from pathlib import Path
 from string import Template
 from time import sleep
+from typing import cast, Any, Callable, List, Optional, Type, TypeVar
 
 # # Import third-party modules
 from kubernetes import config as k8s_config
@@ -17,10 +18,12 @@ from kubernetes.stream import stream as k8s_process
 from yaml import safe_load as yaml_load
 
 # Import internal modules
-from .lang import BatCaveError, BatCaveException
+from .lang import BatCaveError, BatCaveException, PathName
 from .sysutil import SysCmdRunner
 
 kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
+
+K8sObject = TypeVar('K8sObject', 'Pod', 'Job')
 
 
 class ClusterError(BatCaveException):
@@ -54,7 +57,7 @@ class PodError(BatCaveException):
 class Cluster:
     """Class to create a universal abstract interface for a Kubernetes cluster."""
 
-    def __init__(self, cluster_config=None, context=None):
+    def __init__(self, cluster_config: Optional[PathName] = None, context: Optional[str] = None):
         """
         Args:
             cluster_config (optional, default=None): The cluster configuration file to use.
@@ -72,7 +75,7 @@ class Cluster:
         self._core_api = CoreV1Api()
         self._batch_api = BatchV1Api()
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         if '_' in attr:
             (verb, item_class_name) = attr.split('_')
             if item_class_name.endswith('s'):
@@ -86,7 +89,7 @@ class Cluster:
 
     pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
 
-    def create_item(self, item_class, item_spec, namespace='default', exists_ok=False):
+    def create_item(self, item_class: Type[K8sObject], item_spec: PathName, namespace: str = 'default', exists_ok: bool = False) -> K8sObject:
         """Create a new item using the specified spec.
 
         Args:
@@ -99,13 +102,13 @@ class Cluster:
             The created item.
         """
         with open(item_spec) as yaml_file:
-            item_spec = yaml_load(yaml_file)
-            item_name = item_spec['metadata']['name']
+            item_spec_content = yaml_load(yaml_file)
+            item_name = item_spec_content['metadata']['name']
             if self.has_item(item_class, item_name, namespace) and exists_ok:
                 self.find_method(item_class, 'delete')(item_name, namespace)
-            return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec))
+            return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec_content))
 
-    def create_job(self, job_spec, namespace='default', exists_ok=False, wait_for=False, check_every=2, timeout=False):
+    def create_job(self, job_spec: PathName, namespace: str = 'default', exists_ok: bool = False, wait_for: bool = False, check_every: int = 2, timeout: bool = False) -> 'Job':
         """Create a job and wait for the specified condition.
 
         Args:
@@ -145,7 +148,7 @@ class Cluster:
             job = self.get_job(job.name, namespace)
         return job
 
-    def delete_item(self, item_class, name, namespace='default'):
+    def delete_item(self, item_class: Type[K8sObject], name: str, namespace: str = 'default') -> None:
         """Delete the named item.
 
         Args:
@@ -158,7 +161,7 @@ class Cluster:
         """
         item_class(self, self.find_method(item_class, 'delete')(name, namespace))
 
-    def find_method(self, item_class, method, suffix=None):
+    def find_method(self, item_class: Type[K8sObject], method: str, suffix: str = '') -> Callable:
         """Search all the APIs for the specified method.
 
         Args:
@@ -180,7 +183,7 @@ class Cluster:
                 return getattr(api, method_name)
         raise AttributeError(f'No method found: {method_name}')
 
-    def get_item(self, item_class, name, namespace='default'):
+    def get_item(self, item_class: Type[K8sObject], name: str, namespace: str = 'default') -> K8sObject:
         """Get the requested item.
 
         Args:
@@ -193,7 +196,7 @@ class Cluster:
         """
         return item_class(self, self.find_method(item_class, 'read')(name, namespace))
 
-    def get_items(self, item_class, namespace='default', **keys):
+    def get_items(self, item_class: Type[K8sObject], namespace: str = 'default', **keys) -> List[K8sObject]:
         """Get all the item of the requested type.
 
         Args:
@@ -206,7 +209,7 @@ class Cluster:
         """
         return [item_class(self, i) for i in self.find_method(item_class, 'list')(namespace, **keys).items]
 
-    def has_item(self, item_class, item_name, namespace='default'):
+    def has_item(self, item_class: Type[K8sObject], item_name: str, namespace: str = 'default') -> bool:
         """Determine if the named items of the specified class exists.
 
         Args:
@@ -219,7 +222,7 @@ class Cluster:
         """
         return bool([i for i in self.get_items(item_class, namespace) if i.name == item_name])
 
-    def kubectl(self, *args):
+    def kubectl(self, *args) -> str:
         """Run a kubectl command.
 
         Args:
@@ -239,7 +242,7 @@ class Cluster:
 class ClusterObject:
     """Class to create a universal abstract interface for a Kubernetes cluster object."""
 
-    def __init__(self, cluster, object_ref):
+    def __init__(self, cluster: Cluster, object_ref: Any):
         """
         Args:
             cluster: The cluster containing this object.
@@ -252,7 +255,7 @@ class ClusterObject:
         self._cluster_obj = cluster
         self._object_ref = object_ref
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> 'ClusterObject':
         if hasattr(self._object_ref, attr):
             return getattr(self._object_ref, attr)
         return getattr(self._object_ref.metadata, attr)
@@ -263,9 +266,13 @@ class Pod(ClusterObject):
 
     logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name), doc='A read-only property which returns the pod logs.')
 
-    def cp_file(self, mode, source, target):
+    def cp_file(self, mode: str, source: PathName, target: PathName) -> None:
         """Copy a file into or out of the pod.
 
+        Args:
+            mode: The direction of the copy ('in' or 'out').
+            source: The source file for the copy.
+            target: The target file for the copy.
 
         Returns:
             Nothing.
@@ -276,8 +283,8 @@ class Pod(ClusterObject):
             PodError.INVALID_COPY_MODE: If the specified mode is not known.
         """
         if mode == 'in':
-            source_path = Path(source)
-            target_path = f'{self.namespace}/{self.name}:{target}'
+            source_path = Path(source)  # type: PathName
+            target_path = f'{self.namespace}/{self.name}:{target}'  # type: PathName
         elif mode == 'out':
             source_path = f'{self.namespace}/{self.name}:{source}'
             target_path = Path(target)
@@ -285,12 +292,12 @@ class Pod(ClusterObject):
             raise PodError(PodError.INVALID_COPY_MODE, mode=mode)
 
         output = self._cluster_obj.kubectl('cp', str(source_path), str(target_path))
-        if not (self.has_file(target) if (mode == 'in') else target_path.exists()):  # pylint: disable=superfluous-parens
+        if not (self.has_file(str(target)) if (mode == 'in') else cast(Path, target_path).exists()):  # pylint: disable=superfluous-parens
             if output:
                 raise PodError(PodError.COPY_ERROR, errlines=output)
             raise PodError(PodError.BAD_COPY_FILENAME, mode=mode)
 
-    def exec(self, *command, **k8s_api_kwargs):
+    def exec(self, *command, **k8s_api_kwargs) -> str:
         """Execute a command in the pod.
 
         Args:
@@ -309,7 +316,7 @@ class Pod(ClusterObject):
             raise PodError(PodError.EXEC_ERROR, errlines=output)
         return output.split('\n')[0:-1]
 
-    def get_file(self, source, target=None):
+    def get_file(self, source: str, target: Optional[PathName] = None) -> None:
         """Copy a file out of the pod.
 
         Args:
@@ -322,7 +329,7 @@ class Pod(ClusterObject):
         target_path = Path(target) if target else Path(Path(source).name)
         self.cp_file('out', source, target_path)
 
-    def has_file(self, filename):
+    def has_file(self, filename: str) -> bool:
         """Determine if the pod has the specified file.
 
         Args:
@@ -333,7 +340,7 @@ class Pod(ClusterObject):
         """
         return filename == self.exec('ls', filename)[0]
 
-    def put_file(self, source, target):
+    def put_file(self, source: PathName, target: str) -> None:
         """Copy a file into the pod.
 
         Args:
@@ -345,7 +352,7 @@ class Pod(ClusterObject):
         """
         self.cp_file('in', source, target)
 
-    def remove_file(self, filename, not_exists_ok=False):
+    def remove_file(self, filename: str, not_exists_ok: bool = False) -> None:
         """Remove the specified file from the pod.
 
         Args:
