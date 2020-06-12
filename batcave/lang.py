@@ -13,7 +13,7 @@ from pathlib import Path
 from string import Template
 import sys
 from sys import executable, platform, version_info, path as sys_path
-from typing import Union
+from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
 # Useful contants
 FROZEN = getattr(sys, 'frozen', False)
@@ -22,12 +22,16 @@ VALIDATE_PYTHON = True
 WIN32 = (platform == 'win32')
 
 PathName = Union[str, Path]
+MessageString = Union[str, Template]
 
 
 class MsgStr:
     """Class to create a universal abstract interface for message strings.
 
     This class is only useful when subclassed where the subclass simply defines the _messages.
+
+    Attributes:
+        _message: A dictionary of messages provided by subclasses.
 
     Example:
         class MyMsg(MsgStr):
@@ -38,7 +42,9 @@ class MsgStr:
             MyMsg().Message1
             MyMsg(what='this').Message2
     """
-    def __init__(self, instr='', transform=None, **variables):
+    _messages = dict()  # type: Dict[str, str]
+
+    def __init__(self, instr: Union[str, Template] = '', transform: str = '', **variables):
         """
         Args:
             instr (optional, default=''): The input message string.
@@ -54,7 +60,7 @@ class MsgStr:
         self._transform = transform
         self._vars = variables
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> str:
         if attr in list(self._messages.keys()):
             return self._self_to_str(self._messages[attr])
         raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
@@ -62,28 +68,21 @@ class MsgStr:
     def __str__(self):
         return self._self_to_str(self._str)
 
-    def _self_to_str(self, _str):
+    def _self_to_str(self, _str: MessageString) -> str:
         """Convert this message to a string and apply any transforms.
 
         Returns:
             The string message.
         """
-        if isinstance(_str, Template):
-            _str = _str.substitute(self._vars)
+        return_str = _str.substitute(self._vars) if isinstance(_str, Template) else _str  # type: str
         if self._transform:
-            _str = getattr(_str, self._transform)()
-        return _str
+            return_str = getattr(return_str, self._transform)()
+        return return_str
 
 
 class BatCaveException(Exception, MsgStr):
-    """A base class to provide easier Exception management.
-
-    Attributes:
-        _message: A dictionary of messages provided by subclasses.
-    """
-    _messages = dict()
-
-    def __init__(self, errobj, **variables):
+    """A base class to provide easier Exception management."""
+    def __init__(self, errobj: 'BatCaveError', **variables):
         """
         Args:
             errobj: The input message string.
@@ -106,7 +105,7 @@ class BatCaveException(Exception, MsgStr):
 
 class BatCaveError:
     """A class to provide an interface for inspecting exceptions."""
-    def __init__(self, code, msg):
+    def __init__(self, code: int, msg: MessageString):
         """
         Args:
             code: A unique error code for this error.
@@ -146,7 +145,7 @@ class switch:  # pylint: disable=C0103
         structure with reasonable accuracy.
     """
 
-    def __init__(self, value):
+    def __init__(self, value: Any):
         self.value = value
         self.fall = False
         self.first = True
@@ -158,7 +157,7 @@ class switch:  # pylint: disable=C0103
         else:
             return
 
-    def match(self, *args):
+    def match(self, *args) -> bool:
         """Indicate whether or not to enter a case suite."""
         if self.fall or not args:
             return True
@@ -169,7 +168,7 @@ class switch:  # pylint: disable=C0103
             return False
 
 
-def bool_to_str(expr):
+def bool_to_str(expr: str) -> str:
     """Converts an expression to a lowercase boolean string value.
 
     Args:
@@ -181,7 +180,7 @@ def bool_to_str(expr):
     return str(bool(expr)).lower()
 
 
-def flatten(thing, recursive=True):
+def flatten(thing: Iterable[Iterable], recursive: bool = True) -> Iterable:
     """Flatten an iterable of iterables.
 
     Args:
@@ -203,10 +202,10 @@ def flatten(thing, recursive=True):
     if recursive and flattened:
         return flatten(result)
 
-    return type(thing)(result)
+    return type(thing)(result)  # type: ignore
 
 
-def flatten_string_list(iter_of_string, remove_newlines=True):
+def flatten_string_list(iter_of_string: Iterable[str], remove_newlines: bool = True) -> str:
     """Flatten an iterable of strings to a single string.
 
     Args:
@@ -222,11 +221,11 @@ def flatten_string_list(iter_of_string, remove_newlines=True):
     return result
 
 
-def is_debug(test_value=None):
+def is_debug(test_value: Optional[str] = None) -> bool:
     """Determine if the BATCAVE_DEBUG environment variable is set.
 
     Args:
-        test_value (optional, default=None): If set, only return true if the value of test_value is in BATCAVE_DEBUG.
+        test_value (optional, default=False): If set, only return true if the value of test_value is in BATCAVE_DEBUG.
 
     Return:
         True if the OS environment variable BATCAVE_DEBUG is set, False otherwise.
@@ -241,7 +240,7 @@ def is_debug(test_value=None):
     return False
 
 
-def str_to_pythonval(the_string, parse_python=False):
+def str_to_pythonval(the_string: str, parse_python: bool = False) -> Any:
     """Converts a string to the closest Python object.
 
     Args:
@@ -283,11 +282,14 @@ def str_to_pythonval(the_string, parse_python=False):
     return the_string
 
 
-def validate_python(test_against=(3, 6)):
+def validate_python(test_against: Tuple[int, int] = (3, 6)) -> None:
     """Checks to make sure that a minimum version of Python is used.
 
     Args:
         test_against (optional, default=(3,7)): The value of Python to check.
+
+    Returns:
+        Nothing.
 
     Raises:
         PythonVersionError.BAD_VERSION: If the version is too low.
@@ -298,7 +300,7 @@ def validate_python(test_against=(3, 6)):
         raise PythonVersionError(PythonVersionError.BAD_VERSION, used=used, needed=needed)
 
 
-def xor(value1, value2):
+def xor(value1: Any, value2: Any) -> bool:
     """Perform a logical exclusive-or evaluation.
 
     Args:
