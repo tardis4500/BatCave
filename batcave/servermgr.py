@@ -14,7 +14,7 @@ from platform import node
 from socket import getfqdn, gethostbyname, gaierror
 from string import Template
 from time import sleep
-from typing import Any
+from typing import Any, Union
 from xml.etree.ElementTree import SubElement, parse as xmlparse
 
 # Import third-party modules
@@ -42,6 +42,8 @@ ServiceSignal = Enum('ServiceSignal', ('disable', 'enable', 'start', 'stop', 'pa
 ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running', 'StopPending', 'Stopped', 'PausePending', 'Paused'))
 ServiceType = Enum('ServiceType', ('systemd', 'sysv', 'upstart', 'windows'))
 TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
+
+ServerType = Union[str, 'Server']
 
 
 class ServerObjectManagementError(BatCaveException):
