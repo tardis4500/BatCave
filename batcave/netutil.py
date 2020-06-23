@@ -2,6 +2,7 @@
 
 # Import standard modules
 from smtplib import SMTP
+from typing import Dict, Optional, Tuple
 
 # Import third-party modules
 from requests import get as url_get
@@ -10,7 +11,7 @@ from requests import get as url_get
 from .lang import is_debug
 
 
-def download(url, target=None, auth=None):
+def download(url: str, target: Optional[str] = None, auth: Optional[str] = None) -> None:
     """Download a file from a URL target.
 
     Args:
@@ -31,7 +32,7 @@ def download(url, target=None, auth=None):
     open(target, 'wb').write(response.content)
 
 
-def send_email(smtp_server, receiver, sender, subject, body, content_type='text/plain'):
+def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body: str, content_type: str = 'text/plain') -> Dict[str, Tuple[int, bytes]]:
     """Send an SMTP email message.
 
     Args:
@@ -49,10 +50,9 @@ def send_email(smtp_server, receiver, sender, subject, body, content_type='text/
     server = SMTP(smtp_server)
     if is_debug('SMTP'):
         server.set_debuglevel(True)
-    if isinstance(receiver, str):
-        receiver = receiver.split(',')
+    receiver_list = receiver.split(',') if isinstance(receiver, str) else [receiver]
     try:
-        result = server.sendmail(sender, receiver, fullmsg)
+        result = server.sendmail(sender, receiver_list, fullmsg)
     finally:
         server.quit()
     return result

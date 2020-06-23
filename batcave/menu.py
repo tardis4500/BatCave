@@ -1,10 +1,13 @@
 """This module provides utilities for creating command line menus."""
 
+# Import standard modules
+from typing import cast, List, Union
+
 
 class MenuItem:
     """Class to represent a single menu item."""
 
-    def __init__(self, key, desc):
+    def __init__(self, key: str, desc: str):
         """
         Args:
             key: The key input for the menu selection.
@@ -30,9 +33,9 @@ class Menu:
     _DEFAULT_PROMPT = '-> '
     _DEFAULT_TITLE = '\nSelect one of the following\n'
 
-    def __init__(self, items,
-                 title=_DEFAULT_TITLE, prompt=_DEFAULT_PROMPT, invalidmsg=_DEFAULT_INVALID_MESSAGE,
-                 multiselect=False, ignorecase=True):
+    def __init__(self, items: List[MenuItem],
+                 title: str = _DEFAULT_TITLE, prompt: str = _DEFAULT_PROMPT, invalidmsg: str = _DEFAULT_INVALID_MESSAGE,
+                 multiselect: bool = False, ignorecase: bool = True):
         """
         Args:
             items: The list of items for the menu.
@@ -57,7 +60,7 @@ class Menu:
         self.multiselect = multiselect
         self.ignorecase = ignorecase
 
-    def show(self):
+    def show(self) -> Union[str, List[str]]:
         """Show the menu.
 
         Returns:
@@ -92,7 +95,7 @@ class Menu:
 class SimpleMenu(Menu):
     """A simplified version of the Menu class."""
 
-    def __init__(self, itemlist, return_text=False, **args):
+    def __init__(self, itemlist: List[str], return_text: bool = False, **args):
         """
         Args:
             itemlist: The list of items for the menu to which an 'Exit' option will be appended.
@@ -105,13 +108,13 @@ class SimpleMenu(Menu):
         """
         self.itemlist = list(itemlist) + ['Exit']
         self.return_text = return_text
-        super().__init__([MenuItem(str(i), itemlist[i-1]) for i in range(1, len(itemlist)+1)] + [MenuItem('0', 'Exit')], **args)
+        super().__init__([MenuItem(str(i), itemlist[i - 1]) for i in range(1, len(itemlist) + 1)] + [MenuItem('0', 'Exit')], **args)
 
-    def show(self):
+    def show(self) -> str:
         """Show the menu.
 
         Returns:
             The choice selected from the menu.
         """
-        choice = super().show()
+        choice = cast(str, super().show())
         return self.itemlist[int(choice) - 1] if self.return_text else choice

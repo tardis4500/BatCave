@@ -3,24 +3,27 @@
 # Import standard modules
 from logging import Formatter, getLogger, FileHandler, StreamHandler, shutdown
 from logging import INFO, WARN, WARNING, ERROR, CRITICAL, FATAL, DEBUG  # noqa: F401, pylint: disable=W0611
+from multiprocessing import Queue
 from pathlib import Path
+from socket import SocketType
+from typing import Any, Optional, TextIO
 
 
 class Logger:
     """Class to provide a simplified interface to the standard logging module."""
 
-    def __init__(self, logname=None, stream=None, pipe=None, queue=None, msg_fmt='%(asctime)s %(levelname)s %(message)s', date_fmt='%Y/%m/%d %H:%M:%S',
-                 logref='batcave', logref_suffix=None):
+    def __init__(self, logname: str = '', stream: Optional[TextIO] = None, pipe: Optional[SocketType] = None, queue: Optional[Queue] = None,
+                 msg_fmt: str = '%(asctime)s %(levelname)s %(message)s', date_fmt: str = '%Y/%m/%d %H:%M:%S', logref: str = 'batcave', logref_suffix: str = ''):
         """
         Args:
-            logname (optional, default=None): The name of the logfile to be used.
+            logname (optional, default=''): The name of the logfile to be used.
             stream (optional, default=None): The stream to which message should be written.
             pipe (optional, default=None): The pipe to which message should be written.
             queue (optional, default=None): The queue to which message should be written.
             msg_fmt (optional, default='%(asctime)s %(levelname)s %(message)s'): The output message formatting string.
             date_fmt (optional, default='%Y/%m/%d %H:%M:%S'): The message date formatting string.
             logref (optional, default='batcave'): A string to uniquely identify this Logger instance.
-            logref_suffix (optional, default=None): The suffix to append to the value of logref.
+            logref_suffix (optional, default=''): The suffix to append to the value of logref.
 
         Attributes:
             level: The current logging level. Initialized to INFO.
@@ -33,14 +36,14 @@ class Logger:
 
         self._logger = getLogger(logref)
         if logname:
-            handler = FileHandler(Path(logname))
-            handler.setFormatter(formatter)
-            self._logger.addHandler(handler)
+            file_handler = FileHandler(Path(logname))
+            file_handler.setFormatter(formatter)
+            self._logger.addHandler(file_handler)
 
         if stream:
-            handler = StreamHandler(stream)
-            handler.setFormatter(formatter)
-            self._logger.addHandler(handler)
+            stream_handler = StreamHandler(stream)
+            stream_handler.setFormatter(formatter)
+            self._logger.addHandler(stream_handler)
 
         self._pipe = pipe
         self._queue = queue
@@ -54,15 +57,15 @@ class Logger:
         return False
 
     @property
-    def level(self):
+    def level(self) -> int:
         """A read-write property which returns and sets the current logging level."""
         return self._logger.getEffectiveLevel()
 
     @level.setter
-    def level(self, level):
+    def level(self, level: int) -> None:
         self._logger.setLevel(level)
 
-    def logdebug(self, msg):
+    def logdebug(self, msg: str) -> None:
         """Create a DEBUG level log message.
 
         Args:
@@ -77,7 +80,7 @@ class Logger:
         if self._queue:
             self._queue.put(msg)
 
-    def logerror(self, msg):
+    def logerror(self, msg: str) -> None:
         """Create an ERROR level log message.
 
         Args:
@@ -92,7 +95,7 @@ class Logger:
         if self._queue:
             self._queue.put(msg)
 
-    def loginfo(self, msg):
+    def loginfo(self, msg: str) -> None:
         """Create an INFO level log message.
 
         Args:
@@ -107,7 +110,7 @@ class Logger:
         if self._queue:
             self._queue.put(msg)
 
-    def logwarn(self, msg):
+    def logwarn(self, msg: str) -> None:
         """Create a WARN level log message.
 
         Args:
@@ -122,7 +125,7 @@ class Logger:
         if self._queue:
             self._queue.put(msg)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the logging subsystem.
 
         Returns:
