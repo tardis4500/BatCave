@@ -168,7 +168,7 @@ class switch:  # pylint: disable=C0103
             return False
 
 
-def bool_to_str(expr: str) -> str:
+def bool_to_str(expr: Union[bool, str]) -> str:
     """Converts an expression to a lowercase boolean string value.
 
     Args:

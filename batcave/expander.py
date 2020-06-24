@@ -535,7 +535,7 @@ class Procedure:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     def dump(self) -> Dict[str, Union[str, Sequence, Dict]]:

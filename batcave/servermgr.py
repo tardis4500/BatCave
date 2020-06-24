@@ -163,7 +163,7 @@ class Server:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     def _connect_wmi(self):
@@ -924,7 +924,7 @@ class COMObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         self.disconnect()
         return False
 
@@ -981,7 +981,7 @@ class ManagementObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         del self.object_ref
         return False
 

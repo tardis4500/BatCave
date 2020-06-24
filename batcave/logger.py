@@ -6,7 +6,7 @@ from logging import INFO, WARN, WARNING, ERROR, CRITICAL, FATAL, DEBUG  # noqa: 
 from multiprocessing import Queue
 from pathlib import Path
 from socket import SocketType
-from typing import Any, Optional, TextIO
+from typing import Optional, TextIO
 
 
 class Logger:
@@ -52,7 +52,7 @@ class Logger:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         self.shutdown()
         return False
 

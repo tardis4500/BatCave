@@ -11,7 +11,7 @@ from enum import Enum
 from json import loads as json_read
 from pathlib import Path
 from string import Template
-from typing import Any, List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 # Import third-party modules
 from docker import DockerClient
@@ -65,7 +65,7 @@ class Cloud:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     client = property(lambda s: s._client)
@@ -187,7 +187,7 @@ class Image:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
@@ -330,7 +330,7 @@ class Container:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     def stop(self) -> DockerContainer:

@@ -70,7 +70,7 @@ class LoadBalancer:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         self._api.logout()
         return False
 
@@ -292,7 +292,7 @@ class LoadBalancerObject:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
 

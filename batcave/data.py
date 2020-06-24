@@ -168,7 +168,7 @@ class DataSource:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         self.close()
         return False
 
@@ -510,7 +510,7 @@ class DataRow:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     def __getattr__(self, attr: str) -> str:
@@ -717,7 +717,7 @@ class DataTable:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     def _get_row_parent(self) -> Any:

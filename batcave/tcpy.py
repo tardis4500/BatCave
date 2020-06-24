@@ -79,7 +79,7 @@ class TeamCityServer:
     def __enter__(self):
         return self
 
-    def __exit__(self, *exc_info: Any):
+    def __exit__(self, *exc_info):
         return False
 
     build_configs = property(lambda s: s.api_call('get', 'buildTypes')['buildType'], doc='A read-only property which returns a list of the build configurations.')

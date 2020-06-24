@@ -12,7 +12,7 @@ from .lang import switch
 class Platform:
     """A class to provide a simplified interface to the platform and sys.version_info standard modules."""
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> str:
         """Get the platform type formatted for the requested subtype."""
         sys_info = uname()
         batcave_os = bart_os = sys_info.system.replace('-', '')
@@ -86,3 +86,4 @@ class Platform:
                 return build
             if case('p4'):
                 return '%s%s%s' % (batcave_os.lower().replace('windows', 'nt'), p4ver, p4_arch)
+        raise AttributeError(f'Unknown platform type: {attr}')
