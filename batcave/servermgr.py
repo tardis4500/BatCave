@@ -14,7 +14,7 @@ from platform import node
 from socket import getfqdn, gethostbyname, gaierror
 from string import Template
 from time import sleep
-from typing import Any, Union
+from typing import Union
 from xml.etree.ElementTree import SubElement, parse as xmlparse
 
 # Import third-party modules
