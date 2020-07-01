@@ -4,11 +4,12 @@
 from enum import Enum
 from pathlib import Path
 from string import Template
+from typing import Dict, Optional, Sequence
 
 # Import internal modules
 from .logger import Logger
 from .sysutil import LockFile
-from .lang import is_debug, BatCaveError, BatCaveException
+from .lang import is_debug, BatCaveError, BatCaveException, PathName
 
 StateStatus = Enum('StateStatus', ('entering', 'exited'))
 
@@ -48,7 +49,8 @@ class StateMachine:
     _DEFAULT_LOGFILE = Path('log')
     _DEFAULT_STATEFILE = Path('state')
 
-    def __init__(self, states, statefile=_DEFAULT_STATEFILE, logfile=_DEFAULT_LOGFILE, lockfile=_DEFAULT_LOCKFILE, logger_args=None, autostart=True):
+    def __init__(self, states: Sequence, statefile: PathName = _DEFAULT_STATEFILE, logfile: PathName = _DEFAULT_LOGFILE,
+                 lockfile: PathName = _DEFAULT_LOCKFILE, logger_args: Optional[Dict] = None, autostart: bool = True):
         """
         Args:
             states: The list of states for the state machine.
@@ -73,7 +75,7 @@ class StateMachine:
         self.statefile = Path(statefile)
         self.locker = LockFile(lockfile)
         self.logger = Logger(logfile, **(logger_args if logger_args else dict()))
-        self.states = ('None',) + states
+        self.states = ['None'] + list(states)
         self.started = False
         if self.statefile.exists():
             debug_msg = 'Found'
@@ -100,7 +102,7 @@ class StateMachine:
         self.done()
         return False
 
-    def _writestate(self):
+    def _writestate(self) -> None:
         """Write the current state to the state file.
 
         Returns:
@@ -111,7 +113,7 @@ class StateMachine:
         with open(self.statefile, 'w') as filestream:
             print(self.status.name, self.state, file=filestream)
 
-    def done(self):
+    def done(self) -> None:
         """Shutdown the state machine.
 
         Returns:
@@ -120,7 +122,7 @@ class StateMachine:
         self.logger.shutdown()
         self.locker.close()
 
-    def enter_next_state(self):
+    def enter_next_state(self) -> None:
         """Enter the next state.
 
         Returns:
@@ -142,7 +144,7 @@ class StateMachine:
         self.state = self.states[next_state_index]
         self._writestate()
 
-    def exit_state(self):
+    def exit_state(self) -> None:
         """Exit the current state.
 
         Returns:
@@ -159,7 +161,7 @@ class StateMachine:
         self.status = StateStatus.exited
         self._writestate()
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the state machine.
 
         Returns:
@@ -170,7 +172,7 @@ class StateMachine:
         (self.status, self.state) = (StateStatus.exited, self.states[0])
         self._writestate()
 
-    def rollback(self):
+    def rollback(self) -> None:
         """Rollback to the previous state.
 
         Returns:
@@ -185,7 +187,7 @@ class StateMachine:
         self.state = self.states[self.states.index(self.state) - 1]
         self._writestate()
 
-    def start(self):
+    def start(self) -> None:
         """Start the state machine.
 
         Returns:

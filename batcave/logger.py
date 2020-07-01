@@ -8,11 +8,14 @@ from pathlib import Path
 from socket import SocketType
 from typing import Optional, TextIO
 
+# Import internal modules
+from .lang import PathName
+
 
 class Logger:
     """Class to provide a simplified interface to the standard logging module."""
 
-    def __init__(self, logname: str = '', stream: Optional[TextIO] = None, pipe: Optional[SocketType] = None, queue: Optional[Queue] = None,
+    def __init__(self, logname: PathName, stream: Optional[TextIO] = None, pipe: Optional[SocketType] = None, queue: Optional[Queue] = None,
                  msg_fmt: str = '%(asctime)s %(levelname)s %(message)s', date_fmt: str = '%Y/%m/%d %H:%M:%S', logref: str = 'batcave', logref_suffix: str = ''):
         """
         Args:
