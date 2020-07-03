@@ -22,10 +22,11 @@ from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
-from typing import Any
+from typing import cast, Any, Callable, IO, Iterable, List, Optional, Tuple, TextIO, Union
 
 # Import internal modules
-from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, WIN32
+from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
+from .logger import Logger
 
 if WIN32:
     import msvcrt
@@ -89,7 +90,7 @@ class OSUtilError(BatCaveException):
 class LockFile:
     """Class to create a universal abstract interface for an OS lock file."""
 
-    def __init__(self, filename, handle=None, cleanup=True):
+    def __init__(self, filename: PathName, handle: Optional[TextIO] = None, cleanup: bool = True):
         """
         Args:
             filename: The file name for the lock file.
@@ -126,7 +127,7 @@ class LockFile:
         self.close()
         return False
 
-    def action(self, mode):
+    def action(self, mode: LockMode) -> None:
         """Perform the requested action on the lock file.
 
         Args:
@@ -149,7 +150,7 @@ class LockFile:
         if fail:
             raise LockError(LockError.NO_LOCK)
 
-    def close(self):
+    def close(self) -> None:
         """Close the lock file.
 
         Returns:
@@ -164,7 +165,7 @@ class LockFile:
 class SysCmdRunner:
     """This class provides a simplified interface to sysutil.syscmd()."""
 
-    def __init__(self, command, *default_args, logger=None, **default_kwargs):
+    def __init__(self, command: str, *default_args, logger: Optional[Logger] = None, **default_kwargs):
         """
         Args:
             command: The command to run.
@@ -179,11 +180,11 @@ class SysCmdRunner:
             writer: The value of the logger argument if not None, otherwise the standard 'print' method.
         """
         self.command = command
-        self.writer = logger.loginfo if logger else print
+        self.writer = logger.loginfo if logger else print  # type: ignore
         self.default_args = list(default_args)
         self.default_kwargs = default_kwargs
 
-    def run(self, message, *args, **kwargs):
+    def run(self, message: str, *args, **kwargs) -> CommandResult:
         """Run the defined command with the additional specified arguments.
 
         Args:
@@ -192,7 +193,7 @@ class SysCmdRunner:
             **kwargs (optional, default={}): Any extra keyword arguments to pass to the command.
 
         Returns:
-            Nothing.
+            The result of the command.
 
         Raises:
             LockError.NO_LOCK: If it was not possible to obtain a system level lock on the lock file.
@@ -201,11 +202,11 @@ class SysCmdRunner:
         use_keys = copy_object(self.default_kwargs)
         use_keys.update(kwargs)
         if message:
-            self.writer(message)
+            self.writer(message)  # type: ignore
         return syscmd(self.command, *use_args, **use_keys)
 
 
-def chmod(dirname, mode, recursive=False, files_only=False):
+def chmod(dirname: PathName, mode: int, recursive: bool = False, files_only: bool = False) -> None:
     """Perform chmod recursively if requested.
 
     Args:
@@ -226,7 +227,7 @@ def chmod(dirname, mode, recursive=False, files_only=False):
                 Path(root, pathname).chmod(mode)
 
 
-def chown(pathname, user=None, group=None, recursive=False):
+def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] = None, recursive: bool = False) -> None:
     """Perform chown and chgrp together, recursively if requested.
 
     Args:
@@ -245,7 +246,7 @@ def chown(pathname, user=None, group=None, recursive=False):
                 os_chown(Path(root, pathname), user, group)
 
 
-def create_group(group_name, exists_ok=True):
+def create_group(group_name: str, exists_ok: bool = True) -> None:
     """Create the system group at the OS level.
 
     Args:
@@ -272,7 +273,7 @@ def create_group(group_name, exists_ok=True):
         syscmd('groupadd', group_name)
 
 
-def create_user(username, groups=tuple(), exists_ok=True):
+def create_user(username: str, groups: Tuple = tuple(), exists_ok: bool = True) -> None:
     """Create the user account at the OS level.
 
     Args:
@@ -301,7 +302,7 @@ def create_user(username, groups=tuple(), exists_ok=True):
         syscmd('useradd', username, '-g', username, *groups_args)
 
 
-def is_user_administrator():
+def is_user_administrator() -> bool:
     """Determines if the current user is an OS administrator.
 
     Args:
@@ -322,35 +323,35 @@ def is_user_administrator():
     return True
 
 
-def rmpath(path_name):
+def rmpath(path_name: PathName) -> None:
     """Remove the specified path object. If a directory, remove recursively.
 
     Args:
         path_name: The name of the path object to remove.
 
     Returns:
-        The value returned by unlink() for a file object or rmtree_hard() for a path object.
+        Nothing.
     """
     path_name = Path(path_name)
     if path_name.is_dir():
-        return rmtree_hard(path_name)
+        rmtree_hard(path_name)
     else:
-        return path_name.unlink()
+        path_name.unlink()
 
 
-def rmtree_hard(tree):
+def rmtree_hard(tree: PathName) -> None:
     """Recursively, remove a directory and try to avoid non-fatal errors.
 
     Args:
         tree: The directory tree to remove.
 
     Returns:
-        The value returned by shutil.rmtree().
+        Nothing.
     """
-    return rmtree(tree, onerror=_rmtree_onerror)
+    rmtree(tree, onerror=_rmtree_onerror)
 
 
-def _rmtree_onerror(caller, pathstr, excinfo):
+def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
     """The exception handler used by rmtree_hard to try to remove read-only attributes.
 
     Args:
@@ -371,8 +372,10 @@ def _rmtree_onerror(caller, pathstr, excinfo):
     pathstr.unlink()
 
 
-def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stderr=False, append_stderr=False, fail_on_error=True, show_cmd=False, use_shell=False,
-           flatten_output=False, remote=False, remote_is_windows=None, copy_for_remote=False, remote_auth=None, remote_powershell=False):
+def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False, ignore_stderr: bool = False, append_stderr: bool = False,
+           fail_on_error: bool = True, show_cmd: bool = False, use_shell: bool = False, flatten_output: bool = False, remote: Union[bool, str] = False,
+           remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[Tuple[str, str]] = None,
+           remote_powershell: bool = False) -> CommandResult:
     """Wrapper to provide a better interface to subprocess.Popen().
 
     Args:
@@ -404,6 +407,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
         CMDError.CMD_ERROR: If fail_on_error is True, and the return code is non-zero, or there is output on stderr if ignore_stderr is True.
     """
     cmd_spec = [str(command)] + [str(c) for c in cmd_args]
+    remote_driver = list()  # type: List[str]
     if remote:
         remote_is_windows = WIN32 if (remote_is_windows is None) else remote_is_windows
         if WIN32:
@@ -411,7 +415,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
                 if remote_powershell:
                     if remote_auth or copy_for_remote:
                         raise CMDError(CMDError.INVALID_OPERATION, func='remote_auth' if remote_auth else 'copy_for_remote', context='PowerShell')
-                    remote_driver = ['powershell', '-NoLogo', '-NonInteractive', '-Command', 'Invoke-Command', '-ComputerName', remote, '-ScriptBlock']
+                    remote_driver = ['powershell', '-NoLogo', '-NonInteractive', '-Command', 'Invoke-Command', '-ComputerName', str(remote), '-ScriptBlock']
                 else:
                     ignore_stderr = True  # psexec puts status info on stderr
                     remote_driver = ['psexec', rf'\\{remote}', '-accepteula', '-nobanner', '-h']
@@ -426,14 +430,14 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
                 remote_driver = ['plink', '-batch', '-v']
                 if remote_auth:
                     remote_driver += ['-l', remote_auth[0], '-pw', remote_auth[1]]
-                remote_driver += [remote]
+                remote_driver += [str(remote)]
         else:
             if copy_for_remote:
                 raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
             remote_driver = ['ssh', '-t', '-t']
             if remote_auth:
                 remote_driver += ['-u', remote_auth[0], '-p', remote_auth[1]]
-            remote_driver += [remote]
+            remote_driver += [str(remote)]
 
         remote_cmd = cmd_spec
         if use_shell and remote_is_windows:
@@ -457,13 +461,13 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
     if input_lines:
         if is_debug('SYSCMD'):
             print('Sending input lines:', input_lines)
-        proc.stdin.writelines(input_lines)
-        proc.stdin.close()
+        cast(IO, proc.stdin).writelines(input_lines)
+        cast(IO, proc.stdin).close()
 
     if is_debug('SYSCMD'):
         print('Getting output lines')
     outlines = list()
-    for line in iter(proc.stdout.readline, ''):
+    for line in iter(cast(IO, proc.stdout).readline, ''):
         if is_debug('SYSCMD'):
             print('Received output line:', line)
         outlines.append(line)
@@ -472,7 +476,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
 
     if is_debug('SYSCMD'):
         print('Getting error lines')
-    errlines = proc.stderr.readlines()
+    errlines = cast(IO, proc.stderr).readlines()
     if is_debug('SYSCMD'):
         print('Received error lines:', errlines)
 
@@ -507,7 +511,7 @@ def syscmd(command, *cmd_args, input_lines=None, show_stdout=False, ignore_stder
 _DIRECTORY_STACK = list()
 
 
-def pushd(dirname):
+def pushd(dirname: PathName) -> PathName:
     """Implements the push function for a directory stack.
 
     Args:
@@ -523,7 +527,7 @@ def pushd(dirname):
     return cwd
 
 
-def popd():
+def popd() -> Union[int, PathName]:
     """Implements the pop function for a directory stack.
 
     Args:
