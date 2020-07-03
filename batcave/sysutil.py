@@ -184,7 +184,7 @@ class SysCmdRunner:
         self.default_args = list(default_args)
         self.default_kwargs = default_kwargs
 
-    def run(self, message: str, *args, **kwargs) -> CommandResult:
+    def run(self, message: Optional[str], *args, **kwargs) -> CommandResult:
         """Run the defined command with the additional specified arguments.
 
         Args:
@@ -373,7 +373,7 @@ def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
 
 
 def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False, ignore_stderr: bool = False, append_stderr: bool = False,
-           fail_on_error: bool = True, show_cmd: bool = False, use_shell: bool = False, flatten_output: bool = False, remote: Union[bool, str] = False,
+           fail_on_error: bool = True, show_cmd: bool = False, use_shell: bool = False, flatten_output: bool = False, remote: Optional[Union[bool, str]] = False,
            remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[Tuple[str, str]] = None,
            remote_powershell: bool = False) -> CommandResult:
     """Wrapper to provide a better interface to subprocess.Popen().

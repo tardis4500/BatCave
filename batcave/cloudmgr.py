@@ -18,7 +18,7 @@ from docker import DockerClient
 from docker.models.containers import Container as DockerContainer
 
 # Import internal modules
-from .lang import switch, BatCaveError, BatCaveException, WIN32
+from .lang import switch, BatCaveError, BatCaveException, CommandResult, WIN32
 from .sysutil import SysCmdRunner
 
 CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))  # pylint: disable=invalid-name
@@ -70,7 +70,7 @@ class Cloud:
 
     client = property(lambda s: s._client)
 
-    def exec(self, *args, **kwargs) -> str:
+    def exec(self, *args, **kwargs) -> CommandResult:
         """Execute a command against the cloud API.
 
         Args:
@@ -212,7 +212,8 @@ class Image:
                 args = ['--format=json']
                 if image_filter:
                     args += ['--filter=' + image_filter]
-                return sorted([t for i in json_read(self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)) for t in i['tags']])
+                image_list = self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)
+                return sorted([t for i in json_read(str(image_list)) for t in i['tags']])
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
@@ -231,8 +232,8 @@ class Image:
         """
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
-                docker_log = [literal_eval(l.strip()) for l in getattr(self._docker_client.images, action)(self.name).split('\n') if l]
-                errors = [l['error'] for l in docker_log if 'error' in l]
+                docker_log = [literal_eval(line.strip()) for line in getattr(self._docker_client.images, action)(self.name).split('\n') if line]
+                errors = [line['error'] for line in docker_log if 'error' in line]
                 if errors:
                     raise CloudError(CloudError.IMAGE_ERROR, action=action, err=''.join(errors))
                 return docker_log

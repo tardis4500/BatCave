@@ -10,7 +10,7 @@ from typing import cast, Iterator, List, Optional, Tuple, Union
 # Import internal modules
 from .servermgr import Server, OsType
 from .sysutil import rmpath, syscmd, CMDError
-from .lang import is_debug, BatCaveError, BatCaveException, PathName, WIN32
+from .lang import is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 
 class ServerPathError(BatCaveException):
@@ -70,7 +70,7 @@ class ServerPath:
             return WindowsPath(f'//{self.server.fqdn}/{self.local}'.replace(':', '$'))
         return f'{self.server.fqdn}:{self.local}'
 
-    def copy(self, sp_dest: 'ServerPath', remote_cp_command: Optional[str] = None, remote_cp_args: Optional[List[str]] = None) -> str:
+    def copy(self, sp_dest: 'ServerPath', remote_cp_command: Optional[str] = None, remote_cp_args: Optional[List[str]] = None) -> CommandResult:
         """Implementation of shutil.copy() adding remote server support.
 
         Args:
@@ -140,7 +140,7 @@ class ServerPath:
                 return False
             raise
 
-    def iterdir(self) -> Union[str, List[PathName]]:
+    def iterdir(self) -> Union[CommandResult, List[Path]]:
         """Implementation of pathlib.Path.iterdir() adding remote server support.
 
         Returns:
@@ -173,7 +173,7 @@ class ServerPath:
         cmd.append(self.local)
         self.server.run_command(*cmd)  # type: ignore
 
-    def rename(self, new: str) -> PathName:
+    def rename(self, new: str) -> Union[CommandResult, PathName]:
         """Implementation of pathlib.Path.rename() adding remote server support.
 
         Args:

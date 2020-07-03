@@ -23,7 +23,7 @@ from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
 # Import internal modules
 from .serverpath import ServerPath
 from .sysutil import syscmd, CMDError
-from .lang import switch, BatCaveError, BatCaveException, PathName, WIN32
+from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if WIN32:
     from pywintypes import com_error  # pylint: disable=E0611
@@ -529,7 +529,7 @@ class Server:
         """
         self.remove_management_object('Service', service, error_if_not_exists=error_if_not_exists)
 
-    def run_command(self, command: str, *cmd_args, **sys_cmd_args) -> str:
+    def run_command(self, command: str, *cmd_args, **sys_cmd_args) -> CommandResult:
         """Run a command on the server.
 
         Args:
@@ -640,7 +640,7 @@ class OSManager:
 class NamedOSObject:
     """Class to allow management of all OS objects using a similar interface."""
 
-    def __init__(self, Name: str, computer: str, auth: Tuple):
+    def __init__(self, Name: str, computer: str, auth: Tuple[str, str]):
         """
         Args:
             Name: The name of the object.
@@ -661,7 +661,7 @@ class NamedOSObject:
 class LinuxService(NamedOSObject):
     """Class to create a universal abstract interface for a Linux daemon service."""
 
-    def __init__(self, Name: str, computer: str, auth: Tuple, service_type: ServiceType):
+    def __init__(self, Name: str, computer: str, auth: Tuple[str, str], service_type: ServiceType):
         """
         Args:
             Name: The name of the object.
@@ -675,7 +675,7 @@ class LinuxService(NamedOSObject):
         self.type = service_type
         super().__init__(Name, computer, auth)
 
-    def _manage(self, command: str) -> Union[str, CMDError]:
+    def _manage(self, command: str) -> Union[CommandResult, CMDError]:
         """Manage the service.
 
         Args:
@@ -820,7 +820,7 @@ class Win32_ScheduledTask(NamedOSObject):
             raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
         return task_info[attr]
 
-    def _run_task_scheduler(self, *cmd_args, **sys_cmd_args) -> str:
+    def _run_task_scheduler(self, *cmd_args, **sys_cmd_args) -> CommandResult:
         """Run the Windows sc command to manage the service.
 
         Args:
@@ -871,7 +871,7 @@ class Win32_ScheduledTask(NamedOSObject):
         while wait and (self.status.lower() == 'running'):
             sleep(_STATUS_CHECK_INTERVAL)
 
-    def remove(self) -> str:
+    def remove(self) -> CommandResult:
         """Remove the scheduled task.
 
         Returns:
@@ -1164,7 +1164,7 @@ class ScheduledTask(ManagementObject):
     TASK_NAMESPACE = 'http://schemas.microsoft.com/windows/2004/02/mit/task'
 
 
-def _get_server_object(server: Union[str, Server]) -> Server:
+def _get_server_object(server: ServerType) -> Server:
     """Get a server object for the specific fqdn.
 
     Args:
@@ -1180,7 +1180,7 @@ def _get_server_object(server: Union[str, Server]) -> Server:
     return Server(*(server.split('.', 1)))  # type: ignore
 
 
-def _run_task_scheduler(*cmd_args, **sys_cmd_args) -> str:
+def _run_task_scheduler(*cmd_args, **sys_cmd_args) -> CommandResult:
     """Interface to run the standard Windows schtasks command-line tool.
 
     Args:

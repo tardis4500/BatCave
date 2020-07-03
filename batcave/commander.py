@@ -87,7 +87,7 @@ class Commander:
         self._subparsers = subparsers
         self.subparser_common_parser = None
 
-        self.parser = ArgumentParser(description=description, formatter_class=formatter_class, parents=parents)
+        self.parser = ArgumentParser(description=description, formatter_class=formatter_class, parents=parents)  # type: ignore
         _add_arguments_to_parser(self.parser, arguments)
         if add_version:
             self.parser.add_argument('-v', '--version', action='version', version=get_version_info(version_style))

@@ -18,7 +18,7 @@ from kubernetes.stream import stream as k8s_process
 from yaml import safe_load as yaml_load
 
 # Import internal modules
-from .lang import BatCaveError, BatCaveException, PathName
+from .lang import BatCaveError, BatCaveException, CommandResult, PathName
 from .sysutil import SysCmdRunner
 
 kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
@@ -222,7 +222,7 @@ class Cluster:
         """
         return bool([i for i in self.get_items(item_class, namespace) if i.name == item_name])
 
-    def kubectl(self, *args) -> str:
+    def kubectl(self, *args) -> CommandResult:
         """Run a kubectl command.
 
         Args:

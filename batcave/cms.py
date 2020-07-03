@@ -43,9 +43,9 @@ else:
 try:  # Load the Git API if available
     import git
 except Exception:  # pylint: disable=W0703
-    GIT_LOADED = False
+    GIT_LOADED = ''
 else:
-    GIT_LOADED = git.__version__ if hasattr(git, '__version__') else False
+    GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
 
 CleanType = Enum('CleanType', ('none', 'members', 'all'))  # pylint: disable=invalid-name
 ClientType = Enum('ClientType', ('file', 'git', 'perforce'))  # pylint: disable=invalid-name

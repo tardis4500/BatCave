@@ -4,7 +4,7 @@
 from enum import Enum
 from string import Template
 from time import sleep
-from typing import Any, Iterable, Optional, Tuple, Type, Union
+from typing import cast, Iterable, Optional, Tuple, Type, Union
 
 # Import third-party modules
 from nssrc.com.citrix.netscaler.nitro.resource.config.ssl.sslvserver_sslcertkey_binding import sslvserver_sslcertkey_binding as NetScalerCertificateBinding
@@ -244,7 +244,7 @@ class LoadBalancer:
         else:
             return True
 
-    def manage_servers(self, signal: LbServerSignal, servers: Iterable[ServerType], validate: bool = True) -> None:
+    def manage_servers(self, signal: LbServerSignal, servers: Union[ServerType, Iterable[ServerType]], validate: bool = True) -> None:
         """Perform an action on servers managed by the load balancer.
 
         Args:
@@ -262,7 +262,7 @@ class LoadBalancer:
             raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
         if not (isinstance(servers, tuple) or isinstance(servers, list)):
-            server_list = [servers]
+            server_list = [cast(ServerType, servers)]
 
         for server in [_get_server_object(s) for s in server_list]:
             getattr(NetScalerServer, signal.name)(self._api, server.hostname)

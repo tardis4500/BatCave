@@ -43,7 +43,7 @@ class MsgStr:
             MyMsg().Message1
             MyMsg(what='this').Message2
     """
-    _messages = dict()  # type: Dict[str, str]
+    _messages = dict()  # type: Dict[str, Union[str, Template]]
 
     def __init__(self, instr: Union[str, Template] = '', transform: str = '', **variables):
         """

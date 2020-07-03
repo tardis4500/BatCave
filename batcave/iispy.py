@@ -9,7 +9,7 @@ from xml.etree.ElementTree import fromstring as xmlparse_str, fromstringlist as 
 
 # Import internal modules
 from .sysutil import syscmd, CMDError
-from .lang import bool_to_str, str_to_pythonval, BatCaveError, BatCaveException, PathName
+from .lang import bool_to_str, str_to_pythonval, BatCaveError, BatCaveException, CommandResult, PathName
 
 
 class AppCmdError(BatCaveException):
@@ -332,7 +332,7 @@ class IISInstance:
         """
         return self.has_item(WebSite, site_name)
 
-    def manage_item(self, action: str, item_type: Type[IISObject], *args) -> str:
+    def manage_item(self, action: str, item_type: Type[IISObject], *args) -> CommandResult:
         """Manage an IIS object using the standard IIS appcmd.
 
         Args:
@@ -367,7 +367,7 @@ class IISInstance:
         """
         self.manage_item('delete', WebApplicationPool, pool_name)
 
-    def reset(self, verbose: bool = True) -> str:
+    def reset(self, verbose: bool = True) -> CommandResult:
         """Reset the IIS instance.
 
         Args:
@@ -378,7 +378,7 @@ class IISInstance:
         """
         return syscmd('iisreset', remote=self.hostname, show_stdout=not verbose)
 
-    def start(self, quiet: bool = False) -> str:
+    def start(self, quiet: bool = False) -> CommandResult:
         """Start the IIS instance.
 
         Args:
@@ -389,7 +389,7 @@ class IISInstance:
         """
         return syscmd('iisreset', '/start', remote=self.hostname, show_stdout=not quiet)
 
-    def stop(self, quiet: bool = False) -> str:
+    def stop(self, quiet: bool = False) -> CommandResult:
         """Stop the IIS instance.
 
         Args:
@@ -434,7 +434,7 @@ class IISConfigurationSection:
         return False
 
     def __str__(self):
-        return ''.join([l for l in self._run_appcmd('list', 'config', self._path, f'/section:{self._name}') if l.strip()])
+        return ''.join([line for line in self._run_appcmd('list', 'config', self._path, f'/section:{self._name}') if line.strip()])
 
     def __getattr__(self, attr: str) -> str:
         config = xmlparse_str(str(self))[0]
@@ -462,7 +462,7 @@ class IISConfigurationSection:
             value = bool_to_str(value)
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/{attr}:{value}')
 
-    def _run_appcmd(self, *args) -> str:
+    def _run_appcmd(self, *args) -> CommandResult:
         """Run the IIS appcmd against this IIS configuration section.
 
         Args:
@@ -556,7 +556,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
 
-    def _run_appcmd(self, *cmd_args) -> str:
+    def _run_appcmd(self, *cmd_args) -> CommandResult:
         """Run the IIS appcmd against this IIS advanced logger configuration.
 
         Args:
@@ -676,7 +676,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         self.rm_collection_member('logDefinitions', {'baseFileName': log_name})
 
 
-def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> str:
+def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> CommandResult:
     """Interface to run the standard IIS appcmd command-line tool.
 
     Args:
@@ -695,7 +695,7 @@ def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> str:
     if hostname and ('remote_powershell' not in sys_cmd_args):
         sys_cmd_args['remote_powershell'] = True
     try:
-        return syscmd(_appcmd, *cmd_args, '/xml', remote=hostname, **sys_cmd_args)
+        return syscmd(str(_appcmd), *cmd_args, '/xml', remote=hostname, **sys_cmd_args)
     except CMDError as err:
         if ('outlines' not in err.vars) or not err.vars['outlines']:
             raise

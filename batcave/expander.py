@@ -484,7 +484,7 @@ class Procedure:
         self.expander: Expander
 
         xmlroot = xmlparse(slurp(procfile))
-        schema = str_to_pythonval(xmlroot.get(self._SCHEMA_ATTR, 0))
+        schema = str_to_pythonval(xmlroot.get(self._SCHEMA_ATTR, '0'))
         if schema != self._REQUIRED_PROCEDURE_SCHEMA:
             raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
         self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
@@ -587,7 +587,7 @@ class Procedure:
         for dirname in self.directories:
             dirpath = Path(dirname)
             if not dirpath.is_absolute():
-                dirpath = source_root / dirpath
+                dirpath = Path(source_root) / dirpath
             self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
 
     def format(self, text: str) -> str:

@@ -3,11 +3,11 @@
 # Import standard modules
 from pathlib import Path
 from string import Template
-from typing import Any
+from typing import Any, Dict, Optional
 
 # Import third-party modules
 import requests
-from requests import certs, codes, exceptions
+from requests import certs, codes, exceptions  # type: ignore
 from requests.auth import HTTPBasicAuth
 
 # Import internal modules
@@ -26,7 +26,7 @@ class TeamCityError(BatCaveException):
 class TCBuildConfig:
     """Class to create a universal abstract interface for a TeamCity build configuration."""
 
-    def __init__(self, server, config_id):
+    def __init__(self, server: 'TeamCityServer', config_id: str):
         """
         Args:
             server: The Teamcity console containing this object.
@@ -50,7 +50,7 @@ class TCBuildConfig:
     def __str__(self):
         return str(self.info)
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
         if attr in self.info:
             return self.info[attr]
         return self._server.api_call('get', f'buildTypes/id:{self.config_id}/{attr}')
@@ -61,7 +61,7 @@ class TeamCityServer:
 
     _CA_CERT = (BATCAVE_HOME / 'cacert.pem') if FROZEN else Path(certs.where())
 
-    def __init__(self, host, user, passwd, port='80'):
+    def __init__(self, host: str, user: str, passwd: str, port: str = '80'):
         """
         Args:
             host: The server hosting the Teamcity instance.
@@ -86,7 +86,7 @@ class TeamCityServer:
     users = property(lambda s: s.api_call('get', 'users')['user'], doc='A read-only property which returns a list of the TeamCity users.')
     groups = property(lambda s: s.api_call('get', 'userGroups')['group'], doc='A read-only property which returns a list of the TeamCity groups.')
 
-    def api_call(self, calltype, apicall, **params):
+    def api_call(self, calltype: str, apicall: str, **params) -> Dict[str, Any]:
         """Provide an interface to the TeamCity RESTful API.
 
         Args:
@@ -106,7 +106,7 @@ class TeamCityServer:
             raise result.raise_for_status()
         return result.json()
 
-    def create_group(self, name, key=None, description=''):
+    def create_group(self, name: str, key: Optional[str] = None, description: str = '') -> Dict[str, Any]:
         """Create a user group.
 
         Args:
@@ -121,7 +121,7 @@ class TeamCityServer:
             key = name.upper().replace(' ', '_')
         return self.api_call('post', 'userGroups', name=name, key=key, description=description)
 
-    def create_user(self, username):
+    def create_user(self, username: str) -> Dict[str, Any]:
         """Create a user.
 
         Args:
@@ -132,7 +132,7 @@ class TeamCityServer:
         """
         return self.api_call('post', 'users', username=username)
 
-    def get_build_config(self, config):
+    def get_build_config(self, config: str) -> 'TCBuildConfig':
         """Get the named build configuration.
 
         Args:

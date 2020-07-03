@@ -20,12 +20,12 @@ VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
 try:
     import PyQt5.QtCore as pyqt
 except ImportError:
-    PYQT_LOADED = False
+    PYQT_LOADED = ''
 else:
     PYQT_LOADED = pyqt.__dict__['PYQT_VERSION_STR']
 
 
-def get_version_info(style=VersionStyle.full, plattype='batcave_run', extra_info=''):
+def get_version_info(style: VersionStyle = VersionStyle.full, plattype: str = 'batcave_run', extra_info: str = '') -> str:
     """Get the version information about the currently running application.
 
     Args:

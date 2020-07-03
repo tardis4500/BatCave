@@ -208,7 +208,7 @@ def slurp(filename: PathName) -> List[str]:
     Returns:
         The list of lines from the file.
     """
-    return [l for l in open(filename)]
+    return [line for line in open(filename)]
 
 
 def spew(filename: PathName, outlines: Iterable) -> None:
