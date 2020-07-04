@@ -88,10 +88,11 @@ class ServerPath:
             remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[OsType.windows] if (remote_cp_command is None) else remote_cp_command
             remote_cp_args = self.DEFAULT_REMOTE_COPY_ARGS[OsType.windows] if (remote_cp_args is None) else remote_cp_args
 
+            dest: PathName
             if sp_dest.server.is_local and not self.server.is_local:
                 use_server = sp_dest.server
                 source = self.remote
-                dest = sp_dest.local  # type: PathName
+                dest = sp_dest.local
             else:
                 use_server = self.server
                 source = self.local
@@ -167,7 +168,7 @@ class ServerPath:
             Path(self.local).mkdir(mode, parents, exist_ok)
         if self.win_to_win:
             cast(Path, self.remote).mkdir(mode, parents, exist_ok)
-        cmd = ['mkdir']  # type: List[PathName]
+        cmd: List[PathName] = ['mkdir']
         if parents and not self.is_win:
             cmd.append('-p')
         cmd.append(self.local)

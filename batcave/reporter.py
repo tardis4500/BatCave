@@ -263,10 +263,10 @@ class ReportObject:
             container: The value of the container argument.
             _attributes: A dictionary of attributes for this object as initialized by the attr argument.
         """
-        self._attributes = dict()  # type: Dict[str, Attribute]
+        self._attributes: Dict[str, Attribute] = dict()
         for (attr, val) in attributes.items():
             self._set_attribute(attr, val)
-        self.container = container  # type: Optional[Type[ReportObject]]
+        self.container: Optional[Type[ReportObject]] = container
 
     def _get_attr_ref(self, attr: str) -> Attribute:
         """Get a reference to the requested attributes.
@@ -386,7 +386,7 @@ class Section(ReportObject):
         super().__init__(cont, **attr)
         self.header = header
         self.footer = footer
-        self._members = list()  # type: List[Type[ReportObject]]
+        self._members: List[Type[ReportObject]] = list()
 
     def __str__(self):
         the_str = self.sec_ldr

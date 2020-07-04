@@ -43,7 +43,7 @@ class MsgStr:
             MyMsg().Message1
             MyMsg(what='this').Message2
     """
-    _messages = dict()  # type: Dict[str, Union[str, Template]]
+    _messages: Dict[str, Union[str, Template]] = dict()
 
     def __init__(self, instr: Union[str, Template] = '', transform: str = '', **variables):
         """
@@ -75,7 +75,7 @@ class MsgStr:
         Returns:
             The string message.
         """
-        return_str = _str.substitute(self._vars) if isinstance(_str, Template) else _str  # type: str
+        return_str: str = _str.substitute(self._vars) if isinstance(_str, Template) else _str
         if self._transform:
             return_str = getattr(return_str, self._transform)()
         return return_str

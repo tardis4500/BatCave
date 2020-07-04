@@ -151,10 +151,10 @@ class DataSource:
         self.type = data_type
         self.name = name
         self._schema = schema
-        self._source = None  # type: Any
+        self._source: Any = None
         self._connectinfo = connectinfo
-        self._connection = None  # type: Optional[Union[IO, ElementTree]]
-        self._closer = None  # type: Optional[IO]
+        self._connection: Optional[Union[IO, ElementTree]] = None
+        self._closer: Optional[IO] = None
         self._validate_type()
         try:
             self._load()
@@ -751,7 +751,7 @@ class DataTable:
         Returns:
             Nothing.
         """
-        row = None  # type: Any
+        row: Any = None
         for case in switch(self.type):
             if case(SourceType.text):
                 pass

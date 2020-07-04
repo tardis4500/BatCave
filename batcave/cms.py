@@ -351,7 +351,7 @@ class Client:
         self._validatetype()
         self._mapping = mapping
         self._connected = False
-        self._client = None  # type: Any
+        self._client: Any = None
 
         if not connectinfo:
             for case in switch(self._type):
@@ -429,7 +429,7 @@ class Client:
                 self._connected = True
                 break
             if case(ClientType.git):
-                git_args = dict()  # type: Dict[str, Union[int, str]]
+                git_args: Dict[str, Union[int, str]] = dict()
                 if branch:
                     git_args['branch'] = branch
                 if info:
@@ -453,7 +453,7 @@ class Client:
                     raise
                 self._connected = True
                 if create:
-                    clientspec = self._p4fetch('client')  # type: Dict[str, Any]
+                    clientspec: Dict[str, Any] = self._p4fetch('client')
                     clientspec['Root'] = str(root)
                     clientspec['LineEnd'] = cast(LineStyle, linestyle).name
                     clientspec['SubmitOptions'] = changelist_options if changelist_options else 'revertunchanged'
@@ -1563,7 +1563,7 @@ class ChangeList:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         self._client = client
-        self._files = None  # type: Optional[List]
+        self._files: Optional[List] = None
         self._id = None
         self._changelist = dict()
         self._editable = editable if (editable is not None) else not bool(id)

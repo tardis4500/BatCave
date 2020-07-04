@@ -282,9 +282,11 @@ class Pod(ClusterObject):
             PodError.COPY_ERROR: If there was an error when copying the file.
             PodError.INVALID_COPY_MODE: If the specified mode is not known.
         """
+        source_path: PathName
+        target_path: PathName
         if mode == 'in':
-            source_path = Path(source)  # type: PathName
-            target_path = f'{self.namespace}/{self.name}:{target}'  # type: PathName
+            source_path = Path(source)
+            target_path = f'{self.namespace}/{self.name}:{target}'
         elif mode == 'out':
             source_path = f'{self.namespace}/{self.name}:{source}'
             target_path = Path(target)

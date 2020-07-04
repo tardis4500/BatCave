@@ -231,8 +231,8 @@ class QuickBuildConsole:
         self._user = user
         self._password = password
         self._update = True
-        self.configs = dict()  # type: Dict[str, QuickBuildCfg]
-        self.dashboards = dict()  # type: Dict[str, QuickBuildDashboard]
+        self.configs: Dict[str, QuickBuildCfg] = dict()
+        self.dashboards: Dict[str, QuickBuildDashboard] = dict()
         self.updater()
 
     def __enter__(self):
@@ -266,7 +266,7 @@ class QuickBuildConsole:
         Returns:
             The new dashboard.
         """
-        xml_data = str(dashboard) if isinstance(dashboard, QuickBuildDashboard) else dashboard  # type: Union[str, Element]
+        xml_data: Union[str, Element] = str(dashboard) if isinstance(dashboard, QuickBuildDashboard) else dashboard
         if isinstance(xml_data, str):
             xml_data = fromstring(xml_data)
         id_tag = xml_data.find('id')
@@ -309,7 +309,7 @@ class QuickBuildConsole:
             The result of the API call.
         """
         api_call = f'http://{self._host}/rest/{cmd}'
-        api_args = {'auth': (self._user, self._password)}  # type: Dict[str, Any]
+        api_args: Dict[str, Any] = {'auth': (self._user, self._password)}
         if delete:
             caller = req_del
         elif xmldata is None:

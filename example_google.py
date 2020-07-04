@@ -13,10 +13,10 @@
 # Step9: Reorder Classes: private, protected, properties, methods.
 # Step10: Fix enums.
 # Step11: Add PEP484 type hints.
-
-# Finished adding PEP484 type hints. (GitLab #29)
-
 # Step12: Add PEP526 variable type annotations
+
+# Added PEP526 type hints where required to resolve type linting. (GitLab #29)
+
 # Step13: Add linting and type checking to build pipeline.
 
 # -*- coding: utf-8 -*-

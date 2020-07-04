@@ -83,7 +83,7 @@ class Commander:
         self._default = default
         self._extra_var_sep = extra_var_sep
         self._parse_extra = parse_extra
-        self._pass_on = tuple()  # type: Sequence[str]
+        self._pass_on: Sequence[str] = tuple()
         self._subparsers = subparsers
         self.subparser_common_parser = None
 

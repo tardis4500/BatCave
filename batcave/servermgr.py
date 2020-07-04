@@ -266,7 +266,7 @@ class Server:
             The created scheduled task.
         """
         if isinstance(exe, str):
-            exe_args = list()  # type: List[str]
+            exe_args: List[str] = list()
         else:
             exe_args = exe[1:]
             exe = exe[0]
@@ -850,7 +850,7 @@ class Win32_ScheduledTask(NamedOSObject):
         Raises:
             ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the signal is unknown.
         """
-        control_args = tuple()  # type: Tuple
+        control_args: Tuple = tuple()
         for case in switch(signal):
             if case(TaskSignal.enable):
                 control_args = ('/Change', '/ENABLE')

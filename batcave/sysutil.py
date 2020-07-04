@@ -407,7 +407,7 @@ def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show
         CMDError.CMD_ERROR: If fail_on_error is True, and the return code is non-zero, or there is output on stderr if ignore_stderr is True.
     """
     cmd_spec = [str(command)] + [str(c) for c in cmd_args]
-    remote_driver = list()  # type: List[str]
+    remote_driver: List[str] = list()
     if remote:
         remote_is_windows = WIN32 if (remote_is_windows is None) else remote_is_windows
         if WIN32:

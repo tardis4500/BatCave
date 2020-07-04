@@ -112,7 +112,7 @@ class Formatter:
         self.format = output_format
         self.level = 0
         self.count = 1
-        self.keeper = list()  # type: List[Tuple[int, str]]
+        self.keeper: List[Tuple[int, str]] = list()
         self.prefix = ''
         self.link_regex = re_compile(f'\\{self._LINK_PRELIM}(.+?)(\\|(.+))?\\}}')
 
@@ -502,7 +502,7 @@ class Procedure:
         self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if library_element else dict()
 
         environments_element = xmlroot.find(self._ENVIRONMENTS_TAG)
-        self.environments = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else dict()  # type: Dict
+        self.environments: Dict = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else dict()
 
         common_environment: Dict
         if self._COMMON_ENVIRONMENT in self.environments:
@@ -544,7 +544,7 @@ class Procedure:
         Returns:
             The contents of the procedure as an ordered dictionary.
         """
-        result = odict()  # type: Dict
+        result: Dict = odict()
         result[self._HEADER_TAG] = self.header
         result[self._DIRECTORIES_TAG] = self.directories
         result[self._ENVIRONMENTS_TAG] = {e: v for (e, v) in self.environments.items()}

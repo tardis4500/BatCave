@@ -248,7 +248,7 @@ def unpack(arcfile: PathName, dest: Optional[PathName] = None, arctype: str = ''
         use_dest.mkdir(parents=True, exist_ok=True)
         pushd(use_dest)
 
-    pkgfile = None  # type: Any
+    pkgfile: Any = None
     for case in switch(arctype):
         if case('bz2', 'gz', 'xz', 'zip'):
             pkgfile = PACKER_CLASSES[arctype](archive)
