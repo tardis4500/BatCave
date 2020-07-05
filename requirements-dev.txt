@@ -1,7 +1,7 @@
 # Runtime testing
 docker
 google-cloud
-PyQt5; platform_machine != 'aarch64'
+PyQt5 <= 5.14.0; platform_machine != 'aarch64'
 psutil
 WMI
 # Linting and other tools

@@ -5,6 +5,6 @@ psutil
 requests
 setuptools
 twine
-wmi
+WMI ~= 1.4.9
 xmlrunner
 pywin32==227; sys_platform == 'win32'
