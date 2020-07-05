@@ -4,7 +4,7 @@
 
 from unittest import main, TestCase
 
-from batcave.statemachine import StateMachine, StateMachineError
+from batcave.statemachine import StateMachine, StateMachineError, StateStatus
 
 
 class TestStateMachine(TestCase):
@@ -23,17 +23,17 @@ class TestStateMachine(TestCase):
 
     def test_statemachine_happypath(self):
         with StateMachine(self.STATES) as sm:
-            self.assertEqual(sm.status, StateMachine.STATE_STATUSES.exited)
+            self.assertEqual(sm.status, StateStatus.exited)
             self.assertEqual(sm.state, 'None')
             self.assertTrue(StateMachine._DEFAULT_STATEFILE.exists())
             self.assertTrue(StateMachine._DEFAULT_LOGFILE.exists())
             self.assertTrue(StateMachine._DEFAULT_LOCKFILE.exists())
             for state in self.STATES:
                 sm.enter_next_state()
-                self.assertEqual(sm.status, StateMachine.STATE_STATUSES.entering)
+                self.assertEqual(sm.status, StateStatus.entering)
                 self.assertEqual(sm.state, state)
                 sm.exit_state()
-                self.assertEqual(sm.status, StateMachine.STATE_STATUSES.exited)
+                self.assertEqual(sm.status, StateStatus.exited)
                 self.assertEqual(sm.state, state)
             self.assertRaises(StateMachineError, sm.enter_next_state)
             try:

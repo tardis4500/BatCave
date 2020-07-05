@@ -9,7 +9,7 @@ from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from unittest import main, skip, TestCase
 
-from batcave.sysutil import pushd, popd, LockFile, LockError, LockMode, PlatformError
+from batcave.sysutil import pushd, popd, CMDError, LockFile, LockError, LockMode
 
 LockSignal = Enum('LockSignal', ('true', 'false'))
 
@@ -17,9 +17,9 @@ LockSignal = Enum('LockSignal', ('true', 'false'))
 class TestExceptions(TestCase):
     def test_PlatformException(self):
         try:
-            raise PlatformError(PlatformError.UNSUPPORTED, platform='badplatform')
-        except PlatformError as err:
-            self.assertEqual(PlatformError.UNSUPPORTED.code, err.code)
+            raise CMDError(CMDError.INVALID_OPERATION, platform='badplatform')
+        except CMDError as err:
+            self.assertEqual(CMDError.INVALID_OPERATION.code, err.code)
 
 
 class TestLockFile(TestCase):
