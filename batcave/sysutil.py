@@ -184,7 +184,7 @@ class SysCmdRunner:
         self.default_args = list(default_args)
         self.default_kwargs = default_kwargs
 
-    def run(self, message: Optional[str], *args, **kwargs) -> CommandResult:
+    def run(self, message: str, *args, **kwargs) -> CommandResult:
         """Run the defined command with the additional specified arguments.
 
         Args:

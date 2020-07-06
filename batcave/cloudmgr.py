@@ -85,7 +85,7 @@ class Cloud:
         """
         for case in switch(self.type):
             if case(CloudType.gcloud):
-                return gcloud(None, *args, **kwargs)
+                return gcloud('', *args, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
     def get_container(self, name: str) -> Container:  # noqa:F821, pylint: disable=used-before-assignment
@@ -145,8 +145,8 @@ class Cloud:
                     self._client.login(*self.auth)  # type: ignore[attr-defined] # noqa:F821
                 break
             if case(CloudType.gcloud):
-                gcloud(None, 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / f'{self.auth[0]}.json', ignore_stderr=True)
-                gcloud(None, 'auth', 'configure-docker', ignore_stderr=True)
+                gcloud('', 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / f'{self.auth[0]}.json', ignore_stderr=True)
+                gcloud('', 'auth', 'configure-docker', ignore_stderr=True)
                 self._client = True
                 break
             if case():

@@ -236,7 +236,7 @@ class Cluster:
             config_args.append(f'--kubeconfig={self.config}')
         if self._context:
             config_args.append(f'--context={self._context}')
-        return kubectl(None, *config_args, *args)
+        return kubectl('', *config_args, *args)
 
 
 class ClusterObject:

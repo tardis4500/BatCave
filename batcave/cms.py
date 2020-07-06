@@ -1,8 +1,8 @@
 """This module provides utilities for managing source code systems.
 
 Attributes:
-    P4_LOADED (bool/str): If not False then it is the string version of the Perforce API.
-    GIT_LOADED (bool/str): If not False then it is the string version of the GitPython API.
+    P4_LOADED (str): If not empty then it is the string version of the Perforce API.
+    GIT_LOADED (str): If not empty then it is the string version of the GitPython API.
     ClientType (Enum): The CMS providers supported by the Client class.
 """
 
@@ -36,9 +36,9 @@ if WIN32:
 try:  # Load the Perforce API if available
     import P4  # pylint: disable=import-error
 except Exception:  # pylint: disable=W0703
-    P4_LOADED = False
+    P4_LOADED = ''
 else:
-    P4_LOADED = bool(str(P4.P4().api_level))
+    P4_LOADED = str(P4.P4().api_level)
 
 try:  # Load the Git API if available
     import git

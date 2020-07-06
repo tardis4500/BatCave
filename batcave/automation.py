@@ -40,7 +40,7 @@ class ActionCommandRunner(SysCmdRunner):
             Returns whatever is returned by SysCmdRunner.
         """
         if self.guard:
-            self.writer(self.guard)
+            self.writer(self.guard)  # type: ignore
         return super().run(message, *args, **kwargs)
 
 
