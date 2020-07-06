@@ -36,7 +36,7 @@ Modules that provide utilities for accomplishing specific programming tasks:
     version: reporting version information
 """
 
-__all__ = ('__title__', '__summary__', '__uri__',
+__all__  = ('__title__', '__summary__', '__uri__',
            '__version__', '__buildname__', '__builddate__',
            '__author__', '__email__',
            '__license__', '__copyright__')

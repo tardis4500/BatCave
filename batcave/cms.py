@@ -43,6 +43,7 @@ else:
 try:  # Load the Git API if available
     import git
 except Exception:  # pylint: disable=W0703
+    raise
     GIT_LOADED = ''
 else:
     GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
