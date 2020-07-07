@@ -11,7 +11,7 @@ from enum import Enum
 from json import loads as json_read
 from pathlib import Path
 from string import Template
-from typing import List, Optional, Sequence, Union
+from typing import cast, Any, List, Optional, Sequence, Union
 
 # Import third-party modules
 from docker import DockerClient
@@ -55,9 +55,9 @@ class Cloud:
             type: The value of the ctype argument.
             _client: A reference to the underlying client API object.
         """
-        self.type = ctype
-        self.auth = auth
-        self._client = False
+        self.type: CloudType = ctype
+        self.auth: Union[str, Sequence[str]] = auth
+        self._client: Any = False
         validatetype(self.type)
         if login:
             self.login()
@@ -142,7 +142,7 @@ class Cloud:
             if case(CloudType.local, CloudType.dockerhub):
                 self._client = DockerClient()
                 if self.type == CloudType.dockerhub:
-                    self._client.login(*self.auth)  # type: ignore[attr-defined] # noqa:F821
+                    self._client.login(*self.auth)
                 break
             if case(CloudType.gcloud):
                 gcloud('', 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / f'{self.auth[0]}.json', ignore_stderr=True)
@@ -171,9 +171,10 @@ class Image:
         Raises:
             CloudError.INVALID_OPERATION: If the specified cloud type is not supported.
         """
-        self.cloud = cloud
-        self.name = name
-        self._docker_client = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()
+        self.cloud: Cloud = cloud
+        self.name: str = name
+        self._docker_client: DockerClient = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()
+        self._ref: Any
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):
                 self._ref = self.cloud.client.images.get(self.name)
@@ -209,10 +210,10 @@ class Image:
             if case(CloudType.local, CloudType.dockerhub):
                 return self._ref.tags
             if case(CloudType.gcloud):
-                args = ['--format=json']
+                args: List[str] = ['--format=json']
                 if image_filter:
                     args += ['--filter=' + image_filter]
-                image_list = self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True)
+                image_list: List[str] = cast(List[str], self.cloud.exec('container', 'images', 'list-tags', self.name, *args, show_stdout=False, flatten_output=True))
                 return sorted([t for i in json_read(str(image_list)) for t in i['tags']])
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
@@ -285,7 +286,7 @@ class Image:
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support image tagging.
         """
-        new_ref = None
+        new_ref: Image
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):
                 self.pull()
@@ -319,8 +320,9 @@ class Container:
         Raises:
             CloudError.INVALID_OPERATION: If the specified cloud type is not supported.
         """
-        self.cloud = cloud
-        self.name = name
+        self.cloud: Cloud = cloud
+        self.name: str = name
+        self._ref: Any
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):
                 self._ref = self.cloud.client.containers.get(self.name)

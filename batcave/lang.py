@@ -22,8 +22,9 @@ VALIDATE_PYTHON = True
 WIN32 = (platform == 'win32')
 
 CommandResult = Union[str, List[str]]
-PathName = Union[str, Path, PurePath]
 MessageString = Union[str, Template]
+PathName = Union[str, Path, PurePath]
+RegKeyHandle = str
 
 
 class MsgStr:

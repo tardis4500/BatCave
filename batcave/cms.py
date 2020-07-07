@@ -22,17 +22,18 @@ from re import compile as re_compile
 from stat import S_IWUSR
 from string import Template
 from tempfile import mkdtemp
-from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Pattern, Sequence, Tuple, Union
 
 # Import internal modules
 from .fileutil import slurp
 from .sysutil import popd, pushd, rmtree_hard
-from .lang import is_debug, switch, BatCaveError, BatCaveException, WIN32
+from .lang import is_debug, switch, BatCaveError, BatCaveException, RegKeyHandle, WIN32
 
 if WIN32:
     import win32api
     import win32con
 
+P4_LOADED: str
 try:  # Load the Perforce API if available
     import P4  # pylint: disable=import-error
 except Exception:  # pylint: disable=W0703
@@ -40,6 +41,7 @@ except Exception:  # pylint: disable=W0703
 else:
     P4_LOADED = str(P4.P4().api_level)
 
+GIT_LOADED: str
 try:  # Load the Git API if available
     import git
 except Exception:  # pylint: disable=W0703
@@ -102,13 +104,13 @@ class Label:
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        self._client = client
-        self._name = name
-        self._type = label_type
-        self._selector = selector
-        self._label = dict()
+        self._client: 'Client' = client
+        self._name: str = name
+        self._type: LabelType = label_type
+        self._selector: str = selector
+        self._label: Dict = dict()
         self._refresh()
-        changed = False
+        changed: bool = False
         if self._selector:
             for case in switch(self._client.type):
                 if case(ClientType.perforce):
@@ -210,7 +212,7 @@ class Label:
             if case(ClientType.perforce):
                 if self._type == LabelType.project:
                     raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
-                args = ['labelsync', '-l', self._name]
+                args: List[str] = ['labelsync', '-l', self._name]
                 if no_execute:
                     args.append('-n')
                 if files:
@@ -281,10 +283,10 @@ class Client:
         _DEFAULT_P4PORT: The default Perforce port.
         _INFO_DUMMY_CLIENT: The default name for a dummy client.
     """
-    _DEFAULT_P4PORT = 'perforce:1666'
-    _INFO_DUMMY_CLIENT = 'BatCave_info_dummy_client'
+    _DEFAULT_P4PORT: str = 'perforce:1666'
+    _INFO_DUMMY_CLIENT: str = 'BatCave_info_dummy_client'
 
-    def __init__(self, ctype: ClientType, name: str = '', connectinfo: Optional[str] = '', user: str = '',
+    def __init__(self, ctype: ClientType, name: str = '', connectinfo: str = '', user: str = '',
                  root: Optional[Path] = None, altroots: Optional[Sequence[str]] = None, mapping: Optional[List[str]] = None, hostless: bool = False,
                  changelist_options: Optional[str] = None, linestyle: Optional[LineStyle] = None, cleanup: Optional[bool] = None,
                  create: Optional[bool] = None, info: bool = False, password: Optional[str] = None, branch: Optional[str] = None):
@@ -347,10 +349,10 @@ class Client:
             CMSError.CONNECTINFO_REQUIRED: If connection info was not supplied when required.
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        self._type = ctype
+        self._type: ClientType = ctype
         self._validatetype()
-        self._mapping = mapping
-        self._connected = False
+        self._mapping: Optional[List[str]] = mapping
+        self._connected: bool = False
         self._client: Any = None
 
         if not connectinfo:
@@ -358,14 +360,14 @@ class Client:
                 if case(ClientType.file):
                     raise CMSError(CMSError.CONNECTINFO_REQUIRED, ctype=self._type.name)
                 if case(ClientType.git):
-                    connectinfo = getenv('GIT_WORK_TREE')
+                    connectinfo = getenv('GIT_WORK_TREE', '')
                     break
                 if case(ClientType.perforce):
                     connectinfo = self.get_cms_sys_value('P4PORT')
                     break
                 if case():
                     raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
-        self._connectinfo = connectinfo
+        self._connectinfo: str = connectinfo
 
         if not user:
             for case in switch(self._type):
@@ -377,44 +379,48 @@ class Client:
                     break
                 if case():
                     raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
-        self._user = user
+        self._user: str = user
 
+        client_name: str = ''
         if info:
-            name = name if name else f'{self._INFO_DUMMY_CLIENT}_{randint(0, 1000)}'
+            client_name = name if name else f'{self._INFO_DUMMY_CLIENT}_{randint(0, 1000)}'
 
-        create_arg = create
+        create_client: bool
         if create is None:
-            create = False if (info and (self._type != ClientType.git)) else True
+            create_client = False if (info and (self._type != ClientType.git)) else True
+        else:
+            create_client = create
 
+        self._cleanup: bool
         if cleanup is None:
             if self._type == ClientType.file:
                 self._cleanup = False
-            elif (self._type == ClientType.git) and (create_arg is None):
+            elif (self._type == ClientType.git) and (create_client is None):
                 self._cleanup = True
             else:
-                self._cleanup = bool(create)
+                self._cleanup = create_client
         else:
-            self._cleanup = bool(cleanup)
+            self._cleanup = cleanup
 
-        self._tmpdir = None
-        if create:
+        self._tmpdir: Path
+        if create_client:
             self._tmpdir = Path(mkdtemp(prefix='cms'))
-            if not name:
+            if not client_name:
                 for case in switch(self._type):
                     if case(ClientType.file):
                         break
                     if case(ClientType.git, ClientType.perforce):
-                        name = f'{self._user}_{self._tmpdir.name}'
+                        client_name = f'{self._user}_{self._tmpdir.name}'
                         break
                     if case():
                         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
-        elif not name:
+        elif not client_name:
             raise CMSError(CMSError.CLIENT_NAME_REQUIRED)
-        self._name = name
+        self._name: str = client_name
 
-        if create:
-            if root is None:
-                root = self._tmpdir
+        client_root: Path
+        if create_client:
+            client_root = self._tmpdir if (root is None) else root
             if (self._mapping is None) and (self._type == ClientType.perforce) and info:
                 self._mapping = [f'-//spec/... //{self.name}/...']
             if (linestyle is None) and (self._type == ClientType.perforce):
@@ -434,7 +440,7 @@ class Client:
                     git_args['branch'] = branch
                 if info:
                     git_args['depth'] = 1
-                self._client = git.Repo.clone_from(self._connectinfo, root, branch=(branch if branch else 'master')) if create else git.Repo(str(self._connectinfo))
+                self._client = git.Repo.clone_from(self._connectinfo, client_root, branch=(branch if branch else 'master')) if create_client else git.Repo(self._connectinfo)
                 self._connected = True
                 break
             if case(ClientType.perforce):
@@ -452,9 +458,9 @@ class Client:
                         raise CMSError(CMSError.CONNECT_FAILED, connectinfo=self._connectinfo)
                     raise
                 self._connected = True
-                if create:
+                if create_client:
                     clientspec: Dict[str, Any] = self._p4fetch('client')
-                    clientspec['Root'] = str(root)
+                    clientspec['Root'] = str(client_root)
                     clientspec['LineEnd'] = cast(LineStyle, linestyle).name
                     clientspec['SubmitOptions'] = changelist_options if changelist_options else 'revertunchanged'
                     if self._mapping:
@@ -479,6 +485,7 @@ class Client:
 
     def __str__(self):
         for case in switch(self._type):
+            infostr: str
             if case(ClientType.perforce):
                 infostr = '\n'.join([f'{i}: {v}' for (i, v) in self._p4fetch('client').items()])
                 break
@@ -606,7 +613,7 @@ class Client:
         """A read-only property which returns the root of the client."""
         for case in switch(self._type):
             if case(ClientType.file):
-                return Path(str(self._connectinfo))
+                return Path(self._connectinfo)
             if case(ClientType.git):
                 return Path(self._client.working_tree_dir)
             if case(ClientType.perforce):
@@ -633,11 +640,11 @@ class Client:
         for case in switch(self._type):
             if case(ClientType.file):
                 pushd(self.root)
-                files = glob('**')
+                files: List[str] = glob('**')
                 popd()
                 return files
             if case(ClientType.git):
-                file_list = list()
+                file_list: List[str] = list()
                 for (root, dirs, files) in walk_git_tree(self._client.tree()):  # pylint: disable=W0612
                     file_list += [f'{root}/{f}' for f in files]
                 return file_list
@@ -666,7 +673,7 @@ class Client:
                     return self._client.index.add([str(f) for f in files])
                 break
             if case(ClientType.perforce):
-                args = ['-n'] if no_execute else []
+                args: List[str] = ['-n'] if no_execute else list()
                 args += files
                 return self._p4run('add', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -745,7 +752,7 @@ class Client:
             if case(ClientType.git):
                 if not no_execute:
                     self._client.index.commit(description)
-                    args = {'set_upstream': True, 'all': True} if all_branches else dict()
+                    args: Dict[str, Union[bool, str]] = {'set_upstream': True, 'all': True} if all_branches else dict()
                     args.update(extra_args)
                     progress = git.RemoteProgress()
                     result = getattr(self._client.remotes, remote).push(progress=progress, **args)
@@ -754,7 +761,7 @@ class Client:
                     return result
                 return list()
             if case(ClientType.perforce):
-                changelist = self._p4fetch('change')
+                changelist: Dict[str, Any] = self._p4fetch('change')
                 changelist['Description'] = description
                 try:
                     return self._p4save('submit' if not no_execute else 'change', changelist)
@@ -780,7 +787,7 @@ class Client:
         for case in switch(self._type):
             if case(ClientType.file):
                 for file_name in files:
-                    file_path = self.root / file_name
+                    file_path: Path = self.root / file_name
                     if not no_execute:
                         file_path.chmod(file_path.stat().st_mode | S_IWUSR)
                 return list()
@@ -789,7 +796,7 @@ class Client:
                     return self._client.index.add([str(f) for f in files])
                 return list()
             if case(ClientType.perforce):
-                args = ['-n'] if no_execute else []
+                args: List[str] = ['-n'] if no_execute else list()
                 args += files
                 return self._p4run('edit', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -855,7 +862,7 @@ class Client:
             if case(ClientType.perforce):
                 if branch_type.startswith('stream'):
                     (branch_type, stream_type) = branch_type.split(':')
-                    streamspec = self._p4fetch(branch_type, f'//{repo}/{name}')
+                    streamspec: Dict[str, Any] = self._p4fetch(branch_type, f'//{repo}/{name}')
                     streamspec['Type'] = stream_type
                     if branch_from:
                         streamspec['Parent'] = f'//{repo}/{branch_from}'
@@ -868,7 +875,7 @@ class Client:
                         return self._p4save('stream', streamspec)
                 return list()
             if case(ClientType.git):
-                args = [name]
+                args: List[str] = [name]
                 if branch_from:
                     args.append(branch_from)
                 self._client.create_head(*args)
@@ -894,7 +901,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                depotspec = self._p4fetch('depot', repository)
+                depotspec: Dict[str, Any] = self._p4fetch('depot', repository)
                 if repo_type:
                     depotspec['Type'] = repo_type
                 if not no_execute:
@@ -916,7 +923,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.file, ClientType.git):
-                regex = re_compile(file_regex)
+                regex: Pattern = re_compile(file_regex)
                 return [f for f in self.list() if regex.search(f)]
             if case(ClientType.perforce):
                 try:
@@ -959,14 +966,17 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                arglist = ['-l', '-s', 'submitted']
+                arglist: List[str] = ['-l', '-s', 'submitted']
+                changelist_names: List[str]
                 if not names:
                     if count is not None:
                         arglist += ['-m', str(count)]
                     if forfiles:
                         arglist += forfiles
-                    names = self._p4run('changes', *arglist)
-                return [ChangeList(self, str(c)) for c in names]
+                    changelist_names = self._p4run('changes', *arglist)
+                else:
+                    changelist_names = [str(n) for n in names]
+                return [ChangeList(self, c) for c in changelist_names]
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_clients(self, *args) -> List['Client']:
@@ -1005,7 +1015,7 @@ class Client:
                 if WIN32:
                     for key in (win32con.HKEY_CURRENT_USER, win32con.HKEY_LOCAL_MACHINE):
                         try:
-                            keyhandle = win32api.RegOpenKeyEx(key, r'Software\perforce\environment', 0, win32con.KEY_READ)
+                            keyhandle: RegKeyHandle = win32api.RegOpenKeyEx(key, r'Software\perforce\environment', 0, win32con.KEY_READ)
                             if win32api.RegQueryValueEx(keyhandle, var):
                                 return win32api.RegQueryValueEx(keyhandle, var)[0]
                         except win32api.error as err:
@@ -1015,7 +1025,7 @@ class Client:
                     if inner_case('P4PORT'):
                         return self._DEFAULT_P4PORT
                     if inner_case('P4USER'):
-                        username = getuser().lower()
+                        username: str = getuser().lower()
                         if username:
                             return username
                 raise P4.P4Exception('unable to determine ' + var)
@@ -1065,7 +1075,7 @@ class Client:
             if case(ClientType.file, ClientType.git):
                 return self.root / file_name
             if case(ClientType.perforce):
-                file_info = self._p4run('fstat', file_name)
+                file_info: List[Dict[str, Any]] = self._p4run('fstat', file_name)
                 return file_info[0]['clientFile']
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1100,9 +1110,8 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                if label:
-                    label = '@' + label
-                return self._p4run('changes', '-m1', f'//...{label}')[0]['change']
+                label_name: str = f'@{label}' if label else label
+                return self._p4run('changes', '-m1', f'//...{label_name}')[0]['change']
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_repos(self, *args) -> List[str]:
@@ -1135,7 +1144,7 @@ class Client:
             if case(ClientType.file):
                 return 'CMS type: file'
             if case(ClientType.perforce):
-                return str(self._connectinfo)
+                return self._connectinfo
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_user_record(self, username: str) -> Dict[str, str]:
@@ -1185,7 +1194,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                args = ['integrate', source, target]
+                args: List[str] = ['integrate', source, target]
                 if no_execute:
                     args.append('-n')
                 return self._p4run(*args)
@@ -1206,7 +1215,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                args = ['-n'] if no_execute else []
+                args: List[str] = ['-n'] if no_execute else list()
                 args += files
                 return self._p4run('lock', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)

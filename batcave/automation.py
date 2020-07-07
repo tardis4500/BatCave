@@ -26,7 +26,7 @@ class ActionCommandRunner(SysCmdRunner):
             guard: The value of the guard argument.
         """
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
-        self.guard = guard
+        self.guard: str = guard
 
     def run(self, message: str, *args: Any, **kwargs: Any) -> Union[str, List[str]]:
         """Run the action.
@@ -128,9 +128,9 @@ class Action:
         Returns:
             Nothing.
         """
-        the_guard = self.MESSAGE_GUARD if (guard is True) else ''
-        leader = f'{leader} ' if leader else ''
+        the_guard: str = self.MESSAGE_GUARD if (guard is True) else ''
+        the_leader: str = f'{leader} ' if leader else ''
         if the_guard:
-            print(f'{leader}{the_guard}')
-        print(f'{leader}{message}')
+            print(f'{the_leader}{the_guard}')
+        print(f'{the_leader}{message}')
         sys.stdout.flush()
