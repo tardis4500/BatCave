@@ -2,7 +2,7 @@
 
 # Import standard modules
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, HelpFormatter, Namespace, REMAINDER, _MutuallyExclusiveGroup
-from typing import cast, Any, Callable, Iterable, Optional, Sequence, Type, Union
+from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Type, Union
 
 # Import internal modules
 from .version import get_version_info, VersionStyle
@@ -16,14 +16,14 @@ class Argument:
         """
         Args:
             *names: A list of the argument names.
-            **options (optional, default={}): A dictionary of the argument options.
+            **options (optional): A dictionary of the argument options.
 
         Attributes:
             names: The value of the names argument.
             options: The value of the options argument.
         """
-        self.names = names
-        self.options = options
+        self.names: Sequence[str] = names
+        self.options: Dict = options
 
 
 class SubParser:
@@ -85,7 +85,7 @@ class Commander:
         self._parse_extra = parse_extra
         self._pass_on: Sequence[str] = tuple()
         self._subparsers = subparsers
-        self.subparser_common_parser = None
+        self.subparser_common_parser: Optional[ArgumentParser] = None
 
         self.parser = ArgumentParser(description=description, formatter_class=formatter_class, parents=parents)  # type: ignore
         _add_arguments_to_parser(self.parser, arguments)
@@ -95,7 +95,7 @@ class Commander:
         if subparsers:
             subparser_objects = self.parser.add_subparsers(dest='command')
         for subparser_def in subparsers:
-            subparser = subparser_objects.add_parser(subparser_def.subcommand)
+            subparser: ArgumentParser = subparser_objects.add_parser(subparser_def.subcommand)
             _add_arguments_to_parser(subparser, subparser_def.arguments)
             subparser.set_defaults(command=subparser_def.command_runner)
 
@@ -106,7 +106,7 @@ class Commander:
         if self._parse_extra:
             self.parser.add_argument('extra_parser_args', nargs=REMAINDER, metavar='[[var1:val1] ...]')
 
-    def execute(self, argv: Optional[Sequence[str]] = None, use_args: Optional[Sequence[str]] = None) -> Any:
+    def execute(self, argv: Optional[Sequence[str]] = None, use_args: Optional[Namespace] = None) -> Any:
         """Parse the command line and call the command_runner.
 
         Args:
@@ -116,8 +116,8 @@ class Commander:
         Returns:
             The result of the called command_runner.
         """
-        args = cast(Namespace, use_args if use_args else self.parse_args(argv))
-        caller = self._default if (self._subparsers and not args.command and self._default) else args.command
+        args: Namespace = use_args if use_args else self.parse_args(argv)
+        caller: Callable = self._default if (self._subparsers and not args.command and self._default) else args.command
         caller_args = (self.subparser_common_parser, self._pass_on) if self.subparser_common_parser else (args,)
         return caller(*caller_args)
 

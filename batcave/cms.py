@@ -104,13 +104,13 @@ class Label:
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        self._client: 'Client' = client
-        self._name: str = name
-        self._type: LabelType = label_type
-        self._selector: str = selector
-        self._label: Dict = dict()
+        self._client = client
+        self._name = name
+        self._type = label_type
+        self._selector = selector
+        self._label: Dict[str, str] = dict()
         self._refresh()
-        changed: bool = False
+        changed = False
         if self._selector:
             for case in switch(self._client.type):
                 if case(ClientType.perforce):
@@ -283,8 +283,8 @@ class Client:
         _DEFAULT_P4PORT: The default Perforce port.
         _INFO_DUMMY_CLIENT: The default name for a dummy client.
     """
-    _DEFAULT_P4PORT: str = 'perforce:1666'
-    _INFO_DUMMY_CLIENT: str = 'BatCave_info_dummy_client'
+    _DEFAULT_P4PORT = 'perforce:1666'
+    _INFO_DUMMY_CLIENT = 'BatCave_info_dummy_client'
 
     def __init__(self, ctype: ClientType, name: str = '', connectinfo: str = '', user: str = '',
                  root: Optional[Path] = None, altroots: Optional[Sequence[str]] = None, mapping: Optional[List[str]] = None, hostless: bool = False,
@@ -349,10 +349,10 @@ class Client:
             CMSError.CONNECTINFO_REQUIRED: If connection info was not supplied when required.
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        self._type: ClientType = ctype
+        self._type = ctype
         self._validatetype()
-        self._mapping: Optional[List[str]] = mapping
-        self._connected: bool = False
+        self._mapping = mapping
+        self._connected = False
         self._client: Any = None
 
         if not connectinfo:
@@ -498,7 +498,7 @@ class Client:
 
         Args:
             what: The item to fetch.
-            *args (optional, default=[]): The arguments to pass to the command.
+            *args (optional): The arguments to pass to the command.
 
         Returns:
             The result of the command.
@@ -510,7 +510,7 @@ class Client:
 
         Args:
             method: The command to run.
-            *args (optional, default=[]): The arguments to pass to the command.
+            *args (optional): The arguments to pass to the command.
 
         Returns:
             The result of the command.
@@ -549,7 +549,7 @@ class Client:
 
         Args:
             what: The item to save.
-            *args (optional, default=[]): The arguments to pass to the command.
+            *args (optional): The arguments to pass to the command.
 
         Returns:
             The result of the command.
@@ -731,11 +731,11 @@ class Client:
 
         Args:
             description: A description of the changes.
-            *files (optional, default=[]): If provided, a subset of the files to commit, otherwise all will be submitted.
+            *files (optional): If provided, a subset of the files to commit, otherwise all will be submitted.
             all_branches (optional, default=False): If True, commit all branches, otherwise only the current branch.
             fail_on_empty (optional, default=False): If True, raise an error if there are no files to commit, otherwise just return.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
-            **extra_args (optional, default={}): Any extra API specific arguments or the commit.
+            **extra_args (optional): Any extra API specific arguments or the commit.
 
         Returns:
             The result of the checkin command.
@@ -939,7 +939,7 @@ class Client:
 
         Args:
             name: The name of the changelist.
-            *files (optional, default=[]): Restrict the list based on the list of files.
+            *files (optional): Restrict the list based on the list of files.
             edit (optional, default=False): If True, return and editable ChangeList object.
 
         Returns:
@@ -983,7 +983,7 @@ class Client:
         """Get the clients in the CMS system.
 
         Args:
-            *args (optional, default=[]): Any API specific arguments to use.
+            *args (optional): Any API specific arguments to use.
 
         Returns:
             The list of clients.
@@ -1083,7 +1083,7 @@ class Client:
         """Get the labels in the CMS system.
 
         Args:
-            *args (optional, default=[]): Any API specific arguments to use.
+            *args (optional): Any API specific arguments to use.
 
         Returns:
             The list of labels.
@@ -1118,7 +1118,7 @@ class Client:
         """Get the repositories in the CMS system.
 
         Args:
-            *args (optional, default=[]): Any API specific arguments to use.
+            *args (optional): Any API specific arguments to use.
 
         Returns:
             The list of repositories.
@@ -1237,11 +1237,11 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.git):
-                branch_owner = self._client.heads if (f'refs/heads/{source_branch}' in [str(b) for b in self.branches]) else self._client.remotes.origin.refs
-                result = self._client.git.merge(getattr(branch_owner, source_branch), '--no-ff')
+                branch_owner: str = self._client.heads if (f'refs/heads/{source_branch}' in [str(b) for b in self.branches]) else self._client.remotes.origin.refs
+                result: List[str] = self._client.git.merge(getattr(branch_owner, source_branch), '--no-ff')
                 if checkin:
-                    checkin_message = checkin_message if (checkin_message is not None) else f'Merging code from {source_branch} to {self._client.active_branch}'
-                    self.checkin_files(checkin_message, all_branches=True, no_execute=no_execute)
+                    final_message: str = checkin_message if (checkin_message is not None) else f'Merging code from {source_branch} to {self._client.active_branch}'
+                    self.checkin_files(final_message, all_branches=True, no_execute=no_execute)
                 return result
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -1270,7 +1270,7 @@ class Client:
         """Reconcile the workspace against the server and creates a changelist for the changes.
 
         Args:
-            *files (optional, default=[]): The files to reconcile, otherwise all will be reconciled.
+            *files (optional): The files to reconcile, otherwise all will be reconciled.
             no_execute (optional, default=False): If True, run the command but don't commit the results.
 
         Returns:
@@ -1279,10 +1279,10 @@ class Client:
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        use_files = files if files else ['//...']
+        use_files: List[str] = list(files) if files else ['//...']
         for case in switch(self._type):
             if case(ClientType.perforce):
-                args = ['reconcile']
+                args: List[str] = ['reconcile']
                 if no_execute:
                     args.append('-n')
                 if use_files:
@@ -1303,8 +1303,8 @@ class Client:
             CMSError.CLIENT_NOT_FOUND: If the client is not found.
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        client_root = self.root
-        results = []
+        client_root: Path = self.root
+        results: List[str]
         for case in switch(self._type):
             if case(ClientType.perforce):
                 if clean in (CleanType.members, CleanType.all):
@@ -1341,7 +1341,7 @@ class Client:
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        result = list()
+        result: List[str] = list()
         for case in switch(self._type):
             if case(ClientType.git):
                 if not no_execute:
@@ -1353,7 +1353,7 @@ class Client:
                         (self.root / filename).unlink()
                 return result
             if case(ClientType.perforce):
-                args = ['-n'] if no_execute else []
+                args: List[str] = ['-n'] if no_execute else list()
                 args += files
                 return self._p4run('delete', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -1402,7 +1402,7 @@ class Client:
         """Revert open files for editing on the client.
 
         Args:
-            *files (optional, default=[]): If provided, a subset of the files to revert, otherwise all will be reverted.
+            *files (optional): If provided, a subset of the files to revert, otherwise all will be reverted.
             unchanged_only (optional, default=False): If True, only revert unchanged files, otherwise all will be reverted.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
@@ -1415,7 +1415,7 @@ class Client:
         for case in switch(self._type):
             if case(ClientType.file):
                 for file_name in files:
-                    file_path = self.root / file_name
+                    file_path: Path = self.root / file_name
                     if not no_execute:
                         file_path.chmod(file_path.stat().st_mode & S_IWUSR)
                 return list()
@@ -1424,7 +1424,7 @@ class Client:
                     return self._client.index.checkout(paths=files, force=True)
                 return list()
             if case(ClientType.perforce):
-                args = ['-n'] if no_execute else []
+                args: List[str] = ['-n'] if no_execute else list()
                 if unchanged_only:
                     args.append('-a')
                 args += files if files else ['//...']
@@ -1451,7 +1451,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                args = ['-n'] if no_execute else []
+                args: List[str] = ['-n'] if no_execute else list()
                 args += files
                 return self._p4run('unedit', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -1460,7 +1460,7 @@ class Client:
         """Update the local client files.
 
         Args:
-            *files (optional, default=[]): The files to update, otherwise all will be updated.
+            *files (optional): The files to update, otherwise all will be updated.
             limiters (optional, default=None): Arguments to limit the updated files.
             force (optional, default=False): If True update files that are already up-to-date.
             parallel (optional, default=False): If True update files in parallel.
@@ -1479,7 +1479,7 @@ class Client:
                 info = self._client.remotes.origin.pull()[0]
                 return info.note if info.note else info.ref
             if case(ClientType.perforce):
-                args = ['sync']
+                args: List[str] = ['sync']
                 if force:
                     args.append('-f')
                 if no_execute:
@@ -1513,12 +1513,12 @@ class FileRevision:
             labels: A list of labels on this revision.
         """
 
-        self.filename = filename
-        self.revision = revision
-        self.author = author
-        self.date = date
-        self.labels = labels
-        self.description = description
+        self.filename: str = filename
+        self.revision: str = revision
+        self.author: str = author
+        self.date: str = date
+        self.labels: List[str] = labels
+        self.description: str = description
 
     def __str__(self):
         return f'{self.filename}#{self.revision} by {self.author} on {self.date}\nLabels: {self.labels}\nDescription: {self.description}\n'
@@ -1537,11 +1537,11 @@ class FileChangeRecord:
             changelist: The changelist number for the change record.
         """
 
-        self._client = client
-        self.filename = filename
-        self.revision = revision
-        self.type = mod_type
-        self.changelist = changelist
+        self._client: Client = client
+        self.filename: str = filename
+        self.revision: str = revision
+        self.type: str = mod_type
+        self.changelist: str = changelist
 
     def __str__(self):
         for case in switch(self._client.type):
@@ -1572,10 +1572,10 @@ class ChangeList:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         self._client = client
-        self._files: Optional[List] = None
-        self._id = None
-        self._changelist = dict()
-        self._editable = editable if (editable is not None) else not bool(id)
+        self._files: Optional[List[FileChangeRecord]] = None
+        self._id: str
+        self._changelist: Dict[str, str]
+        self._editable: bool = editable if (editable is not None) else not bool(id)
         for case in switch(client.type):
             if case(ClientType.perforce):
                 if isinstance(id, str) or isinstance(id, int):
@@ -1619,7 +1619,7 @@ class ChangeList:
     def files(self) -> List[FileChangeRecord]:
         """A read-only property which returns the list of files in the change list."""
         if self._files is None:
-            desc = self._client._p4run('describe', '-s', self.name)[0]  # pylint: disable=W0212
+            desc: Dict[str, str] = self._client._p4run('describe', '-s', self.name)[0]  # pylint: disable=W0212
             self._files = [FileChangeRecord(self._client, f, r, a, self.name)
                            for (f, r, a) in zip(desc['depotFile'], desc['rev'], desc['action'])]
         return self._files
@@ -1691,7 +1691,7 @@ def create_client_name(prefix: Optional[str] = None, suffix: Optional[str] = Non
     Returns:
         Returns the client name.
     """
-    parts = [getuser(), node()]
+    parts: List[str] = [getuser(), node()]
     if prefix:
         parts.insert(0, prefix)
     if suffix:
@@ -1736,7 +1736,7 @@ def walk_git_tree(tree: git.Tree, parent: Optional[git.Tree] = None) -> Generato
         else:
             blobs.append(entry.name)
 
-    new_parent = f'{parent}/{tree.name}' if parent else tree.name
+    new_parent: str = f'{parent}/{tree.name}' if parent else tree.name
     for tree in trees:
         yield from walk_git_tree(tree, new_parent)
 

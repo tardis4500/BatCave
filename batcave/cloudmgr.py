@@ -55,8 +55,8 @@ class Cloud:
             type: The value of the ctype argument.
             _client: A reference to the underlying client API object.
         """
-        self.type: CloudType = ctype
-        self.auth: Union[str, Sequence[str]] = auth
+        self.type = ctype
+        self.auth = auth
         self._client: Any = False
         validatetype(self.type)
         if login:
@@ -171,8 +171,8 @@ class Image:
         Raises:
             CloudError.INVALID_OPERATION: If the specified cloud type is not supported.
         """
-        self.cloud: Cloud = cloud
-        self.name: str = name
+        self.cloud = cloud
+        self.name = name
         self._docker_client: DockerClient = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()
         self._ref: Any
         for case in switch(self.cloud.type):
@@ -320,8 +320,8 @@ class Container:
         Raises:
             CloudError.INVALID_OPERATION: If the specified cloud type is not supported.
         """
-        self.cloud: Cloud = cloud
-        self.name: str = name
+        self.cloud = cloud
+        self.name = name
         self._ref: Any
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):

@@ -26,7 +26,7 @@ class ActionCommandRunner(SysCmdRunner):
             guard: The value of the guard argument.
         """
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
-        self.guard: str = guard
+        self.guard = guard
 
     def run(self, message: str, *args: Any, **kwargs: Any) -> Union[str, List[str]]:
         """Run the action.
@@ -59,7 +59,7 @@ class Action:
     Attributes:
         MESSAGE_GUARD: This string is printed by logger if the value of guard passed to logger is true.
     """
-    MESSAGE_GUARD: str = f"{'*'*70}"
+    MESSAGE_GUARD = f"{'*'*70}"
 
     def __init__(self, **_unused_kwargs: Any):
         """
