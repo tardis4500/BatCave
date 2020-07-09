@@ -15,7 +15,7 @@
 # Step11: Add PEP484 type hints.
 # Step12: Add PEP526 variable type annotations
 
-# Added PEP526 type hints to cms and commander modules. (GitLab #29)
+# Added PEP526 type hints to configmgr modules. (GitLab #29)
 
 # Step13: Add linting and type checking to build pipeline.
 

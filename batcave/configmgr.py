@@ -66,7 +66,7 @@ class ConfigCollection:
         path_name = Path(name)
         self.name = path_name.name
         self._config_filename = path_name.parent / (path_name.name + suffix)
-        failure = None
+        failure: Optional[BatCaveError] = None
         try:
             self._data_source = DataSource(SourceType.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
         except DataError as err:
@@ -85,7 +85,7 @@ class ConfigCollection:
         if failure:
             raise ConfigurationError(failure, file=self._config_filename)
 
-        self.parent = None
+        self.parent: Optional[ConfigCollection] = None
         self._mask_missing = True
         self.params = getattr(self, self._PARAMS_CONFIGURATION) if hasattr(self, self._PARAMS_CONFIGURATION) else None
         if hasattr(self.params, self._PARENT_CONFIGURATION):
