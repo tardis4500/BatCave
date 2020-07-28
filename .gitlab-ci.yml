@@ -10,7 +10,7 @@ stages:
 
 variables:
   PRODUCT: BatCave
-  BUILD_DIR: Build
+  BUILD_DIR: build
   ARTIFACTS_DIR: $BUILD_DIR/artifacts
   UNIT_TEST_DIR: $BUILD_DIR/unit_test_results
   PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
@@ -32,7 +32,6 @@ cache:
     - python -V
     - pip install -U pip
     - pip install -r requirements-frozen.txt
-    - cd $BUILD_DIR
   script:
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
 
@@ -72,7 +71,6 @@ install_test:
   allow_failure: false
   before_script:
     - pip install -r requirements-frozen.txt
-    - cd $BUILD_DIR
 
 publish_test:
   stage: publish_test

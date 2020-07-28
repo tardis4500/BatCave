@@ -27,7 +27,7 @@ from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Pattern
 # Import internal modules
 from .fileutil import slurp
 from .sysutil import popd, pushd, rmtree_hard
-from .lang import is_debug, switch, BatCaveError, BatCaveException, RegKeyHandle, WIN32
+from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle, WIN32
 
 if WIN32:
     import win32api
@@ -652,7 +652,7 @@ class Client:
                 return self._p4run('have')
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
-    def add_files(self, *files: str, no_execute: bool = False) -> List[str]:
+    def add_files(self, *files: PathName, no_execute: bool = False) -> List[str]:
         """Add files to the client.
 
         Args:
@@ -674,7 +674,7 @@ class Client:
                 break
             if case(ClientType.perforce):
                 args: List[str] = ['-n'] if no_execute else list()
-                args += files
+                args += [str(f) for f in files]
                 return self._p4run('add', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
