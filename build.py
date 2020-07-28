@@ -184,7 +184,7 @@ def remake_dir(dir_path: Path, info_str: str) -> None:
         MESSAGE_LOGGER(f'Removing old {info_str} directory')
         rmpath(dir_path)
     MESSAGE_LOGGER(f'Creating {info_str} directory')
-    dir_path.mkdir()
+    dir_path.mkdir(parents=True)
 
 
 def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool = False) -> None:
