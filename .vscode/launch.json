@@ -21,8 +21,8 @@
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config.python.pythonPath}",
-            "program": "${workspaceRoot}/Build/build.py",
-            "cwd": "${workspaceRoot}/Build",
+            "program": "${workspaceRoot}/build.py",
+            "cwd": "${workspaceRoot}",
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",

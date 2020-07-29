@@ -5,7 +5,7 @@
     "tasks": [
         {
             "taskName": "build",
-            "command": "Set-Location ${workspaceRoot}\\Build; .\\build.py",
+            "command": "Set-Location ${workspaceRoot}; .\\build.py",
             "type": "shell",
             "problemMatcher": [],
             "group": {

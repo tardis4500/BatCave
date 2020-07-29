@@ -1,9 +1,7 @@
 # cSpell:ignore gitignore, pycache, writefys
 .__atomic-writefys4ldw6
 .git
-Build/*
-!Build/build.py
-!Build/build_info.txt
+build/*
 *.egg-info
 __pycache__
 .vscode/settings.json

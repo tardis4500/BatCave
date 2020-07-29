@@ -35,7 +35,7 @@ PRODUCT_NAME = 'BatCave'
 SOURCE_DIR = PROJECT_ROOT / 'batcave'
 VERSION_FILE = SOURCE_DIR / '__init__.py'
 
-BUILD_DIR = PROJECT_ROOT / 'Build'
+BUILD_DIR = PROJECT_ROOT / 'build'
 ARTIFACTS_DIR = BUILD_DIR / 'artifacts'
 UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
 CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
