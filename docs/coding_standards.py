@@ -16,6 +16,8 @@
 # Step12: Add PEP526 variable type annotations
 # Step13: Add linting and type checking to build pipeline.
 
+# Step14: Change pylint numericals
+
 # -*- coding: utf-8 -*-
 """Example Google style docstrings.
 

@@ -90,7 +90,7 @@ class ConfigCollection:
         self.params = getattr(self, self._PARAMS_CONFIGURATION) if hasattr(self, self._PARAMS_CONFIGURATION) else None
         if hasattr(self.params, self._PARENT_CONFIGURATION):
             self.parent = ConfigCollection(getattr(self.params, self._PARENT_CONFIGURATION))
-        self._mask_missing = True if hasattr(self.params, self._MASK_MISSING) else False
+        self._mask_missing = hasattr(self.params, self._MASK_MISSING)
 
         self._configs = [getattr(self, t.name) for t in self._data_source.gettables() if t.name not in (DataSource.INFO_TABLE, self._PARAMS_CONFIGURATION)]
         config_names = [c.name for c in self._configs]
@@ -105,7 +105,7 @@ class ConfigCollection:
             if hasattr(config, self.INCLUDE_CONFIG_TAG):
                 config = Configuration(self._data_source, attr, parent_config, getattr(self, getattr(config, self.INCLUDE_CONFIG_TAG)))
             return config
-        elif self.parent and not self._mask_missing:
+        if self.parent and not self._mask_missing:
             return getattr(self.parent, attr)
         raise AttributeError(f'Unknown configuration ({attr}) in {self._config_filename}')
 

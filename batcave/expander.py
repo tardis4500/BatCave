@@ -255,7 +255,7 @@ class Expander:
             varprop: The value of the varprop argument.
         """
         self.vardict = vardict if vardict else dict()
-        self.varprops = varprops if (isinstance(varprops, list) or isinstance(varprops, tuple)) else [varprops]
+        self.varprops = varprops if (isinstance(varprops, (list, tuple))) else [varprops]
         self.prelim = prelim
         self.postlim = postlim
         prelim_re = self.prelim
@@ -360,7 +360,7 @@ class Expander:
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
 
-    def expand_directory(self, source_dir: PathName, target_dir: Optional[PathName] = None,
+    def expand_directory(self, source_dir: PathName, target_dir: Optional[PathName] = None,  # pylint: disable=too-many-arguments
                          ignore_files: Sequence[str] = tuple(), no_expand_files: Sequence[str] = tuple(), err_if_exists: bool = True) -> None:
         """Perform an expansion on an entire directory tree.
 
@@ -459,7 +459,7 @@ class Procedure:
     _SCHEMA_ATTR = 'schema'
     _STEPS_TAG = 'steps'
 
-    def __init__(self, procfile: PathName, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):
+    def __init__(self, procfile: PathName, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):  # pylint: disable=too-many-locals
         """
         Args:
             procfile: The procedure file.
@@ -490,7 +490,7 @@ class Procedure:
         self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
 
         flags_element = xmlroot.find(self._FLAGS_TAG)
-        flags = {f.tag: self.parse_flag(str(f.text)) for f in list(flags_element)} if flags_element else dict()
+        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if flags_element else dict()
 
         directories_element = xmlroot.find(self._DIRECTORIES_TAG)
         self.directories = [str(d.text) for d in list(directories_element)] if directories_element else list()
@@ -547,7 +547,7 @@ class Procedure:
         result: Dict = odict()
         result[self._HEADER_TAG] = self.header
         result[self._DIRECTORIES_TAG] = self.directories
-        result[self._ENVIRONMENTS_TAG] = {e: v for (e, v) in self.environments.items()}
+        result[self._ENVIRONMENTS_TAG] = {e: v for (e, v) in self.environments.items()}  # pylint: disable=unnecessary-comprehension
         result[self._LIBRARY_TAG] = {r: s.dump() for (r, s) in self.library.items()}
         result[self._STEPS_TAG] = [s.dump() for s in self.steps]
         return result
@@ -601,23 +601,6 @@ class Procedure:
         """
         return self.formatter.format_hyperlinks(self.expand(text))
 
-    def parse_flag(self, flag: str) -> Any:
-        """Evaluate a parsing flag.
-
-        Args:
-            flag: The flag to evaluate.
-
-        Return:
-            The evaluated value for the flag.
-
-        Raises:
-            ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
-        """
-        value = str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False'))
-        if not isinstance(value, bool):
-            raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
-        return value
-
     def realize(self, env: str) -> str:
         """Realize the procedure for the specified environments based on the variables.
 
@@ -657,7 +640,7 @@ class Procedure:
                 self.formatter.increment()
         return self.format(header) + content + footer
 
-    def realize_step(self, step: 'Step') -> str:
+    def realize_step(self, step: 'Step') -> str:  # pylint: disable=too-many-branches
         """Realize a step in the procedure.
 
         Args:
@@ -733,7 +716,7 @@ class Procedure:
         self.expander = Expander(self.environments[environment])
 
 
-class Step:
+class Step:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a procedure step.
 
     Attributes:
@@ -780,5 +763,23 @@ class Step:
             The contents of the step as an list.
         """
         return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [str(s.dump()) for s in self.substeps]
+
+
+def parse_flag(flag: str) -> Any:
+    """Evaluate a parsing flag.
+
+    Args:
+        flag: The flag to evaluate.
+
+    Return:
+        The evaluated value for the flag.
+
+    Raises:
+        ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
+    """
+    value = str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False'))
+    if not isinstance(value, bool):
+        raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
+    return value
 
 # cSpell:ignore odict

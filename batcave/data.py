@@ -122,7 +122,7 @@ class DataSource:
     INI_ROW_TAG = ' ROW '
     INI_ROWLIST_OPT = 'ROWS'
 
-    def __init__(self, data_type: SourceType, connectinfo: PathName, name: str, schema: int, create: bool = False):
+    def __init__(self, data_type: SourceType, connectinfo: PathName, name: str, schema: int, create: bool = False):  # pylint: disable=too-many-arguments
         """
         Args:
             data_type: The data source type.
@@ -200,7 +200,7 @@ class DataSource:
             source_info.addrow(schema=str(self._schema))
         self.commit()
 
-    def _load(self) -> None:
+    def _load(self) -> None:  # pylint: disable=too-many-branches
         """Load the data source.
 
         Returns:
@@ -245,7 +245,7 @@ class DataSource:
                 if isinstance(self._connectinfo, list):
                     self._connection = xml_etree.ElementTree(xml_etree.fromstring(' '.join(self._connectinfo)))
                 else:
-                    if isinstance(self._connectinfo, str) or isinstance(self._connectinfo, PurePath):
+                    if isinstance(self._connectinfo, (str, PurePath)):
                         if str(self._connectinfo).startswith('http:') or str(self._connectinfo).startswith('file:'):
                             self._closer = urlopen(cast(str, self._connectinfo))
                         else:
@@ -386,7 +386,7 @@ class DataSource:
                 cast(ElementTree, self._connection).write(cast(str, self._connectinfo), 'ISO-8859-1')
                 break
 
-    def gettable(self, name: str) -> 'DataTable':
+    def gettable(self, name: str) -> 'DataTable':  # pylint: disable=too-many-branches
         """Get the requested data table.
 
         Args:
@@ -438,7 +438,7 @@ class DataSource:
             if case(SourceType.text):
                 pass
             if case(SourceType.pickle):
-                table_names = [t for t in self._source]
+                table_names = [t for t in self._source]  # pylint: disable=unnecessary-comprehension
                 break
             if case(SourceType.ini):
                 table_names = [t for t in self._source.sections() if self.INI_ROW_TAG not in t]
@@ -617,7 +617,7 @@ class DataRow:
                 return self._row.findtext(col)
         return ''
 
-    def hascol(self, col: str) -> bool:
+    def hascol(self, col: str) -> bool:  # pylint: disable=too-many-return-statements
         """Determine if the named column exists in the row.
 
         Args:
@@ -739,6 +739,7 @@ class DataTable:
                 pass
             if case(SourceType.xml_flat):
                 return self._parent
+        raise DataError(DataError.INVALID_TYPE)
 
     raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
 

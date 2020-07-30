@@ -10,7 +10,7 @@ from typing import Any, List, Union
 from .sysutil import popd, SysCmdRunner
 
 
-class ActionCommandRunner(SysCmdRunner):
+class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-methods
     """Class to wrap SysCmdRunner for simple usage with auto-logging."""
 
     def __init__(self, command: str, guard: str = '', default_args: tuple = tuple(), **kwargs: Any):
@@ -95,7 +95,7 @@ class Action:
             Nothing.
         """
 
-    def always_post(self) -> None:
+    def always_post(self) -> None:  # pylint: disable=no-self-use
         """Always executed after _execute() as in finally in try/catch/finally.
 
         Returns:

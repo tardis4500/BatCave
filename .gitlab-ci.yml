@@ -1,6 +1,7 @@
 image: python:3.7-alpine
 
 stages:
+  - pylint
   - unit_tests
   - ci_build
   - install_test
@@ -34,6 +35,10 @@ cache:
     - pip install -r requirements-frozen.txt
   script:
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
+
+pylint:
+  stage: pylint
+  extends: .builder
 
 unit_tests:
   stage: unit_tests

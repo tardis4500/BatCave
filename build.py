@@ -16,6 +16,7 @@ from typing import Dict, Optional, Tuple
 from unittest import defaultTestLoader
 
 # Import third-party-modules
+from pylint.lint import Run as run_pylint
 from requests import delete as rest_delete, post as rest_post
 from twine.commands.upload import main as upload
 from xmlrunner import XMLTestRunner
@@ -65,6 +66,7 @@ def main() -> None:
     release_args = [Argument('release')] + gitlab_args
     publish_args = release_args + pypi_args
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
+                                             SubParser('pylint', pylint),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
                                              SubParser('publish_test', publish_to_pypi, publish_args),
@@ -82,6 +84,12 @@ def devbuild(args: Namespace) -> None:
     """Run a developer build."""
     unit_tests(args)
     builder(args)
+
+
+def pylint(_unused_args: Namespace) -> None:
+    """Run pylint."""
+    MESSAGE_LOGGER('Running pylint', True)
+    run_pylint(['--max-line-length=200'] + [str(f) for f in SOURCE_DIR.iterdir() if f.suffix == '.py'])
 
 
 def unit_tests(_unused_args: Namespace) -> None:

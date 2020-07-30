@@ -9,7 +9,7 @@ from .version import get_version_info, VersionStyle
 from .lang import str_to_pythonval
 
 
-class Argument:
+class Argument:  # pylint: disable=too-few-public-methods
     """This is a simple container class to encapsulate an argument definition passed to ArgumentParser.add_argument()."""
 
     def __init__(self, *names, **options):
@@ -26,7 +26,7 @@ class Argument:
         self.options: Dict = options
 
 
-class SubParser:
+class SubParser:  # pylint: disable=too-few-public-methods
     """This is a simple container class to encapsulate a subparser definition."""
 
     def __init__(self, subcommand: str, command_runner: Callable, arguments: Sequence[Argument] = tuple()):
@@ -49,7 +49,7 @@ class SubParser:
 class Commander:
     """This class provides a simplified interface to the argparse.ArgumentParser class."""
 
-    def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),
+    def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),  # pylint: disable=too-many-arguments,too-many-locals
                  subparser_common_args: Sequence[Argument] = tuple(), default: Optional[Callable] = None, parents: Sequence[ArgumentParser] = tuple(),
                  parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, add_version: bool = True,
                  version_style: VersionStyle = VersionStyle.oneline, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):

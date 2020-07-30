@@ -6,7 +6,7 @@ Attributes:
     ClientType (Enum): The CMS providers supported by the Client class.
 """
 
-# pylint: disable=C0302,I1101
+# pylint: disable=too-many-lines,too-many-arguments,too-many-branches,too-many-public-methods,too-many-locals,too-many-statements,c-extension-no-member
 
 # Import standard modules
 from datetime import datetime
@@ -147,8 +147,7 @@ class Label:
         for case in switch(self._client.type):
             if case(ClientType.perforce):
                 return '\n'.join([f'{i}: {v}' for (i, v) in self._client._p4fetch('label', self._name).items()])  # pylint: disable=W0212
-            if case():
-                raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
+        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def _get_info(self, field: str) -> str:
         """Return the info for the specified field.
@@ -387,7 +386,7 @@ class Client:
 
         create_client: bool
         if create is None:
-            create_client = False if (info and (self._type != ClientType.git)) else True
+            create_client = not (info and (self._type != ClientType.git))
         else:
             create_client = create
 
@@ -528,21 +527,19 @@ class Client:
         try:
             if isinstance(method, cast(type, Callable)):
                 return cast(Callable, method)(*args)
-            elif hasattr(self._client, method) and isinstance(getattr(self._client, method), cast(type, Callable)):
+            if hasattr(self._client, method) and isinstance(getattr(self._client, method), cast(type, Callable)):
                 return getattr(self._client, method)(*args)
-            elif hasattr(self._client, f'run_{method}') and isinstance(getattr(self._client, f'run_{method}'), cast(type, Callable)):
+            if hasattr(self._client, f'run_{method}') and isinstance(getattr(self._client, f'run_{method}'), cast(type, Callable)):
                 return getattr(self._client, f'run_{method}')(*args)
-            elif hasattr(self._client, method):
+            if hasattr(self._client, method):
                 raise TypeError(method)  # not callable
-            else:
-                raise AttributeError(f"'{type(self)}' object has no attribute '{method}'")
+            raise AttributeError(f"'{type(self)}' object has no attribute '{method}'")
         except P4.P4Exception:
             raise
         except Exception:  # pylint: disable=W0703
             if self._client.errors:
                 raise P4.P4Exception('\n'.join(self._client.errors))
-            else:
-                raise
+            raise
 
     def _p4save(self, what: str, *args) -> List[str]:
         """Run the Perforce save command.
@@ -947,8 +944,7 @@ class Client:
         """
         if edit:
             return ChangeList(self, name, editable=True)
-        else:
-            return self.get_changelists(name, forfiles=files)[0]
+        return self.get_changelists(name, forfiles=files)[0]
 
     def get_changelists(self, *names: Optional[Iterable[str]], forfiles: Optional[Iterable[str]] = tuple(), count: Optional[int] = None) -> List['ChangeList']:
         """Get a list of changelist objects for the specified changelist names.
@@ -1010,7 +1006,7 @@ class Client:
         """
         if var in environ:
             return environ[var]
-        for case in switch(self._type):
+        for case in switch(self._type):  # pylint: disable=too-many-nested-blocks
             if case(ClientType.perforce):
                 if WIN32:
                     for key in (win32con.HKEY_CURRENT_USER, win32con.HKEY_LOCAL_MACHINE):
@@ -1500,7 +1496,7 @@ class Client:
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
 
-class FileRevision:
+class FileRevision:  # pylint: disable=too-few-public-methods
     """This class describes information about a file revision."""
 
     def __init__(self, filename: str, revision: str, author: str, date: str, labels: List, description: str):
@@ -1547,6 +1543,7 @@ class FileChangeRecord:
         for case in switch(self._client.type):
             if case(ClientType.perforce):
                 return f'{self.filename}#{self.revision} {self.type} {self.changelist}'
+        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     fullname = property(lambda s: f'{s.filename}#{s.revision}', doc='A read-only property which returns the full name of the changed file.')
 
@@ -1578,7 +1575,7 @@ class ChangeList:
         self._editable: bool = editable if (editable is not None) else not bool(id)
         for case in switch(client.type):
             if case(ClientType.perforce):
-                if isinstance(id, str) or isinstance(id, int):
+                if isinstance(id, (str, int)):
                     self._id = str(id)
                     if self._editable:
                         self._changelist = self._client._p4fetch('change', self._id)  # pylint: disable=W0212
@@ -1631,8 +1628,7 @@ class ChangeList:
             if case(ClientType.perforce):
                 if self._editable:
                     return datetime.strptime(self._changelist['Date'], '%Y/%m/%d %H:%M:%S')
-                else:
-                    return datetime.fromtimestamp(int(self._changelist['time']))
+                return datetime.fromtimestamp(int(self._changelist['time']))
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @time.setter
@@ -1737,8 +1733,8 @@ def walk_git_tree(tree: git.Tree, parent: Optional[git.Tree] = None) -> Generato
             blobs.append(entry.name)
 
     new_parent: str = f'{parent}/{tree.name}' if parent else tree.name
-    for tree in trees:
-        yield from walk_git_tree(tree, new_parent)
+    for subtree in trees:
+        yield from walk_git_tree(subtree, new_parent)
 
     yield new_parent, tree_names, blobs
 

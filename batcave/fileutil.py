@@ -50,7 +50,7 @@ COMPRESSION_TYPE = {'gz': 'gz', 'tgz': 'gz',
 ConversionMode = Enum('ConversionMode', ('to_unix', 'to_dos'))
 
 
-class CompressedFile:
+class CompressedFile:  # pylint: disable=too-few-public-methods
     """Class to add support for compressed file types which are missing some methods."""
 
     def __init__(self, filename: PathName, **_unused_attr):
@@ -73,7 +73,7 @@ class CompressedFile:
         return (self._filename.stem,)
 
 
-class BatCaveGzipFile(GzipFile, CompressedFile):
+class BatCaveGzipFile(GzipFile, CompressedFile):  # pylint: disable=too-many-ancestors
     """Add CompressedFile class methods to the GzipFile class."""
 
     def __init__(self, filename: PathName, **attr):
@@ -88,7 +88,7 @@ class BatCaveGzipFile(GzipFile, CompressedFile):
         super().__init__(filename, **attr)
 
 
-class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore
+class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore # pylint: disable=too-many-ancestors
     """Add CompressedFile class methods to the BZ2File class."""
 
     def __init__(self, filename: PathName, **attr):
@@ -136,7 +136,7 @@ def eol_convert(filename: PathName, mode: ConversionMode, backup: bool = True) -
         stream.write(data)
 
 
-def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None, arctype: str = '', ignore_empty: bool = True) -> None:
+def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None, arctype: str = '', ignore_empty: bool = True) -> None:  # pylint: disable=too-many-locals,too-many-branches
     """Create a compressed archive.
 
     Attributes:
@@ -208,7 +208,7 @@ def slurp(filename: PathName) -> List[str]:
     Returns:
         The list of lines from the file.
     """
-    return [line for line in open(filename)]
+    return [line for line in open(filename)]  # pylint: disable=unnecessary-comprehension
 
 
 def spew(filename: PathName, outlines: Iterable) -> None:
