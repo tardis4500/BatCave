@@ -1,6 +1,7 @@
 GitPython
 kubernetes
 nitrosdk-python
+pylint
 psutil
 requests
 setuptools

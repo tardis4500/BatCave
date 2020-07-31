@@ -227,7 +227,7 @@ def freeze(_unused_args: Namespace) -> None:
         if (pip_module['name'] not in requirements) and ('PyQt5' not in pip_module['name']) and ('pywin32' not in pip_module['name']):
             dev_requirements.add(pip_module['name'])
     pip('Uninstalling development requirements', 'uninstall', '-y', '-qqq', *dev_requirements)
-    pip('Re-installing requirements', 'install', '-qqq', '-U', '-r', REQUIREMENTS_FILE)
+    pip('Re-installing requirements', 'install', '-qqq', '--upgrade', '--upgrade-strategy', 'eager', '-r', REQUIREMENTS_FILE)
     spew(FREEZE_FILE, pip('Creating frozen requirements file', 'freeze'))
     freeze_file = [line.strip() for line in slurp(FREEZE_FILE)]
     with open(FREEZE_FILE, 'w') as updated_freeze_file:

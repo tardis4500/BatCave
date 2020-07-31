@@ -1,17 +1,10 @@
 # Runtime testing
 docker
+GitPython
 google-cloud
-PyQt5 <= 5.14.0; platform_machine != 'aarch64'
+kubernetes
+PyQt5; platform_machine != 'aarch64'
 psutil
+pywin32==225; sys_platform == 'win32'
+requests
 WMI
-# Linting and other tools
-autopep8
-doc8
-flake8
-flake8-annotations
-mypy
-pipdeptree
-pylint
-restview
-rope
-rstvalidator
