@@ -4,7 +4,7 @@
 from typing import cast, List, Union
 
 
-class MenuItem:
+class MenuItem:  # pylint: disable=too-few-public-methods
     """Class to represent a single menu item."""
 
     def __init__(self, key: str, desc: str):
@@ -21,7 +21,7 @@ class MenuItem:
         self.desc = desc
 
 
-class Menu:
+class Menu:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a command-line menu.
 
     Attributes:
@@ -33,7 +33,7 @@ class Menu:
     _DEFAULT_PROMPT = '-> '
     _DEFAULT_TITLE = '\nSelect one of the following\n'
 
-    def __init__(self, items: List[MenuItem],
+    def __init__(self, items: List[MenuItem],  # pylint: disable=too-many-arguments
                  title: str = _DEFAULT_TITLE, prompt: str = _DEFAULT_PROMPT, invalidmsg: str = _DEFAULT_INVALID_MESSAGE,
                  multiselect: bool = False, ignorecase: bool = True):
         """
@@ -92,7 +92,7 @@ class Menu:
         return choices if self.multiselect else choices[0]
 
 
-class SimpleMenu(Menu):
+class SimpleMenu(Menu):  # pylint: disable=too-few-public-methods
     """A simplified version of the Menu class."""
 
     def __init__(self, itemlist: List[str], return_text: bool = False, **args):

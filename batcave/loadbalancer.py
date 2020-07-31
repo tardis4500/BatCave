@@ -90,7 +90,8 @@ class LoadBalancer:
         NetScalerServer.add(self._api, ns_server)
         return self.get_server(server_info)
 
-    def add_virtual_server(self, server_info: ServerType, service_type: LbVipType = LbVipType.HTTP, port: Optional[int] = None, servers: Iterable[ServerType] = tuple(),
+    def add_virtual_server(self, server_info: ServerType, service_type: LbVipType = LbVipType.HTTP,  # pylint: disable=too-many-arguments,too-many-locals
+                           port: Optional[int] = None, servers: Iterable[ServerType] = tuple(),
                            services: Iterable = tuple(), certificates: Iterable = tuple(),
                            responder_policies: Iterable = tuple()) -> Union['LoadBalancerVirtualServer', Tuple['LoadBalancerVirtualServer', 'LoadBalancerVirtualServer']]:
         """Add a virtual server to the load balancer.
@@ -118,10 +119,10 @@ class LoadBalancer:
         else:
             port_value = port
 
-        server_objects = [_get_server_object(s) for s in (list(servers) if (isinstance(servers, tuple) or isinstance(servers, list)) else [servers])]  # pylint: disable=C0325
-        service_objects = list(services) if (isinstance(services, tuple) or isinstance(services, list)) else [services]
-        certificates = certificates if (isinstance(certificates, list) or isinstance(certificates, tuple)) else [certificates]
-        responder_policies = responder_policies if (isinstance(responder_policies, list) or isinstance(responder_policies, tuple)) else [responder_policies]
+        server_objects = [_get_server_object(s) for s in (list(servers) if isinstance(servers, (tuple, list)) else [servers])]  # pylint: disable=C0325
+        service_objects = list(services) if isinstance(services, (tuple, list)) else [services]
+        certificates = certificates if isinstance(certificates, (tuple, list)) else [certificates]
+        responder_policies = responder_policies if isinstance(responder_policies, (tuple, list)) else [responder_policies]
 
         server_object = _get_server_object(server_info)
         ns_virtual_server = NetScalerVirtualServer()
@@ -261,7 +262,7 @@ class LoadBalancer:
         if signal not in (LbServerSignal.enable, LbServerSignal.disable):
             raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
-        if not (isinstance(servers, tuple) or isinstance(servers, list)):
+        if not isinstance(servers, (tuple, list)):
             server_list = [cast(ServerType, servers)]
 
         for server in [_get_server_object(s) for s in server_list]:
@@ -338,7 +339,7 @@ class LoadBalancerServer(LoadBalancerObject):
             raise
 
 
-class LoadBalancerService(LoadBalancerObject):
+class LoadBalancerService(LoadBalancerObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a load balancer service."""
 
 

@@ -64,11 +64,11 @@ class QuickBuildObject:
     id = property(lambda s: s._object_id, doc='A read-only property which returns the QuickBuild object ID.')
 
 
-class QuickBuildBuild(QuickBuildObject):
+class QuickBuildBuild(QuickBuildObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a QuickBuild configuration run."""
 
 
-class QuickBuildDashboard(QuickBuildObject):
+class QuickBuildDashboard(QuickBuildObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a QuickBuild dashboard."""
 
 
@@ -88,8 +88,7 @@ class QuickBuildCfg(QuickBuildObject):
             return thing
         if isinstance(thing, QuickBuildCfg):
             return thing.id
-        else:
-            return self._console.configs[thing].id
+        return self._console.configs[thing].id
 
     @property
     def latest_build(self) -> QuickBuildBuild:

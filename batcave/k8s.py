@@ -86,6 +86,7 @@ class Cluster:
             item_class = globals()[item_class_name.capitalize()]
             method = getattr(self, f'{verb}_item{plural}')
             return lambda *a, **k: method(item_class, *a, **k)
+        raise AttributeError(f'No attribute for cluster: {attr}')
 
     pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
 
@@ -108,7 +109,8 @@ class Cluster:
                 self.find_method(item_class, 'delete')(item_name, namespace)
             return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec_content))
 
-    def create_job(self, job_spec: PathName, namespace: str = 'default', exists_ok: bool = False, wait_for: bool = False, check_every: int = 2, timeout: bool = False) -> 'Job':
+    def create_job(self, job_spec: PathName, namespace: str = 'default', exists_ok: bool = False,  # pylint: disable=too-many-arguments
+                   wait_for: bool = False, check_every: int = 2, timeout: bool = False) -> 'Job':
         """Create a job and wait for the specified condition.
 
         Args:
@@ -239,7 +241,7 @@ class Cluster:
         return kubectl('', *config_args, *args)
 
 
-class ClusterObject:
+class ClusterObject:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Kubernetes cluster object."""
 
     def __init__(self, cluster: Cluster, object_ref: Any):
@@ -372,7 +374,7 @@ class Pod(ClusterObject):
         self.exec('rm', filename)
 
 
-class Job(ClusterObject):
+class Job(ClusterObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Kubernetes job."""
 
 # cSpell:ignore kube kubeconfig

@@ -301,8 +301,7 @@ class ReportObject:
         if isinstance(attr_ref, MetaAttribute):
             sub_attr_ref = cast(SimpleAttribute, self._get_attr_ref(attr_ref.simple_attr_name))
             return attr_ref.get_value(sub_attr_ref.value)
-        else:
-            return attr_ref.value
+        return attr_ref.value
 
     def _set_attribute(self, attr: str, val: str) -> None:
         """Set the value of the requested attributes.
@@ -485,8 +484,7 @@ class Cell(ReportObject):
 
     def __str__(self):
         datastr = self._data
-        if isinstance(self._data, int) or isinstance(self._data, list) or isinstance(self._data, tuple) or \
-           isinstance(self._data, Enum) or isinstance(self._data, LinkList) or isinstance(self._data, Link) or not self._data:
+        if isinstance(self._data, (int, list, tuple, Enum, LinkList, Link)) or not self._data:
             datastr = str(self._data)
         return self.tbl_cel_ldr + datastr + self.tbl_cel_trm
 

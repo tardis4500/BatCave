@@ -32,7 +32,8 @@ def download(url: str, target: Optional[str] = None, auth: Optional[str] = None)
     open(target, 'wb').write(response.content)
 
 
-def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body: str, content_type: str = 'text/plain') -> Dict[str, Tuple[int, bytes]]:
+def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body: str,   # pylint: disable=too-many-arguments
+               content_type: str = 'text/plain') -> Dict[str, Tuple[int, bytes]]:
     """Send an SMTP email message.
 
     Args:

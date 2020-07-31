@@ -111,7 +111,7 @@ class WebSite(IISObject):
     """Class to create a universal abstract interface for an IIS website."""
 
 
-class IISInstance:
+class IISInstance:  # pylint: disable=too-many-public-methods
     """Class to create a universal abstract interface for an IIS instance.
 
     Attributes:
@@ -404,7 +404,8 @@ class IISInstance:
 class IISConfigurationSection:
     """Class to create a universal abstract interface for an IIS configuration section."""
 
-    def __init__(self, name: str, path: Optional[PathName], set_location: Optional[str] = None, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
+    def __init__(self, name: str, path: Optional[PathName], set_location: Optional[str] = None,  # pylint: disable=too-many-arguments
+                 hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             name: The name of the IIS configuration section.
@@ -544,7 +545,8 @@ class IISConfigurationSection:
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path: Optional[PathName], logtype: str, set_location: str, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
+    def __init__(self, path: Optional[PathName], logtype: str, set_location: str,  # pylint: disable=too-many-arguments
+                 hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             path: The path to AdvancedLogger configuration section.

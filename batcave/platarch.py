@@ -9,10 +9,10 @@ from sys import version_info
 from .lang import switch
 
 
-class Platform:
+class Platform:  # pylint: disable=too-few-public-methods
     """A class to provide a simplified interface to the platform and sys.version_info standard modules."""
 
-    def __getattr__(self, attr: str) -> str:
+    def __getattr__(self, attr: str) -> str:  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         """Get the platform type formatted for the requested subtype."""
         sys_info = uname()
         batcave_os = bart_os = sys_info.system.replace('-', '')
@@ -42,7 +42,7 @@ class Platform:
                 else:
                     batcave_arch = sys_info.machine
                 try:
-                    build = open([f for f in Path('/etc').glob('*-release')][0]).readline().strip()
+                    build = open([f for f in Path('/etc').glob('*-release')][0]).readline().strip()  # pylint: disable=unnecessary-comprehension
                 except IndexError:
                     build = 'unknown'
 

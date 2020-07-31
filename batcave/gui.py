@@ -5,7 +5,7 @@ Attributes:
     MessageType (Enum): The message types supported by the MessageBox class.
 """
 
-# pylint: disable=C0103
+# pylint: disable=too-few-public-methods,invalid-name
 
 # Import standard modules
 import sys
@@ -256,7 +256,7 @@ class MessageBox(QMessageBox):
                       MessageType.error: QMessageBox.Critical,
                       MessageType.results: QMessageBox.Information}
 
-    def __init__(self, parent: QWidget, message: str, msg_type: MessageType = MessageType.info, detail: str = '', image: Optional[QImage] = None):
+    def __init__(self, parent: QWidget, message: str, msg_type: MessageType = MessageType.info, detail: str = '', image: Optional[QImage] = None):  # pylint: disable=too-many-arguments
         """
         Args:
             parent: The parent for the message box.
@@ -287,4 +287,4 @@ def find_image(name: str) -> QImage:
         The image object.
     """
     image_dir = BATCAVE_HOME if FROZEN else (BATCAVE_HOME / 'img')
-    return [f for f in image_dir.glob(name + '.*')][0]
+    return [f for f in image_dir.glob(name + '.*')][0]  # pylint: disable=unnecessary-comprehension

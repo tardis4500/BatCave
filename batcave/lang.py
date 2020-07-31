@@ -105,7 +105,7 @@ class BatCaveException(Exception, MsgStr):
     code = property(lambda s: s._errobj.code, doc='A read-only property which returns the error code from the error object.')
 
 
-class BatCaveError:
+class BatCaveError:  # pylint: disable=too-few-public-methods
     """A class to provide an interface for inspecting exceptions."""
     def __init__(self, code: int, msg: MessageString):
         """
@@ -163,11 +163,10 @@ class switch:  # pylint: disable=C0103
         """Indicate whether or not to enter a case suite."""
         if self.fall or not args:
             return True
-        elif self.value in args:
+        if self.value in args:
             self.fall = True
             return True
-        else:
-            return False
+        return False
 
 
 def bool_to_str(expr: Union[bool, str]) -> str:
@@ -196,7 +195,7 @@ def flatten(thing: Iterable[Iterable], recursive: bool = True) -> Iterable:
     result = list()
     for item in thing:
         try:
-            result += [i for i in iter(item)]
+            result += [i for i in iter(item)]  # pylint: disable=unnecessary-comprehension
             flattened = True
         except TypeError:
             result.append(item)
