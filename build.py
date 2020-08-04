@@ -33,7 +33,8 @@ from batcave.sysutil import pushd, popd, rmpath, SysCmdRunner
 PROJECT_ROOT = Path().cwd()
 PRODUCT_NAME = 'BatCave'
 
-SOURCE_DIR = PROJECT_ROOT / 'batcave'
+MODULE_NAME = 'batcave'
+SOURCE_DIR = PROJECT_ROOT / MODULE_NAME
 VERSION_FILE = SOURCE_DIR / '__init__.py'
 
 BUILD_DIR = PROJECT_ROOT / 'build'
@@ -89,7 +90,7 @@ def devbuild(args: Namespace) -> None:
 def pylint(_unused_args: Namespace) -> None:
     """Run pylint."""
     MESSAGE_LOGGER('Running pylint', True)
-    run_pylint(['--max-line-length=200'] + [str(f) for f in SOURCE_DIR.iterdir() if f.suffix == '.py'])
+    run_pylint(['--max-line-length=200', '--max-attributes=10', '--disable=duplicate-code'] + [MODULE_NAME])
 
 
 def unit_tests(_unused_args: Namespace) -> None:

@@ -21,7 +21,8 @@ from xml.etree.ElementTree import Element, SubElement, parse as xmlparse
 from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
 
 # Import internal modules
-from .serverpath import ServerPath
+from .platarch import OsType
+from .serverpath import ServerPath  # pylint: disable=cyclic-import
 from .sysutil import syscmd, CMDError
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
@@ -38,7 +39,6 @@ else:
 
 _STATUS_CHECK_INTERVAL = 2
 
-OsType = Enum('OsType', ('linux', 'windows'))
 ProcessSignal = Enum('ProcessSignal', ('stop', 'kill'))
 ServiceSignal = Enum('ServiceSignal', ('disable', 'enable', 'start', 'stop', 'pause', 'resume', 'restart'))
 ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running', 'StopPending', 'Stopped', 'PausePending', 'Paused'))

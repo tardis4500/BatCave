@@ -1,12 +1,15 @@
 """This module provides a simplified interface to the standard platform module."""
 
 # Import standard modules
+from enum import Enum
 from pathlib import Path
 from platform import uname
 from sys import version_info
 
 # Import internal modules
 from .lang import switch
+
+OsType = Enum('OsType', ('linux', 'windows'))
 
 
 class Platform:  # pylint: disable=too-few-public-methods

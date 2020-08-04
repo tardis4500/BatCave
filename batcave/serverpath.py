@@ -8,7 +8,8 @@ from shutil import copy
 from typing import cast, Iterator, List, Optional, Tuple, Union
 
 # Import internal modules
-from .servermgr import Server, OsType
+from .platarch import OsType
+from .servermgr import Server
 from .sysutil import rmpath, syscmd, CMDError
 from .lang import is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
