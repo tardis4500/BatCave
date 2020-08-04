@@ -162,7 +162,7 @@ class LockFile:
             self._filename.unlink()
 
 
-class SysCmdRunner:
+class SysCmdRunner:  # pylint: disable=too-few-public-methods
     """This class provides a simplified interface to sysutil.syscmd()."""
 
     def __init__(self, command: str, *default_args, logger: Optional[Logger] = None, **default_kwargs):
@@ -238,12 +238,12 @@ def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] =
     Returns:
         Nothing.
     """
-    pathname = Path(pathname)
-    os_chown(pathname, user, group)
+    path = Path(pathname)
+    os_chown(path, user, group)
     if recursive:
-        for (root, dirs, files) in walk(pathname):
-            for pathname in dirs + files:
-                os_chown(Path(root, pathname), user, group)
+        for (root, dirs, files) in walk(path):
+            for sub_path in dirs + files:
+                os_chown(Path(root, sub_path), user, group)
 
 
 def create_group(group_name: str, exists_ok: bool = True) -> None:
@@ -372,8 +372,9 @@ def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
     pathstr.unlink()
 
 
-def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False, ignore_stderr: bool = False, append_stderr: bool = False,
-           fail_on_error: bool = True, show_cmd: bool = False, use_shell: bool = False, flatten_output: bool = False, remote: Optional[Union[bool, str]] = False,
+def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+           ignore_stderr: bool = False, append_stderr: bool = False, fail_on_error: bool = True, show_cmd: bool = False,
+           use_shell: bool = False, flatten_output: bool = False, remote: Optional[Union[bool, str]] = False,
            remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[Tuple[str, str]] = None,
            remote_powershell: bool = False) -> CommandResult:
     """Wrapper to provide a better interface to subprocess.Popen().

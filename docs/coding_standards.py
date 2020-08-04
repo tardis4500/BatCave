@@ -16,7 +16,7 @@
 # Step12: Add PEP526 variable type annotations
 # Step13: Add linting and type checking to build pipeline.
 
-# Fixed refactor linting in gui, iispy, k8s, lang, loadbalancer, logger, menu, netutil, platarch, qbpy, and reporter modules. (GitLab #29)
+# Fixed refactor linting in servermgr, serverpath, statemachine, and sysutil modules. (GitLab #29)
 
 # Step14: Change pylint numericals
 

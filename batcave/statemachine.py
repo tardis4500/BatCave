@@ -49,7 +49,7 @@ class StateMachine:
     _DEFAULT_LOGFILE = Path('log')
     _DEFAULT_STATEFILE = Path('state')
 
-    def __init__(self, states: Sequence, statefile: PathName = _DEFAULT_STATEFILE, logfile: PathName = _DEFAULT_LOGFILE,
+    def __init__(self, states: Sequence, statefile: PathName = _DEFAULT_STATEFILE, logfile: PathName = _DEFAULT_LOGFILE,  # pylint: disable=too-many-arguments
                  lockfile: PathName = _DEFAULT_LOCKFILE, logger_args: Optional[Dict] = None, autostart: bool = True):
         """
         Args:

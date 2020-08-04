@@ -113,7 +113,7 @@ class Server:
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
 
-    def __init__(self, hostname: str = None, domain: str = None, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
+    def __init__(self, hostname: str = None, domain: str = None, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',  # pylint: disable=too-many-arguments
                  os_type: OsType = OsType.windows if WIN32 else OsType.linux):
         """
         Args:
@@ -248,7 +248,7 @@ class Server:
             created_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
         return globals()[item_type](created_object, manager, unique_key, unique_id)
 
-    def create_scheduled_task(self, task: str, exe: str, schedule_type: str, schedule: str, user: str = '', password: str = '',
+    def create_scheduled_task(self, task: str, exe: str, schedule_type: str, schedule: str, user: str = '', password: str = '',  # pylint: disable=too-many-arguments,too-many-locals
                               start_in: Optional[PathName] = None, disable: bool = False) -> 'ScheduledTask':
         """Create a scheduled task.
 
@@ -305,7 +305,8 @@ class Server:
 
         return task_object
 
-    def create_service(self, service: str, exe: str, user: str = '', password: str = '', start: bool = False, timeout: int = 0, error_if_exists: bool = True) -> 'Service':
+    def create_service(self, service: str, exe: str, user: str = '', password: str = '', start: bool = False,  # pylint: disable=too-many-arguments
+                       timeout: int = 0, error_if_exists: bool = True) -> 'Service':
         """Create a service.
 
         Args:
@@ -579,7 +580,7 @@ class OSManager:
                 return list()
             raise
 
-    def LinuxProcess(self, CommandLine: str = None, ExecutablePath: str = None, Name: str = None, ProcessId: str = None) -> List['LinuxProcess']:
+    def LinuxProcess(self, CommandLine: str = None, ExecutablePath: str = None, Name: str = None, ProcessId: str = None) -> List['LinuxProcess']:  # pylint: disable=no-self-use
         """Get the specified Linux process.
 
         Args:
@@ -604,7 +605,7 @@ class OSManager:
             except NoSuchProcess:
                 return list()
 
-        process_list = [p for p in process_iter(attrs=('pid', 'cmdline', 'exe', 'name'))]
+        process_list = [p for p in process_iter(attrs=('pid', 'cmdline', 'exe', 'name'))]  # pylint: disable=unnecessary-comprehension
         if CommandLine:
             return [LinuxProcess(p.pid) for p in process_list if p.info['cmdline'] == CommandLine]
         if ExecutablePath:
@@ -637,7 +638,7 @@ class OSManager:
         return cast('ScheduledTask', self.get_object_as_list('Win32_ScheduledTask', Name))
 
 
-class NamedOSObject:
+class NamedOSObject:  # pylint: disable=too-few-public-methods
     """Class to allow management of all OS objects using a similar interface."""
 
     def __init__(self, Name: str, computer: str, auth: Tuple[str, str]):
@@ -804,7 +805,7 @@ class LinuxProcess:
         self.process_obj.terminate()
 
 
-class LinuxScheduledTask:
+class LinuxScheduledTask:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Linux cron job."""
 
 
@@ -815,7 +816,7 @@ class Win32_ScheduledTask(NamedOSObject):
         if attr == 'state':
             attr = 'scheduled_task_state'
         attr = attr.title().replace('_', ' ')
-        task_info = [line for line in DictReader(self._run_task_scheduler('/Query', '/V', '/FO', 'CSV'))][0]
+        task_info = [line for line in DictReader(self._run_task_scheduler('/Query', '/V', '/FO', 'CSV'))][0]  # pylint: disable=unnecessary-comprehension
         if attr not in task_info:
             raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
         return task_info[attr]
@@ -1020,7 +1021,7 @@ class Service(ManagementObject):
             return self.ServiceState[super().__getattr__(attr).replace(' ', '')]
         return super().__getattr__(attr)
 
-    def manage(self, signal: ServiceSignal, wait: bool = True, ignore_state: bool = False, timeout: int = False) -> None:
+    def manage(self, signal: ServiceSignal, wait: bool = True, ignore_state: bool = False, timeout: int = False) -> None:  # pylint: disable=too-many-branches,too-many-statements
         """Manage the service.
 
         Args:
@@ -1153,7 +1154,7 @@ class Process(ManagementObject):
                 raise ServerObjectManagementError(ServerObjectManagementError.STATUS_CHECK_TIMEOUT, type='process', state=signal.name)
 
 
-class ScheduledTask(ManagementObject):
+class ScheduledTask(ManagementObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for an OS scheduled task.
 
     Attributes:

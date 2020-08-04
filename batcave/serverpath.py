@@ -148,9 +148,9 @@ class ServerPath:
             The contents of this directory path.
         """
         if self.server.is_local:
-            return [i for i in Path(self.local).iterdir()]
+            return [i for i in Path(self.local).iterdir()]  # pylint: disable=unnecessary-comprehension
         if self.win_to_win:
-            return [i for i in cast(Path, self.remote).iterdir()]
+            return [i for i in cast(Path, self.remote).iterdir()]  # pylint: disable=unnecessary-comprehension
         return self.server.run_command('dir' if self.is_win else 'ls', self.local)
 
     def mkdir(self, mode: int = 0o777, parents: bool = False, exist_ok: bool = False) -> None:
