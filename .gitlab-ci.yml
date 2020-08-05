@@ -1,7 +1,7 @@
 image: python:3.7-alpine
 
 stages:
-  - pylint
+  - static_analysis
   - unit_tests
   - ci_build
   - install_test
@@ -36,8 +36,8 @@ cache:
   script:
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
 
-pylint:
-  stage: pylint
+static_analysis:
+  stage: static_analysis
   extends: .builder
 
 unit_tests:

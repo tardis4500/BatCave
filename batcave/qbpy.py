@@ -317,7 +317,7 @@ class QuickBuildConsole:
             caller = req_post
             api_args['data'] = xmldata if isinstance(xmldata, str) else tostring(xmldata)
         result = caller(api_call, **api_args)
-        if result.status_code != codes.ok:  # pylint: disable=E1101
+        if result.status_code != codes.ok:  # pylint: disable=no-member
             result.raise_for_status()
         return result
 

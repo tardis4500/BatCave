@@ -255,7 +255,7 @@ class DataSource:
                     try:
                         self._connection = xml_etree.parse(self._closer)
                     except expat.ExpatError as err:
-                        if expat.ErrorString(err.code) == expat.errors.XML_ERROR_SYNTAX:  # pylint: disable=E1101
+                        if expat.ErrorString(err.code) == expat.errors.XML_ERROR_SYNTAX:  # pylint: disable=no-member
                             raise DataError(DataError.BAD_URL, url=self._connectinfo)
                         raise
                 self._source = self._connection.getroot()

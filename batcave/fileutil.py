@@ -181,7 +181,7 @@ def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None,
         for item in glob_item.parent.glob(glob_item.name):
             added = True
             if (adder == 'write') and item.is_dir():
-                for (root, dirs, files) in walk(item):  # pylint: disable=W0612
+                for (root, _unused_dirs, files) in walk(item):
                     for files_name in files:
                         getattr(pkgfile, adder)(Path(root, files_name))
             else:

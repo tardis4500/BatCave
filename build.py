@@ -16,7 +16,6 @@ from typing import Dict, Optional, Tuple
 from unittest import defaultTestLoader
 
 # Import third-party-modules
-from pylint.lint import Run as run_pylint
 from requests import delete as rest_delete, post as rest_post
 from twine.commands.upload import main as upload
 from xmlrunner import XMLTestRunner
@@ -67,7 +66,7 @@ def main() -> None:
     release_args = [Argument('release')] + gitlab_args
     publish_args = release_args + pypi_args
     Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
-                                             SubParser('pylint', pylint),
+                                             SubParser('static_analysis', static_analysis),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
                                              SubParser('publish_test', publish_to_pypi, publish_args),
@@ -87,10 +86,11 @@ def devbuild(args: Namespace) -> None:
     builder(args)
 
 
-def pylint(_unused_args: Namespace) -> None:
+def static_analysis(_unused_args: Namespace) -> None:
     """Run pylint."""
-    MESSAGE_LOGGER('Running pylint', True)
-    run_pylint(['--max-line-length=200', '--max-attributes=10', '--disable=duplicate-code'] + [MODULE_NAME])
+    SysCmdRunner('pylint', show_stdout=True).run('Running pylint', '--max-line-length=200', '--max-attributes=10', '--disable=duplicate-code', MODULE_NAME)
+    SysCmdRunner('flake8', show_stdout=True).run('Running flake8', '--max-line-length=200', '--ignore=ANN002,ANN003,ANN101,ANN204', MODULE_NAME)
+    SysCmdRunner('mypy', show_stdout=True).run('Running mypy', MODULE_NAME)
 
 
 def unit_tests(_unused_args: Namespace) -> None:

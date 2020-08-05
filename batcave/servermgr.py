@@ -18,7 +18,7 @@ from typing import cast, List, Optional, Tuple, Union
 from xml.etree.ElementTree import Element, SubElement, parse as xmlparse
 
 # Import third-party modules
-from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
+from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess  # type: ignore
 
 # Import internal modules
 from .platarch import OsType
@@ -27,9 +27,9 @@ from .sysutil import syscmd, CMDError
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if WIN32:
-    from pywintypes import com_error  # pylint: disable=E0611
-    from win32com.client import CDispatch, DispatchEx
-    from wmi import WMI, x_wmi
+    from pywintypes import com_error  # type: ignore # pylint: disable=no-name-in-module
+    from win32com.client import CDispatch, DispatchEx  # type: ignore
+    from wmi import WMI, x_wmi  # type: ignore
     from .iispy import IISInstance
     _DEFAULT_WMI = True
 else:
@@ -656,7 +656,7 @@ class NamedOSObject:  # pylint: disable=too-few-public-methods
         self.Name = Name
         self.computer = computer
         self.auth = auth
-        self.validate()  # type: ignore # pylint: disable=E1101
+        self.validate()  # type: ignore # pylint: disable=no-member
 
 
 class LinuxService(NamedOSObject):

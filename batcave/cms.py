@@ -30,21 +30,21 @@ from .sysutil import popd, pushd, rmtree_hard
 from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle, WIN32
 
 if WIN32:
-    import win32api
-    import win32con
+    import win32api  # type: ignore
+    import win32con  # type: ignore
 
 P4_LOADED: str
 try:  # Load the Perforce API if available
-    import P4  # pylint: disable=import-error
-except Exception:  # pylint: disable=W0703
+    import P4  # type: ignore # pylint: disable=import-error
+except Exception:  # pylint: disable=broad-except
     P4_LOADED = ''
 else:
     P4_LOADED = str(P4.P4().api_level)
 
 GIT_LOADED: str
 try:  # Load the Git API if available
-    import git
-except Exception:  # pylint: disable=W0703
+    import git  # type: ignore
+except Exception:  # pylint: disable=broad-except
     GIT_LOADED = ''
 else:
     GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
@@ -146,7 +146,7 @@ class Label:
     def __str__(self):
         for case in switch(self._client.type):
             if case(ClientType.perforce):
-                return '\n'.join([f'{i}: {v}' for (i, v) in self._client._p4fetch('label', self._name).items()])  # pylint: disable=W0212
+                return '\n'.join([f'{i}: {v}' for (i, v) in self._client._p4fetch('label', self._name).items()])
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     def _get_info(self, field: str) -> str:
@@ -168,7 +168,7 @@ class Label:
         """
         for case in switch(self._client.type):
             if case(ClientType.perforce):
-                self._label = self._client._p4fetch('label', self._name)  # pylint: disable=W0212
+                self._label = self._client._p4fetch('label', self._name)  # pylint: disable=protected-access
                 break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
@@ -184,7 +184,7 @@ class Label:
         """
         for case in switch(self._client.type):
             if case(ClientType.perforce):
-                self._client._p4save('label', self._label)  # pylint: disable=W0212
+                self._client._p4save('label', self._label)  # pylint: disable=protected-access
                 break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
@@ -536,7 +536,7 @@ class Client:
             raise AttributeError(f"'{type(self)}' object has no attribute '{method}'")
         except P4.P4Exception:
             raise
-        except Exception:  # pylint: disable=W0703
+        except Exception:  # pylint: disable=broad-except
             if self._client.errors:
                 raise P4.P4Exception('\n'.join(self._client.errors))
             raise
@@ -642,7 +642,7 @@ class Client:
                 return files
             if case(ClientType.git):
                 file_list: List[str] = list()
-                for (root, dirs, files) in walk_git_tree(self._client.tree()):  # pylint: disable=W0612
+                for (root, _unused_dirs, files) in walk_git_tree(self._client.tree()):
                     file_list += [f'{root}/{f}' for f in files]
                 return file_list
             if case(ClientType.perforce):
@@ -1578,11 +1578,11 @@ class ChangeList:
                 if isinstance(id, (str, int)):
                     self._id = str(id)
                     if self._editable:
-                        self._changelist = self._client._p4fetch('change', self._id)  # pylint: disable=W0212
+                        self._changelist = self._client._p4fetch('change', self._id)
                     else:
-                        self._changelist = self._client._p4run('describe', '-s', self._id)[0]  # pylint: disable=W0212
+                        self._changelist = self._client._p4run('describe', '-s', self._id)[0]
                 else:
-                    self._changelist = chg_list_id if chg_list_id else self._client._p4fetch('change')  # pylint: disable=W0212
+                    self._changelist = chg_list_id if chg_list_id else self._client._p4fetch('change')
                     self._id = self._changelist['change']
                 break
             if case():
@@ -1616,7 +1616,7 @@ class ChangeList:
     def files(self) -> List[FileChangeRecord]:
         """A read-only property which returns the list of files in the change list."""
         if self._files is None:
-            desc: Dict[str, str] = self._client._p4run('describe', '-s', self.name)[0]  # pylint: disable=W0212
+            desc: Dict[str, str] = self._client._p4run('describe', '-s', self.name)[0]  # pylint: disable=protected-access
             self._files = [FileChangeRecord(self._client, f, r, a, self.name)
                            for (f, r, a) in zip(desc['depotFile'], desc['rev'], desc['action'])]
         return self._files
@@ -1671,7 +1671,7 @@ class ChangeList:
             Nothing.
         """
         if not no_execute:
-            self._client._p4save('change', self._changelist, '-f')  # pylint: disable=W0212
+            self._client._p4save('change', self._changelist, '-f')  # pylint: disable=protected-access
 
 
 def create_client_name(prefix: Optional[str] = None, suffix: Optional[str] = None, sep: str = '_', licenseplate: bool = False) -> str:

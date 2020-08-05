@@ -102,7 +102,7 @@ class TeamCityServer:
         """
         caller = getattr(requests, calltype)
         result = caller(self.url + apicall, auth=self.auth, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, json=params, verify=self._CA_CERT)
-        if result.status_code != codes.ok:  # pylint: disable=E1101
+        if result.status_code != codes.ok:  # pylint: disable=no-member
             raise result.raise_for_status()
         return result.json()
 

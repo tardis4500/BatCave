@@ -14,8 +14,8 @@ from string import Template
 from typing import cast, Any, List, Optional, Sequence, Union
 
 # Import third-party modules
-from docker import DockerClient
-from docker.models.containers import Container as DockerContainer
+from docker import DockerClient  # type: ignore
+from docker.models.containers import Container as DockerContainer  # type: ignore
 
 # Import internal modules
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, WIN32

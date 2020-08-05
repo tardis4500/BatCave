@@ -295,7 +295,7 @@ class Expander:
         try:
             if is_debug('EXPANDER'):
                 print(f'Expanding (corrected expression) "{expression}"')
-            result = eval(expression, self.vardict)  # pylint: disable=W0123
+            result = eval(expression, self.vardict)  # pylint: disable=eval-used
             if is_debug('EXPANDER'):
                 print(f'Expanding (evaluated expression) "{result}"')
             if isinstance(result, str):

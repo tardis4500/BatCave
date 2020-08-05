@@ -283,7 +283,7 @@ class ReportObject:
         if attr in self._attributes:
             return self._attributes[attr]
         if self.container:
-            return cast('ReportObject', self.container)._get_attr_ref(attr)  # pylint: disable=W0212
+            return cast('ReportObject', self.container)._get_attr_ref(attr)  # pylint: disable=protected-access
         if attr in _ATTRIBUTES:
             return cast(Attribute, _ATTRIBUTES[attr])
         raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")

@@ -15,9 +15,9 @@ from string import Template
 from typing import cast, Any, Callable, List, Optional, TextIO, Tuple
 
 # Import GUI framework and widgets
-from PyQt5.QtCore import QEvent  # pylint: disable=import-error,no-name-in-module
-from PyQt5.QtGui import QIcon, QImage  # pylint: disable=import-error,no-name-in-module
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox, QWidget  # pylint: disable=import-error,no-name-in-module
+from PyQt5.QtCore import QEvent  # type: ignore # pylint: disable=import-error,no-name-in-module
+from PyQt5.QtGui import QIcon, QImage  # type: ignore # pylint: disable=import-error,no-name-in-module
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox, QWidget  # type: ignore # pylint: disable=import-error,no-name-in-module
 
 # Import internal modules
 from . import __title__

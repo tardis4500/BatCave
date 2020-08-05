@@ -130,7 +130,7 @@ class PythonVersionError(BatCaveException):
     BAD_VERSION = BatCaveError(1, Template('Python $needed required but $used used'))
 
 
-class switch:  # pylint: disable=C0103
+class switch:  # pylint: disable=invalid-name
     """Class to implement a Pythonic switch statement.
 
     Taken verbatim from: http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/410692
@@ -278,7 +278,7 @@ def str_to_pythonval(the_string: str, parse_python: bool = False) -> Any:
 
     if parse_python and '~' in the_string:
         (data_type, val) = the_string.split('~', 1)
-        the_string = eval(f'{data_type}({val})')  # pylint: disable=W0123
+        the_string = eval(f'{data_type}({val})')  # pylint: disable=eval-used
 
     return the_string
 

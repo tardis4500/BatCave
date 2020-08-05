@@ -7,15 +7,15 @@ from time import sleep
 from typing import cast, Iterable, Optional, Tuple, Type, Union
 
 # Import third-party modules
-from nssrc.com.citrix.netscaler.nitro.resource.config.ssl.sslvserver_sslcertkey_binding import sslvserver_sslcertkey_binding as NetScalerCertificateBinding
-from nssrc.com.citrix.netscaler.nitro.resource.config.cache.cachecontentgroup import cachecontentgroup as NetScalerCacheContentGroup
-from nssrc.com.citrix.netscaler.nitro.exception.nitro_exception import nitro_exception as NetScalerError
-from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver_responderpolicy_binding import lbvserver_responderpolicy_binding as NetScalerResponderPolicyBinding
-from nssrc.com.citrix.netscaler.nitro.resource.config.basic.server import server as NetScalerServer
-from nssrc.com.citrix.netscaler.nitro.resource.config.basic.service import service as NetScalerServerService
-from nssrc.com.citrix.netscaler.nitro.service.nitro_service import nitro_service as NetScalerService
-from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver import lbvserver as NetScalerVirtualServer
-from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver_service_binding import lbvserver_service_binding as NetScalerVirtualServiceBinding
+from nssrc.com.citrix.netscaler.nitro.resource.config.ssl.sslvserver_sslcertkey_binding import sslvserver_sslcertkey_binding as NetScalerCertificateBinding  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.resource.config.cache.cachecontentgroup import cachecontentgroup as NetScalerCacheContentGroup  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.exception.nitro_exception import nitro_exception as NetScalerError  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver_responderpolicy_binding import lbvserver_responderpolicy_binding as NetScalerResponderPolicyBinding  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.resource.config.basic.server import server as NetScalerServer  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.resource.config.basic.service import service as NetScalerServerService  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.service.nitro_service import nitro_service as NetScalerService  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver import lbvserver as NetScalerVirtualServer  # type: ignore
+from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver_service_binding import lbvserver_service_binding as NetScalerVirtualServiceBinding  # type: ignore
 
 # Import internal modules
 from .lang import BatCaveError, BatCaveException
@@ -119,7 +119,7 @@ class LoadBalancer:
         else:
             port_value = port
 
-        server_objects = [_get_server_object(s) for s in (list(servers) if isinstance(servers, (tuple, list)) else [servers])]  # pylint: disable=C0325
+        server_objects = [_get_server_object(s) for s in (list(servers) if isinstance(servers, (tuple, list)) else [servers])]  # pylint: disable=superfluous-parens
         service_objects = list(services) if isinstance(services, (tuple, list)) else [services]
         certificates = certificates if isinstance(certificates, (tuple, list)) else [certificates]
         responder_policies = responder_policies if isinstance(responder_policies, (tuple, list)) else [responder_policies]

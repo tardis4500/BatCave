@@ -1,6 +1,8 @@
 """Unit tests for the lang module."""
 
-# pylint: disable=C0103,C0111
+# pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
+# flake8: noqa
+# type: ignore
 
 import os
 from unittest import main, TestCase

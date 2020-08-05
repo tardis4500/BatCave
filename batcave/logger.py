@@ -2,7 +2,7 @@
 
 # Import standard modules
 from logging import Formatter, getLogger, FileHandler, StreamHandler, shutdown
-from logging import INFO, WARN, WARNING, ERROR, CRITICAL, FATAL, DEBUG  # noqa: F401, pylint: disable=W0611
+from logging import INFO, WARN, WARNING, ERROR, CRITICAL, FATAL, DEBUG  # noqa: F401, pylint: disable=unused-import
 from multiprocessing import Queue
 from pathlib import Path
 from socket import SocketType

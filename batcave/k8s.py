@@ -12,9 +12,9 @@ from time import sleep
 from typing import cast, Any, Callable, List, Optional, Type, TypeVar
 
 # # Import third-party modules
-from kubernetes import config as k8s_config
-from kubernetes.client import BatchV1Api, CoreV1Api
-from kubernetes.stream import stream as k8s_process
+from kubernetes import config as k8s_config  # type: ignore
+from kubernetes.client import BatchV1Api, CoreV1Api  # type: ignore
+from kubernetes.stream import stream as k8s_process  # type: ignore
 from yaml import safe_load as yaml_load
 
 # Import internal modules

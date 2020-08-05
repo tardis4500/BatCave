@@ -1,6 +1,8 @@
 """Unit tests for the statemachine module."""
 
-# pylint: disable=C0103,C0111,W0212
+# pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name,protected-access
+# flake8: noqa
+# type: ignore
 
 from unittest import main, TestCase
 
@@ -45,7 +47,7 @@ class TestStateMachine(TestCase):
         self.assertFalse(StateMachine._DEFAULT_LOCKFILE.exists())
 
     def test_statemachine_savestate(self):
-        for state in self.STATES:  # pylint: disable=W0612
+        for _unused_state in self.STATES:
             with StateMachine(self.STATES) as sm:
                 sm.enter_next_state()
                 sm.exit_state()

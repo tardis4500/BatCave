@@ -18,7 +18,7 @@ VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
 
 # Import third-party modules
 try:
-    import PyQt5.QtCore as pyqt
+    import PyQt5.QtCore as pyqt  # type: ignore
 except ImportError:
     PYQT_LOADED = ''
 else:

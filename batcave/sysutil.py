@@ -32,10 +32,10 @@ if WIN32:
     import msvcrt
     PROG_FILES = {'32': Path(getenv('ProgramFiles(x86)', '')), '64': Path(getenv('ProgramFiles', ''))}
 else:
-    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=E0401
-    from grp import getgrnam  # pylint: disable=E0401
-    from os import geteuid  # type: ignore # pylint: disable=E0611,C0412
-    from pwd import getpwnam  # pylint: disable=E0401
+    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=import-error
+    from grp import getgrnam  # pylint: disable=import-error
+    from os import geteuid  # type: ignore # pylint: disable=no-name-in-module,ungrouped-imports
+    from pwd import getpwnam  # pylint: disable=import-error
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
 
@@ -548,4 +548,4 @@ def popd() -> Union[int, PathName]:
     chdir(dirname)
     return dirname
 
-# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd UNLCK
+# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd unlck ungrouped
