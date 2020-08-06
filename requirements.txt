@@ -1,12 +1,15 @@
 docker
+flake8
+flake8-annotations
 GitPython
 kubernetes
+mypy
 nitrosdk-python
 pylint
 psutil
 requests
 setuptools
 twine
-WMI ~= 1.4.9
+WMI~=1.4.9
 xmlrunner
 pywin32==227; sys_platform == 'win32'
