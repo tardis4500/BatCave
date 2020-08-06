@@ -27,8 +27,8 @@ from .sysutil import syscmd, CMDError
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if WIN32:
-    from pywintypes import com_error  # type: ignore # pylint: disable=no-name-in-module
-    from win32com.client import CDispatch, DispatchEx  # type: ignore
+    from pywintypes import com_error  # type: ignore # pylint: disable=no-name-in-module,import-error
+    from win32com.client import CDispatch, DispatchEx  # type: ignore # pylint: disable=import-error
     from wmi import WMI, x_wmi  # type: ignore
     from .iispy import IISInstance
     _DEFAULT_WMI = True

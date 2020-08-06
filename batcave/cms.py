@@ -30,8 +30,8 @@ from .sysutil import popd, pushd, rmtree_hard
 from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle, WIN32
 
 if WIN32:
-    import win32api  # type: ignore
-    import win32con  # type: ignore
+    import win32api  # type: ignore # pylint: disable=import-error
+    import win32con  # type: ignore # pylint: disable=import-error
 
 P4_LOADED: str
 try:  # Load the Perforce API if available

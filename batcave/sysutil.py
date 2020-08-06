@@ -29,7 +29,7 @@ from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException,
 from .logger import Logger
 
 if WIN32:
-    import msvcrt
+    import msvcrt  # pylint: disable=import-error
     PROG_FILES = {'32': Path(getenv('ProgramFiles(x86)', '')), '64': Path(getenv('ProgramFiles', ''))}
 else:
     from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=import-error
