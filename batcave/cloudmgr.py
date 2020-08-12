@@ -88,7 +88,7 @@ class Cloud:
                 return gcloud('', *args, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
-    def get_container(self, name: str) -> Container:  # noqa:F821, pylint: disable=used-before-assignment
+    def get_container(self, name: str) -> 'Container':
         """Get a container from the cloud.
 
         Args:
@@ -118,7 +118,7 @@ class Cloud:
 
     containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
-    def get_image(self, tag: str) -> Image:  # noqa:F821, pylint: disable=used-before-assignment
+    def get_image(self, tag: str) -> 'Image':
         """Get an image from the cloud container registry.
 
         Args:
