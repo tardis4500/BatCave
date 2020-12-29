@@ -9,6 +9,7 @@ Attributes:
 from ast import literal_eval
 from enum import Enum
 from json import loads as json_read
+from os import getenv
 from pathlib import Path
 from string import Template
 from typing import cast, Any, List, Optional, Sequence, Union
@@ -23,7 +24,16 @@ from .sysutil import SysCmdRunner
 
 CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))  # pylint: disable=invalid-name
 
-gcloud = SysCmdRunner('gcloud', '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
+if WIN32:
+    user_install = Path(getenv('USERPROFILE', '')) / 'APPDATA/LOCAL'
+    gcloud_command_location = 'Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd'
+    if (user_install / gcloud_command_location).exists():
+        gcloud_command = str(user_install / gcloud_command_location)
+    else:
+        gcloud_command = str(Path(getenv('ProgramFiles(x86)', '')) / gcloud_command_location)
+else:
+    gcloud_command = 'gcloud'
+gcloud = SysCmdRunner(gcloud_command, '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
 
 
 class CloudError(BatCaveException):
@@ -286,7 +296,7 @@ class Image:
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support image tagging.
         """
-        new_ref: Image
+        new_ref: Optional[Image] = None
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):
                 self.pull()
