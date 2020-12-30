@@ -19,7 +19,9 @@ class Platform:  # pylint: disable=too-few-public-methods
         """Get the platform type formatted for the requested subtype."""
         sys_info = uname()
         batcave_os = bart_os = sys_info.system.replace('-', '')
-        p4_arch = du_os = ''
+        batcave_version = batcave_arch = ''
+        bart_version = bartarch = ''
+        p4ver = p4_arch = du_os = build = ''
         for case in switch(batcave_os):
             if case('AIX'):
                 batcave_version = bart_version = sys_info.version + sys_info.release

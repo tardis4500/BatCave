@@ -176,6 +176,7 @@ class Formatter:
         replace_what = match.group(0)
         link = match.group(1)
         text = match.group(3) if (len(match.groups()) == 3) else ''
+        replace_with = ''
         for case in switch(self.format):
             if case(OutputFormat.csv):
                 replace_with = f'"=HYPERLINK(""{link}"", ""{text}"")"' if text else link
@@ -332,6 +333,7 @@ class Expander:
         if (thing is None) or isinstance(thing, bool):
             return thing
 
+        var = substr = replacer = ''
         while self.prelim in thing:
             fail = False
             try:
@@ -613,6 +615,7 @@ class Procedure:
         Raises:
             ProcedureError.BAD_FORMAT: If the format type is not defined.
         """
+        header = footer = ''
         self.formatter = Formatter(self.output_format)
         self.setup_expander(env)
         for case in switch(self.output_format):

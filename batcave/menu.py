@@ -73,6 +73,7 @@ class Menu:  # pylint: disable=too-few-public-methods
             valid_choices.append(item.key.upper() if self.ignorecase else item.key)
             menu += f'\t{item.key}. {item.desc}\n'
 
+        choices = list()
         while invalid_choice:
             print(menu)
 

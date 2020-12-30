@@ -262,9 +262,7 @@ class LoadBalancer:
         if signal not in (LbServerSignal.enable, LbServerSignal.disable):
             raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
-        if not isinstance(servers, (tuple, list)):
-            server_list = [cast(ServerType, servers)]
-
+        server_list = servers if isinstance(servers, (tuple, list)) else [cast(ServerType, servers)]
         for server in [_get_server_object(s) for s in server_list]:
             getattr(NetScalerServer, signal.name)(self._api, server.hostname)
             while validate and (self.get_server(server).state.lower() != (signal.name + 'd')):

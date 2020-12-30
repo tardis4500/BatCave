@@ -37,6 +37,10 @@ else:
         'Needed to avoid errors on Linux'
     _DEFAULT_WMI = False
 
+    class IISInstance:  # type: ignore  # pylint: disable=too-few-public-methods
+        'Fixes pylance linting error'
+    WMI = None  # fixes pylance linting error
+
 _STATUS_CHECK_INTERVAL = 2
 
 ProcessSignal = Enum('ProcessSignal', ('stop', 'kill'))
@@ -1067,7 +1071,9 @@ class Service(ManagementObject):
             if case():
                 raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
+        control_method = final_state = ''
         if not ignore_state:
+            waitfor = self.ServiceState.Running  # fix pylance linting error
             for case in switch(self.state):
                 if case(self.ServiceState.StartPending, self.ServiceState.Running, self.ServiceState.ContinuePending):
                     waitfor = self.ServiceState.Running
@@ -1133,6 +1139,7 @@ class Process(ManagementObject):
             ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the requested action is invalid.
             ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
         """
+        control_method = ''
         for case in switch(signal):
             if case(self.ProcessSignal.stop):
                 control_method = 'Terminate'
@@ -1193,4 +1200,4 @@ def _run_task_scheduler(*cmd_args, **sys_cmd_args) -> CommandResult:
     """
     return syscmd('schtasks.exe', *cmd_args, **sys_cmd_args)
 
-# cSpell:ignore cmdline sbin wsahost psutil syscmd iispy
+# cSpell:ignore cmdline sbin wsahost psutil pylance syscmd iispy

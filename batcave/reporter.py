@@ -511,8 +511,8 @@ class Table(ReportObject):
         self._data = data
 
     def __str__(self):
+        col_widths = list()
         if self.output == 'text':
-            col_widths = list()
             for row in self._data:
                 i = 0
                 for col in row:

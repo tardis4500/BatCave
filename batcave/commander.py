@@ -94,10 +94,10 @@ class Commander:
 
         if subparsers:
             subparser_objects = self.parser.add_subparsers(dest='command')
-        for subparser_def in subparsers:
-            subparser: ArgumentParser = subparser_objects.add_parser(subparser_def.subcommand)
-            _add_arguments_to_parser(subparser, subparser_def.arguments)
-            subparser.set_defaults(command=subparser_def.command_runner)
+            for subparser_def in subparsers:
+                subparser: ArgumentParser = subparser_objects.add_parser(subparser_def.subcommand)
+                _add_arguments_to_parser(subparser, subparser_def.arguments)
+                subparser.set_defaults(command=subparser_def.command_runner)
 
         if subparser_common_args:
             self.subparser_common_parser = ArgumentParser(add_help=False)

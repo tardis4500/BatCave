@@ -214,6 +214,7 @@ class DataSource:
         for case in switch(self.type):
             if case(SourceType.text):
                 self._source = dict()
+                table_name: str = ''
                 for line in open(self._connectinfo):
                     line = line.strip()
                     if line.startswith(self._TEXT_TABLE_DELIMITER):
@@ -434,6 +435,7 @@ class DataSource:
         Returns:
             The list of table in the data source.
         """
+        table_names: List[str] = list()
         for case in switch(self.type):
             if case(SourceType.text):
                 pass

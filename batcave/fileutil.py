@@ -159,6 +159,7 @@ def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None,
     if itemloc:
         pushd(itemloc)
 
+    tar_name = Path()
     tarbug = False
     pkgfile = None
     if arctype == 'zip':
@@ -248,6 +249,7 @@ def unpack(arcfile: PathName, dest: Optional[PathName] = None, arctype: str = ''
         use_dest.mkdir(parents=True, exist_ok=True)
         pushd(use_dest)
 
+    lister = extractor = ''
     pkgfile: Any = None
     for case in switch(arctype):
         if case('bz2', 'gz', 'xz', 'zip'):

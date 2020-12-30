@@ -472,8 +472,9 @@ class IISConfigurationSection:
         Returns:
             The output from appcmd.
         """
+        cmd_args = list(args)
         if self._set_location:
-            cmd_args = list(args) + [f'/commit:{self._set_location}']
+            cmd_args += [f'/commit:{self._set_location}']
         return appcmd(*cmd_args, hostname=self._hostname, remote_powershell=self._remote_powershell)
 
     def add_collection_member(self, collection: str, properties: Dict, changes: Optional[Dict]) -> None:

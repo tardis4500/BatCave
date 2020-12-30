@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstrings. (GitLab #29)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
   - Fixed failure on cloudmgr.Image.pull method. (GitLab #41)
+  - Fix pylance linting errors.
 
 <!-- This comment will prevent merge conflicts -->
 ## Release History
@@ -1323,4 +1324,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
       cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
       cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
-      cSpell:ignore setattr iispy virtualenv prdb syscmd -->
+      cSpell:ignore setattr iispy virtualenv prdb syscmd pylance -->

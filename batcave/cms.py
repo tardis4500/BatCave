@@ -48,6 +48,7 @@ except Exception:  # pylint: disable=broad-except
     GIT_LOADED = ''
 else:
     GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
+import git  # noqa:E402, fixes pylance linting error  # pylint: disable=wrong-import-order,wrong-import-position
 
 CleanType = Enum('CleanType', ('none', 'members', 'all'))  # pylint: disable=invalid-name
 ClientType = Enum('ClientType', ('file', 'git', 'perforce'))  # pylint: disable=invalid-name
@@ -417,7 +418,7 @@ class Client:
             raise CMSError(CMSError.CLIENT_NAME_REQUIRED)
         self._name: str = client_name
 
-        client_root: Path
+        client_root: Optional[Path] = None
         if create_client:
             client_root = self._tmpdir if (root is None) else root
             if (self._mapping is None) and (self._type == ClientType.perforce) and info:
@@ -483,8 +484,8 @@ class Client:
         return False
 
     def __str__(self):
+        infostr: str = ''
         for case in switch(self._type):
-            infostr: str
             if case(ClientType.perforce):
                 infostr = '\n'.join([f'{i}: {v}' for (i, v) in self._p4fetch('client').items()])
                 break
@@ -1300,7 +1301,7 @@ class Client:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         client_root: Path = self.root
-        results: List[str]
+        results: List[str] = list()
         for case in switch(self._type):
             if case(ClientType.perforce):
                 if clean in (CleanType.members, CleanType.all):
@@ -1738,4 +1739,4 @@ def walk_git_tree(tree: git.Tree, parent: Optional[git.Tree] = None) -> Generato
 
     yield new_parent, tree_names, blobs
 
-# cSpell:ignore checkin unedit
+# cSpell:ignore checkin pylance unedit
