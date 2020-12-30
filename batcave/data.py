@@ -163,7 +163,7 @@ class DataSource:
             if create and (ioe.errno == 2):
                 self._create()
             else:
-                raise DataError(DataError.FILE_OPEN, errmsg=str(ioe))
+                raise DataError(DataError.FILE_OPEN, errmsg=str(ioe)) from ioe
 
     def __enter__(self):
         return self
@@ -224,8 +224,8 @@ class DataSource:
                     for pair in line.split(self._TEXT_TABLE_DELIMITER):
                         try:
                             (col, val) = pair.split(self._TEXT_VAL_DELIMITER)
-                        except ValueError:
-                            raise DataError(DataError.BAD_COLUMN, col=pair, line=line)
+                        except ValueError as err:
+                            raise DataError(DataError.BAD_COLUMN, col=pair, line=line) from err
                         row[col] = val
                     self._source[table_name].append(row)
                 break
@@ -256,7 +256,7 @@ class DataSource:
                         self._connection = xml_etree.parse(self._closer)
                     except expat.ExpatError as err:
                         if expat.ErrorString(err.code) == expat.errors.XML_ERROR_SYNTAX:  # pylint: disable=no-member
-                            raise DataError(DataError.BAD_URL, url=self._connectinfo)
+                            raise DataError(DataError.BAD_URL, url=self._connectinfo) from err
                         raise
                 self._source = self._connection.getroot()
                 if self._source.tag != self.name:

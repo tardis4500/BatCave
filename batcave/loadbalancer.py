@@ -184,7 +184,7 @@ class LoadBalancer:
             return group_ref
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='cache content group', name=group_name)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='cache content group', name=group_name) from err
             raise
 
     def get_server(self, server_info: ServerType) -> 'LoadBalancerServer':
@@ -204,7 +204,7 @@ class LoadBalancer:
             return LoadBalancerServer(self, NetScalerServer.get(self._api, server_hostname))
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='server', name=server_hostname)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='server', name=server_hostname) from err
             raise
 
     def get_virtual_server(self, server_name: ServerType) -> 'LoadBalancerVirtualServer':
@@ -224,7 +224,7 @@ class LoadBalancer:
             return LoadBalancerVirtualServer(self, NetScalerVirtualServer.get(self._api, server_hostname))
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='virtual server', name=server_hostname)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='virtual server', name=server_hostname) from err
             raise
 
     def has_server(self, server_info: ServerType) -> bool:
@@ -335,7 +335,7 @@ class LoadBalancerServer(LoadBalancerObject):
             return LoadBalancerService(self, NetScalerServerService.get(self.load_balancer_ref.ns_session, service_name))
         except NetScalerError as err:
             if err.errorcode == 258:
-                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='service', name=service_name)
+                raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='service', name=service_name) from err
             raise
 
 

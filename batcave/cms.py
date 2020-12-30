@@ -454,7 +454,7 @@ class Client:
                     self._p4run('connect')
                 except P4.P4Exception as err:
                     if 'Connect to server failed' in err.value:
-                        raise CMSError(CMSError.CONNECT_FAILED, connectinfo=self._connectinfo)
+                        raise CMSError(CMSError.CONNECT_FAILED, connectinfo=self._connectinfo) from err
                     raise
                 self._connected = True
                 if create_client:
@@ -536,9 +536,9 @@ class Client:
             raise AttributeError(f"'{type(self)}' object has no attribute '{method}'")
         except P4.P4Exception:
             raise
-        except Exception:  # pylint: disable=broad-except
+        except Exception as err:  # pylint: disable=broad-except
             if self._client.errors:
-                raise P4.P4Exception('\n'.join(self._client.errors))
+                raise P4.P4Exception('\n'.join(self._client.errors)) from err
             raise
 
     def _p4save(self, what: str, *args) -> List[str]:
@@ -1313,7 +1313,7 @@ class Client:
                     results += self._p4run('client', '-d', '-f', self._name)
                 except P4.P4Exception as err:
                     if "doesn't exist" in str(err):
-                        raise CMSError(CMSError.CLIENT_NOT_FOUND, name=self._name)
+                        raise CMSError(CMSError.CLIENT_NOT_FOUND, name=self._name) from err
                     results += self._p4run('client', '-d', self._name)
                 break
             if case(ClientType.git):

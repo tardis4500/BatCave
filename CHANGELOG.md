@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - More variable renames due to rename to BatCave. (GitLab #27)
   - Improved docstrings. (GitLab #29)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
+  - Fixed failure on cloudmgr.Image.pull method. (GitLab #41)
 
 <!-- This comment will prevent merge conflicts -->
 ## Release History

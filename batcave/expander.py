@@ -568,7 +568,7 @@ class Procedure:
             return self.expander.expand(text)
         except ExpanderError as err:
             if err.code == ExpanderError.NO_REPLACEMENT.code:
-                raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text)
+                raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text) from err
             raise
 
     def expand_directories(self, env: str, destination_root: PathName, source_root: PathName = Path(), err_if_exists: bool = True) -> None:

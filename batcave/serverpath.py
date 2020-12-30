@@ -108,7 +108,7 @@ class ServerPath:
                     if err.vars['returncode'] in (1, 2, 3):
                         return ''
                     if err.vars['returncode'] in (8, 9):
-                        raise ServerPathError(ServerPathError.REMOTE_COPY_SPACE_ERROR, dest=sp_dest)
+                        raise ServerPathError(ServerPathError.REMOTE_COPY_SPACE_ERROR, dest=sp_dest) from err
                 raise
         elif sp_dest.server.os_type == OsType.linux:
             remote_cp_command = self.DEFAULT_REMOTE_COPY_COMMAND[OsType.linux] if (remote_cp_command is None) else remote_cp_command

@@ -26,13 +26,13 @@ CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))  # pylint: disab
 
 if WIN32:
     user_install = Path(getenv('USERPROFILE', '')) / 'APPDATA/LOCAL'
-    gcloud_command_location = 'Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd'
+    gcloud_command_location = 'Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd'  # pylint: disable=invalid-name
     if (user_install / gcloud_command_location).exists():
-        gcloud_command = str(user_install / gcloud_command_location)
+        gcloud_command = str(user_install / gcloud_command_location)  # pylint: disable=invalid-name
     else:
-        gcloud_command = str(Path(getenv('ProgramFiles(x86)', '')) / gcloud_command_location)
+        gcloud_command = str(Path(getenv('ProgramFiles(x86)', '')) / gcloud_command_location)  # pylint: disable=invalid-name
 else:
-    gcloud_command = 'gcloud'
+    gcloud_command = 'gcloud'  # pylint: disable=invalid-name
 gcloud = SysCmdRunner(gcloud_command, '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
 
 
@@ -229,42 +229,32 @@ class Image:
 
     tags = property(get_tags, doc='A read-only property which calls the get_tags() method with no filters.')
 
-    def manage(self, action: str) -> List[str]:
-        """Manage an image in the cloud registry.
-
-        Args:
-            action: The management action to perform on the image.
-
-        Returns:
-            The log message of the management action.
-
-        Raises:
-            CloudError.INVALID_OPERATION: If the cloud type does not support image management.
-        """
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
-                docker_log = [literal_eval(line.strip()) for line in getattr(self._docker_client.images, action)(self.name).split('\n') if line]
-                errors = [line['error'] for line in docker_log if 'error' in line]
-                if errors:
-                    raise CloudError(CloudError.IMAGE_ERROR, action=action, err=''.join(errors))
-                return docker_log
-        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
-
-    def pull(self) -> List[str]:
+    def pull(self) -> 'Image':
         """Pull the image from the registry.
 
         Returns:
-            The result of the self.manage() call.
+            The image object.
         """
-        return self.manage('pull')
+        for case in switch(self.cloud.type):
+            if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
+                self._ref = self._docker_client.images.pull(self.name)
+                return self
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def push(self) -> List[str]:
         """Push the image to the registry.
 
         Returns:
-            The result of the self.manage() call.
+            The server log from the push.
         """
-        return self.manage('push')
+        for case in switch(self.cloud.type):
+            if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
+                docker_log = [literal_eval(line.strip()) for line in self._docker_client.images.push(self.name).split('\n') if line]
+                errors = [line['error'] for line in docker_log if 'error' in line]
+                if errors:
+                    raise CloudError(CloudError.IMAGE_ERROR, action='push', err=''.join(errors))
+                return docker_log
+        raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def run(self, detach: bool = True, update: bool = True, **kwargs) -> DockerContainer:
         """Run an image to create an active container.

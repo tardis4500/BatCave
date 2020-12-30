@@ -50,6 +50,7 @@ setup(
                       'kubernetes >= 10.0',
                       'PyQt5 >= 5.13; platform_machine != "aarch64"',
                       'psutil >= 5.6',
+                      'pypiwin32 == 225; sys_platform == "win32"',
                       'pywin32 == 225; sys_platform == "win32"',
                       'requests >= 2.22',
                       'WMI >= 1.4, < 1.5'],
