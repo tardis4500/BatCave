@@ -29,7 +29,7 @@ from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathNam
 if WIN32:
     from pywintypes import com_error  # type: ignore # pylint: disable=no-name-in-module,import-error
     from win32com.client import CDispatch, DispatchEx  # type: ignore # pylint: disable=import-error
-    from wmi import WMI, x_wmi  # type: ignore
+    from wmi import WMI, x_wmi  # type: ignore # pylint: disable=import-error
     from .iispy import IISInstance
     _DEFAULT_WMI = True
 else:
@@ -37,7 +37,7 @@ else:
         'Needed to avoid errors on Linux'
     _DEFAULT_WMI = False
 
-    class IISInstance:  # type: ignore  # pylint: disable=too-few-public-methods
+    class IISInstance:  # type: ignore # pylint: disable=too-few-public-methods
         'Fixes pylance linting error'
     WMI = None  # fixes pylance linting error
 
