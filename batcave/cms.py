@@ -381,9 +381,10 @@ class Client:
                     raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
         self._user: str = user
 
-        client_name: str = ''
         if info:
             client_name = name if name else f'{self._INFO_DUMMY_CLIENT}_{randint(0, 1000)}'
+        else:
+            client_name = name
 
         create_client: bool
         if create is None:
@@ -1390,8 +1391,9 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.git):
-                if branch not in [b.name.split('/')[-1] for b in self.branches]:
-                    self._client.create_head(branch, getattr(self._client.remotes.origin.refs, branch))
+                self._client.git.fetch('--all')
+                if branch not in {b.name.replace('origin/', '') for b in self.branches}:
+                    self.create_branch(branch)
                 return self._client.git.checkout(branch)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 

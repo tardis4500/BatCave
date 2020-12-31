@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstrings. (GitLab #29)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
   - Fixed failure on cloudmgr.Image.pull method. (GitLab #41)
+  - Fix errors in cms.Client.switch method for existing branches in Git. (GitLab #50)
   - Fix pylance linting errors.
 
 <!-- This comment will prevent merge conflicts -->
