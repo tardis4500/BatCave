@@ -48,14 +48,16 @@ setup(
                       'GitPython >= 3.0',
                       'google-cloud',
                       'kubernetes >= 10.0',
-                      'PyQt5 >= 5.13; platform_machine != "aarch64"',
                       'psutil >= 5.6',
-                      'pypiwin32 == 225; sys_platform == "win32"',
-                      'pywin32 == 225; sys_platform == "win32"',
                       'requests >= 2.22',
-                      'WMI >= 1.4, < 1.5'],
+                      'pypiwin32 == 223; sys_platform == "win32"',
+                      'pywin32 >= 225; sys_platform == "win32"',
+                      'WMI >= 1.4; sys_platform == "win32"',
+                      'PyQt5 >= 5.13; platform_machine not in "aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l"'],
     extras_require={
         'dev': ['setuptools', 'twine', 'wheel', 'xmlrunner'],
         'test': [],
     }
 )
+
+# cSpell:ignore armv pypiwin

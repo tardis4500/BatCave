@@ -6,7 +6,6 @@ from argparse import Namespace
 from datetime import datetime
 from distutils.core import run_setup
 from importlib import import_module, reload
-from json import loads as json_parse
 import os
 from pathlib import Path
 from random import randint
@@ -14,6 +13,7 @@ from shutil import copyfile
 from stat import S_IWUSR
 from typing import Dict, Optional, Tuple
 from unittest import defaultTestLoader
+from venv import EnvBuilder
 
 # Import third-party-modules
 from requests import delete as rest_delete, post as rest_post
@@ -25,9 +25,10 @@ from batcave.automation import Action
 from batcave.commander import Argument, Commander, SubParser
 from batcave.expander import file_expander
 from batcave.fileutil import slurp, spew
+from batcave.lang import WIN32
 from batcave.cms import Client, ClientType
 from batcave.platarch import Platform
-from batcave.sysutil import pushd, popd, rmpath, SysCmdRunner
+from batcave.sysutil import pushd, popd, rmpath, syscmd, SysCmdRunner
 
 PROJECT_ROOT = Path().cwd()
 PRODUCT_NAME = 'BatCave'
@@ -161,6 +162,7 @@ def post_release_update(args: Namespace) -> None:
     if args.increment_release:
         gitlab_ci_config = slurp(CI_BUILD_FILE)
         new_config = list()
+        new_release = ''
         for line in gitlab_ci_config:
             if 'RELEASE:' in line:
                 release = args.release.split('.')
@@ -222,22 +224,23 @@ def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool
 
 def freeze(_unused_args: Namespace) -> None:
     """Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers."""
-    requirements = {p.split(';')[0].strip() for p in slurp(REQUIREMENTS_FILE)}.union({'pip', 'setuptools'})
-    dev_requirements = set()
-    for pip_module in json_parse(pip('', 'list', '--format=json')[0]):
-        if (pip_module['name'] not in requirements) and ('PyQt5' not in pip_module['name']) and ('pywin32' not in pip_module['name']):
-            dev_requirements.add(pip_module['name'])
-    pip('Uninstalling development requirements', 'uninstall', '-y', '-qqq', *dev_requirements)
-    pip('Re-installing requirements', 'install', '-qqq', '--upgrade', '--upgrade-strategy', 'eager', '-r', REQUIREMENTS_FILE)
+    venv_dir = BUILD_DIR / 'venv'
+    print('Creating virtual environment in:', venv_dir)
+    EnvBuilder(with_pip=True).create(venv_dir)
+    venv_bin = venv_dir / ('Scripts' if WIN32 else 'bin')
+    python = (venv_bin / 'python').with_suffix('.exe' if WIN32 else '')
+    os.environ['PATH'] = os.path.pathsep.join((str(venv_bin), os.environ['PATH']))
+    syscmd(str(python), '-m', 'pip', 'install', '--upgrade', 'pip')
+    pip('Installing Python requirements', 'install', '-qqq', '-U', '-r', REQUIREMENTS_FILE)
     spew(FREEZE_FILE, pip('Creating frozen requirements file', 'freeze'))
     freeze_file = [line.strip() for line in slurp(FREEZE_FILE)]
     with open(FREEZE_FILE, 'w') as updated_freeze_file:
         for line in freeze_file:
             if 'win32' in line:
                 line += "; sys_platform == 'win32'"
-            if 'systemd' in line:
-                line += "; sys_platform != 'win32'"
             print(line, file=updated_freeze_file)
+        if not WIN32:
+            print("pywin32==227; sys_platform == 'win32'", file=updated_freeze_file)
 
 
 def get_build_info(args: Namespace) -> Tuple[str, str]:
@@ -256,4 +259,4 @@ def delete_release(args: Namespace) -> None:
 if __name__ == '__main__':
     main()
 
-# cSpell:ignore bdist, bldverfile, checkin, cibuild, pywin, sdist, syscmd
+# cSpell:ignore bdist, bldverfile, checkin, cibuild, pywin, sdist, syscmd, venv

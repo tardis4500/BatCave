@@ -11,6 +11,6 @@ requests
 setuptools
 twine
 wheel
-WMI~=1.4.9
 xmlrunner
-pywin32==227; sys_platform == 'win32'
+pywin32; sys_platform == 'win32'
+WMI; sys_platform == 'win32'
