@@ -48,11 +48,11 @@ setup(
                       'GitPython >= 3.0',
                       'google-cloud',
                       'kubernetes >= 10.0',
-                      'psutil >= 5.6',
                       'requests >= 2.22',
                       'pypiwin32 == 223; sys_platform == "win32"',
                       'pywin32 >= 225; sys_platform == "win32"',
                       'WMI >= 1.4; sys_platform == "win32"',
+                      'psutil >= 5.6; platform_machine not in "arm arm64 armv6l armv7l armv8b armv8l"',
                       'PyQt5 >= 5.13; platform_machine not in "aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l"'],
     extras_require={
         'dev': ['setuptools', 'twine', 'wheel', 'xmlrunner'],
