@@ -39,13 +39,10 @@ class TCBuildConfig:
         """
         self._server = server
         self.config_id = config_id
-        fail = False
         try:
             self.info = self._server.api_call('get', 'buildTypes/id:' + self.config_id)
-        except exceptions.HTTPError:
-            fail = True
-        if fail:
-            raise TeamCityError(TeamCityError.BAD_CONFIG, id=self.config_id)
+        except exceptions.HTTPError as err:
+            raise TeamCityError(TeamCityError.BAD_CONFIG, id=self.config_id) from err
 
     def __str__(self):
         return str(self.info)

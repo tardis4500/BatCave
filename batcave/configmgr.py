@@ -66,24 +66,18 @@ class ConfigCollection:
         path_name = Path(name)
         self.name = path_name.name
         self._config_filename = path_name.parent / (path_name.name + suffix)
-        failure: Optional[BatCaveError] = None
         try:
             self._data_source = DataSource(SourceType.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
         except DataError as err:
             for case in switch(err.code):
                 if case(DataError.FILE_OPEN.code):
-                    failure = ConfigurationError.CONFIG_NOT_FOUND
-                    break
+                    raise ConfigurationError(ConfigurationError.CONFIG_NOT_FOUND, file=self._config_filename) from err
                 if case(DataError.BAD_SCHEMA.code):
-                    failure = ConfigurationError.BAD_SCHEMA
-                    break
+                    raise ConfigurationError(ConfigurationError.BAD_SCHEMA, file=self._config_filename) from err
                 if case():
                     raise
-        except ParseError:
-            failure = ConfigurationError.BAD_FORMAT
-
-        if failure:
-            raise ConfigurationError(failure, file=self._config_filename)
+        except ParseError as err:
+            raise ConfigurationError(ConfigurationError.BAD_FORMAT, file=self._config_filename) from err
 
         self.parent: Optional[ConfigCollection] = None
         self._mask_missing = True

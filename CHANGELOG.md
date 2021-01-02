@@ -16,7 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
   - Don't install PyQt5 on Android architectures. (GitLab #39)
   - Don't install psutil on arm architectures. (GitLab #39)
+  - Use splitlines() instead of split('\n'). (GitLab #40)
   - Fixed failure on cloudmgr.Image.pull method. (GitLab #41)
+  - Use exception chaining where appropriate. (GitLab #49)
   - Fix errors in cms.Client.switch method for existing branches in Git. (GitLab #50)
   - Fix pylance linting errors.
   - Only install WMI module on Windows platform.
@@ -1329,4 +1331,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
       cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
       cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
-      cSpell:ignore setattr iispy virtualenv prdb syscmd pylance -->
+      cSpell:ignore setattr iispy virtualenv prdb syscmd pylance splitlines -->

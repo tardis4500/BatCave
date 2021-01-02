@@ -303,10 +303,9 @@ class Expander:
                 result = str_to_pythonval(result)
             if is_debug('EXPANDER'):
                 print(f'Returning: "{result}"')
-            return result
         except NameError as err:
-            badvar = str(err)
-        raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=badvar, thing=expression)
+            raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=str(err), thing=expression) from err
+        return result
 
     def expand(self, thing: Any) -> Any:
         """Perform an expansion on a Python object.
@@ -335,15 +334,12 @@ class Expander:
 
         var = substr = replacer = ''
         while self.prelim in thing:
-            fail = False
             try:
                 var = cast(Match[str], self.re_var.search(thing)).group(1)
-            except AttributeError:
+            except AttributeError as err:
                 prelim_index = thing.index(self.prelim)
                 substr = thing[prelim_index:prelim_index + 200]
-                fail = True
-            if fail:
-                raise ExpanderError(ExpanderError.NO_POST_DELIMITER, substr=substr)
+                raise ExpanderError(ExpanderError.NO_POST_DELIMITER, substr=substr) from err
 
             fail = True
             if var in self.vardict:

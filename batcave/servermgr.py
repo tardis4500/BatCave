@@ -188,13 +188,10 @@ class Server:
             manager_args['user'] = self.auth[0]
             manager_args['password'] = self.auth[1]
 
-        raise_error = False
         try:
             self._wmi_manager = WMI(**manager_args)
         except x_wmi as err:
-            raise_error = err
-        if raise_error:
-            raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self.hostname, msg=str(raise_error))
+            raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self.hostname, msg=str(err)) from err
 
     def _get_object_manager(self, item_type: str, wmi: WMI) -> ServerManager:
         """Return the correct object manager for the platform and item type.
@@ -762,15 +759,12 @@ class LinuxService(NamedOSObject):
         Raises:
             ServerObjectManagementError.OBJECT_NOT_FOUND: If the service is not found.
         """
-        not_found = False
         try:
             self.state
         except CMDError as err:
             if not err.vars['returncode'] == (4 if (self.type == ServiceType.systemd) else 1):
                 raise
-            not_found = True
-        if not_found:
-            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
+            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__) from err
 
 
 class LinuxProcess:
@@ -893,15 +887,12 @@ class Win32_ScheduledTask(NamedOSObject):
         Raises:
             ServerObjectManagementError.OBJECT_NOT_FOUND: If the scheduled task is not found.
         """
-        not_found = False
         try:
             self.state
         except CMDError as err:
             if not err.vars['returncode'] == 1:
                 raise
-            not_found = True
-        if not_found:
-            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__)
+            raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__) from err
 
 
 class COMObject:
@@ -921,7 +912,6 @@ class COMObject:
             ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was a failure making a connection to the COM object.
         """
         self._hostname = hostname
-        raise_error = False
         try:
             if isinstance(ref, CDispatch):
                 self._connection = ref
@@ -929,9 +919,7 @@ class COMObject:
             else:
                 self._connection = DispatchEx(ref, self._hostname)
         except com_error as err:
-            raise_error = err
-        if raise_error:
-            raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self._hostname, msg=str(raise_error))
+            raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self._hostname, msg=str(err)) from err
 
     def __enter__(self):
         return self

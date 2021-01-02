@@ -140,15 +140,12 @@ class LockFile:
             LockError.NO_LOCK: If it was not possible to obtain a system level lock on the lock file.
         """
         lock_mode = self._lock if (mode == LockMode.lock) else self._unlock
-        fail = False
         try:
             self._locker(self._fd, lock_mode, 1)
         except IOError as err:
-            fail = True
             if err.errno not in (EACCES, EAGAIN):
                 raise
-        if fail:
-            raise LockError(LockError.NO_LOCK)
+            raise LockError(LockError.NO_LOCK) from err
 
     def close(self) -> None:
         """Close the lock file.
