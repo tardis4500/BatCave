@@ -249,7 +249,7 @@ class Image:
         """
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
-                docker_log = [literal_eval(line.strip()) for line in self._docker_client.images.push(self.name).split('\n') if line]
+                docker_log = [literal_eval(line.strip()) for line in self._docker_client.images.push(self.name).splitlines() if line]
                 errors = [line['error'] for line in docker_log if 'error' in line]
                 if errors:
                     raise CloudError(CloudError.IMAGE_ERROR, action='push', err=''.join(errors))

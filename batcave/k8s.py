@@ -318,7 +318,7 @@ class Pod(ClusterObject):
                              command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True, **k8s_api_kwargs)
         if 'error' in output:
             raise PodError(PodError.EXEC_ERROR, errlines=output)
-        return output.split('\n')[0:-1]
+        return output.splitlines()[0:-1]
 
     def get_file(self, source: str, target: Optional[PathName] = None) -> None:
         """Copy a file out of the pod.
