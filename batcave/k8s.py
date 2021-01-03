@@ -64,12 +64,12 @@ class Cluster:
             context (optional, default=None): The cluster configuration file context to use.
 
         Attributes:
-            config: The value of the cluster_config argument.
             _batch_api: A reference to the BatchV1Api object.
+            _config: The value of the cluster_config argument.
             _context: The value of the context argument.
             _core_api: A reference to the CoreV1Api object.
         """
-        self.config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
+        self._config = str(cluster_config) if isinstance(cluster_config, Path) else cluster_config
         self._context = context
         k8s_config.load_kube_config(self.config, self._context)
         self._core_api = CoreV1Api()
@@ -88,6 +88,7 @@ class Cluster:
             return lambda *a, **k: method(item_class, *a, **k)
         raise AttributeError(f'No attribute for cluster: {attr}')
 
+    config = property(lambda s: s._config, doc='A read-only property which returns configuration file for the cluster.')
     pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
 
     def create_item(self, item_class: Type[K8sObject], item_spec: PathName, namespace: str = 'default', exists_ok: bool = False) -> K8sObject:

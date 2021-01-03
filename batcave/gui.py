@@ -201,14 +201,6 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
     """This class provides functionality for a dialog box window."""
-
-    def __init__(self, **kwargs):
-        """
-        Args:
-            **kwargs (optional, default={}): The list of arguments to pass to the base class.
-        """
-        super().__init__(**kwargs)
-
     def accept(self) -> bool:
         """Overload of standard Qt method called when the dialog is accepted.
 

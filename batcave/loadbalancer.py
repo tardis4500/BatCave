@@ -52,20 +52,16 @@ class LoadBalancer:
 
         Attributes:
             ip_address: The value of the ip_address argument.
-            password: The value of the password argument.
             type: The value of the lb_type argument.
-            user: The value of the user argument.
             _api: The API object for the load balancer
 
         Raises:
             StateMachineError.BAD_STATUS: if the value of self.status is not in STATE_STATUSES
         """
-        self.type = lb_type
-        self.ip_address = ip_address
-        self.user = user
-        self.password = password
+        self._type = lb_type
+        self._ip_address = ip_address
         self._api = NetScalerService(self.ip_address)
-        self._api.login(self.user, self.password, 3600)
+        self._api.login(user, password, 3600)
 
     def __enter__(self):
         return self
@@ -73,6 +69,9 @@ class LoadBalancer:
     def __exit__(self, *exc_info):
         self._api.logout()
         return False
+
+    ip_address = property(lambda s: s._ip_address, doc='A read-only property which returns the IP address of the load balancer.')
+    type = property(lambda s: s._type, doc='A read-only property which returns the type of the load balancer.')
 
     def add_server(self, server_info: ServerType) -> 'LoadBalancerServer':
         """Add the specified server to the load balancer.
@@ -279,14 +278,14 @@ class LoadBalancerObject:
             lb_object_ref: The load balancer object containing this object.
 
         Attributes:
-            load_balancer_ref: The value of the load_balancer_ref argument.
-            lb_object_ref: The value of the lb_object_ref argument.
+            _lb_object_ref: The value of the lb_object_ref argument.
+            _load_balancer_ref: The value of the load_balancer_ref argument.
         """
-        self.load_balancer_ref = load_balancer_ref
-        self.lb_object_ref = lb_object_ref
+        self._load_balancer_ref = load_balancer_ref
+        self._lb_object_ref = lb_object_ref
 
     def __getattr__(self, attr: str) -> str:
-        return getattr(self.lb_object_ref, attr)
+        return getattr(self._lb_object_ref, attr)
 
     def __enter__(self):
         return self
@@ -312,9 +311,9 @@ class LoadBalancerServer(LoadBalancerObject):
         ns_service = NetScalerServerService()
         ns_service.servicetype = service_type
         ns_service.name = service_name
-        ns_service.servername = self.lb_object_ref.name  # type: ignore
+        ns_service.servername = self._lb_object_ref.name  # type: ignore
         ns_service.port = port
-        NetScalerServerService.add(self.load_balancer_ref.ns_session, ns_service)
+        NetScalerServerService.add(self._load_balancer_ref.ns_session, ns_service)
         return self.get_service(service_name)
 
     def get_service(self, service_name: str) -> 'LoadBalancerService':
@@ -330,7 +329,7 @@ class LoadBalancerServer(LoadBalancerObject):
             LoadBalancerError.BAD_OBJECT: If the requested service could not be found.
         """
         try:
-            return LoadBalancerService(self, NetScalerServerService.get(self.load_balancer_ref.ns_session, service_name))
+            return LoadBalancerService(self, NetScalerServerService.get(self._load_balancer_ref.ns_session, service_name))
         except NetScalerError as err:
             if err.errorcode == 258:
                 raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='service', name=service_name) from err
@@ -356,7 +355,7 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
         ns_certificate_binding = NetScalerCertificateBinding()
         ns_certificate_binding.vservername = self.name
         ns_certificate_binding.certkeyname = cert_name
-        NetScalerCertificateBinding.add(self.load_balancer_ref.ns_session, ns_certificate_binding)
+        NetScalerCertificateBinding.add(self._load_balancer_ref.ns_session, ns_certificate_binding)
 
     def bind_responder_policy(self, policy_name: str, policy_priority: int = 100) -> None:
         """Bind a responder policy to the virtual server.
@@ -372,7 +371,7 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
         ns_policy_binding.name = self.name
         ns_policy_binding.policyname = policy_name
         ns_policy_binding.priority = policy_priority
-        NetScalerResponderPolicyBinding.add(self.load_balancer_ref.ns_session, ns_policy_binding)
+        NetScalerResponderPolicyBinding.add(self._load_balancer_ref.ns_session, ns_policy_binding)
 
     def bind_service(self, service: LoadBalancerService) -> None:
         """Bind a service to the virtual server.
@@ -386,6 +385,6 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
         ns_virtual_service_binding = NetScalerVirtualServiceBinding()
         ns_virtual_service_binding.name = self.name
         ns_virtual_service_binding.servicename = service.name if isinstance(service, LoadBalancerService) else service
-        NetScalerVirtualServiceBinding.add(self.load_balancer_ref.ns_session, ns_virtual_service_binding)
+        NetScalerVirtualServiceBinding.add(self._load_balancer_ref.ns_session, ns_virtual_service_binding)
 
 # cSpell:ignore ipaddress nssrc lbvserver sslcertkey sslvserver vservername

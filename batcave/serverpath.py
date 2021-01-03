@@ -43,16 +43,13 @@ class ServerPath:
             the_path: The file path on the server.
 
         Attributes:
-            is_win: True if the server is a Windows server.
-            local: The value of the the_path argument when referenced locally on the server.
-            server: The value of the server argument.
-            win_to_win: True if the both the local and remote systems are Windows servers.
+            local: The .
+            _raw_path: The value of the the_path argument.
+            _server: The value of the server argument.
+            win_to_win: .
         """
-        self.server = server
-        self.is_win = (self.server.os_type == OsType.windows)
-        path_type = PureWindowsPath if self.is_win else PurePosixPath
-        self.local = path_type(the_path)
-        self.win_to_win = WIN32 and self.is_win
+        self._server = server
+        self._raw_path = the_path
 
     def __str__(self):
         return str(self.remote)
@@ -60,7 +57,12 @@ class ServerPath:
     def __truediv__(self, other: str):
         return ServerPath(self.server, self.local / other)
 
+    is_win = property(lambda s: s._server.os_type == OsType.windows, doc='A read-only property which returns True if the path is on a Windows server.')
+    local = property(lambda s: s.path_type(s._raw_path), doc='A read-only property which returns the value of the the_path argument when referenced locally on the server.')
     parent = property(lambda s: ServerPath(s.server, s.local.parent), doc='A read-only property which returns the parent of the path.')
+    path_type = property(lambda s: PureWindowsPath if s.is_win else PurePosixPath, doc='A read-only property which returns the path type.')
+    server = property(lambda s: s._server, doc='A read-only property which returns the owning server of the path.')
+    win_to_win = property(lambda s: WIN32 and s.is_win, doc='A read-only property which returns True if the both the local and remote systems are Windows servers.')
 
     @property
     def remote(self) -> PathName:

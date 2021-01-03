@@ -129,30 +129,29 @@ class Server:
             os_type (optional): The server type. If not specified, will default to the type of the localhost.
 
         Attributes:
-            auth: The value of the auth argument.
-            domain: The derived value of the domain argument.
-            hostname: The derived value of the hostname argument.
-            ip: The derived value of the ip argument.
-            is_local: True if the server is localhost, False otherwise.
-            os_type: The value of the os_type argument.
+            _auth: The value of the auth argument.
+            _domain: The derived value of the domain argument.
+            _hostname: The derived value of the hostname argument.
+            _ip: The derived value of the ip argument.
             _os_manager: The remote management interface for remote servers, None otherwise.
+            _os_type: The value of the os_type argument.
             _wmi_manager: The WMI object.
 
         Raises:
             ServerObjectManagementError.SERVER_NOT_FOUND: If the remote server IP is not found.
         """
-        self.hostname = (hostname if hostname else node().split('.')[0]).lower()
+        self._hostname = (hostname if hostname else node().split('.')[0]).lower()
         try:
-            self.domain = (domain if domain else getfqdn().split('.', 1)[1]).lower()
+            self._domain = (domain if domain else getfqdn().split('.', 1)[1]).lower()
         except IndexError:
-            self.domain = ''
-        self.auth = auth
-        self.ip = ip
-        self.os_type = os_type
+            self._domain = ''
+        self._auth = auth
+        self._ip = ip
+        self._os_type = os_type
         self._wmi_manager = None
-        if not self.ip:
+        if not self._ip:
             try:
-                self.ip = gethostbyname(self.fqdn)
+                self._ip = gethostbyname(self.fqdn)
             except gaierror as err:
                 server_found = False
                 if err.errno not in (self._WSAHOST_NOT_FOUND, self._WSA_NAME_OR_SERVICE_NOT_KNOWN):
@@ -161,10 +160,10 @@ class Server:
                 server_found = True
             if not server_found:
                 if self.is_local:
-                    self.ip = '127.0.0.1'
+                    self._ip = '127.0.0.1'
                 else:
                     raise ServerObjectManagementError(ServerObjectManagementError.SERVER_NOT_FOUND, server=self.fqdn)
-        self._os_manager = OSManager('' if self.is_local else self.hostname, self.auth)
+        self._os_manager = OSManager('' if self.is_local else self.hostname, self._auth)
         if not defer_wmi:
             self._connect_wmi()
 
@@ -184,9 +183,9 @@ class Server:
             ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was an error connecting to the WMI manager.
         """
         manager_args = dict() if self.is_local else {'computer': self.hostname}
-        if self.auth:
-            manager_args['user'] = self.auth[0]
-            manager_args['password'] = self.auth[1]
+        if self._auth:
+            manager_args['user'] = self._auth[0]
+            manager_args['password'] = self._auth[1]
 
         try:
             self._wmi_manager = WMI(**manager_args)
@@ -212,8 +211,12 @@ class Server:
             self._connect_wmi()
         return self._wmi_manager if wmi else self._os_manager
 
+    domain = property(lambda s: s._domain, doc='A read-only property which returns the domain of the server.')
     fqdn = property(lambda s: f'{s.hostname}.{s.domain}' if s.domain else s.hostname, doc='A read-only property which returns the full-qualified domain name of the server.')
+    hostname = property(lambda s: s._hostname, doc='A read-only property which returns the hostname of the server.')
+    ip = property(lambda s: s._ip, doc='A read-only property which returns IP for the server.')
     is_local = property(lambda s: getfqdn().lower() == s.fqdn, doc='A read-only property which returns True if the server is the local host.')
+    os_type = property(lambda s: s._os_type, doc='A read-only property which returns the OS type of the server.')
 
     def create_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, error_if_exists: bool = True, **key_args) -> 'ManagementObject':
         """Create a management object of the specified type.
@@ -283,8 +286,8 @@ class Server:
             cmd_args += ['/RP', password]
         if not self.is_local:
             cmd_args += ['/S', self.hostname]
-        if self.auth:
-            cmd_args += ['/U', self.auth[0], '/P', self.auth[1]]
+        if self._auth:
+            cmd_args += ['/U', self._auth[0], '/P', self._auth[1]]
         _run_task_scheduler(*cmd_args)
         task_object = self.get_scheduled_task(task)
 
@@ -417,8 +420,8 @@ class Server:
         cmd_args = ['/Query', '/FO', 'CSV']
         if not self.is_local:
             cmd_args += ['/S', self.fqdn]
-        if self.auth:
-            cmd_args += ('/U', self.auth[0], '/P', self.auth[1])
+        if self._auth:
+            cmd_args += ('/U', self._auth[0], '/P', self._auth[1])
         return [self.get_scheduled_task(t['TaskName']) for t in DictReader(_run_task_scheduler(*cmd_args))]
 
     def get_service(self, service: str, **key_args) -> 'Service':
@@ -542,8 +545,8 @@ class Server:
         Returns:
             The result of the command.
         """
-        if (not self.is_local) and self.auth:
-            sys_cmd_args['remote_auth'] = self.auth
+        if (not self.is_local) and self._auth:
+            sys_cmd_args['remote_auth'] = self._auth
         return syscmd(command, *cmd_args, remote=(False if self.is_local else self.ip), remote_is_windows=(not self.is_local) and (self.os_type == OsType.windows), **sys_cmd_args)
 
 

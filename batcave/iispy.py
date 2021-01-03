@@ -51,17 +51,20 @@ class IISObject:
             iis_ref: A reference to the IIS owner instance.
 
         Attributes:
-            name: The value of the name argument.
-            iis_ref: The value of the iis_ref argument.
+            _iis_ref: The value of the iis_ref argument.
+            _name: The value of the name argument.
         """
-        self.name = name
-        self.iis_ref = iis_ref
+        self._iis_ref = iis_ref
+        self._name = name
 
     def __enter__(self):
         return self
 
     def __exit__(self, *exc_info):
         return False
+
+    iis_ref = property(lambda s: s._iis_ref, doc='A read-only property which returns the reference to the IIS object.')
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the IIS object.')
 
     def manage_item(self, action: str) -> None:
         """Perform action on this object.
@@ -130,10 +133,10 @@ class IISInstance:  # pylint: disable=too-many-public-methods
                 Defaults to False for hostname is None, otherwise defaults to True.
 
         Attributes:
-            hostname: The value of the hostname argument.
+            _hostname: The value of the hostname argument.
             _remote_powershell: The resolved value of the remote_powershell argument.
         """
-        self.hostname = hostname
+        self._hostname = hostname
         self._remote_powershell = (True if (remote_powershell is None) else remote_powershell) if hostname else False
 
     def __enter__(self):
@@ -148,6 +151,8 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         if not result:
             raise AttributeError(attr)
         return result
+
+    hostname = property(lambda s: s._hostname, doc='A read-only property which returns the hostname of the IIS server.')
 
     def create_virtual_dir(self, vdir_name: str, vdir_location: PathName, website: str) -> VirtualDirectory:
         """Create the specified virtual directory in the IIS instance.

@@ -61,25 +61,25 @@ class StateMachine:
             autostart (optional, default=True): If True, start the state machine when the instance is created.
 
         Attributes:
-            locker: The value of the lockfile argument.
-            logger: The logging instance created from the logfile and logger_args arguments.
-            started: Indicates if the state machine is running.
             state: Indicates the current state of the state machine.
-            statefile: The value of the statefile argument.
-            states: The value of the states argument prepended by 'None.'
             status: Indicates the current status of the state machine.
+            _locker: The value of the lockfile argument.
+            _logger: The logging instance created from the logfile and logger_args arguments.
+            _started: Indicates if the state machine is running.
+            _statefile: The value of the statefile argument.
+            _states: The value of the states argument prepended by 'None.'
 
         Raises:
             StateMachineError.BAD_STATUS: if the value of self.status is not in StateStatus
         """
-        self.statefile = Path(statefile)
-        self.locker = LockFile(lockfile)
-        self.logger = Logger(logfile, **(logger_args if logger_args else dict()))
-        self.states = ['None'] + list(states)
-        self.started = False
-        if self.statefile.exists():
+        self._statefile = Path(statefile)
+        self._locker = LockFile(lockfile)
+        self._logger = Logger(logfile, **(logger_args if logger_args else dict()))
+        self._states = ['None'] + list(states)
+        self._started = False
+        if self._statefile.exists():
             debug_msg = 'Found'
-            with open(self.statefile) as filestream:
+            with open(self._statefile) as filestream:
                 (status, state) = filestream.read().split()
                 self.status = StateStatus[status]
                 self.state = state
@@ -110,7 +110,7 @@ class StateMachine:
         """
         if is_debug('STATEMACHINE'):
             print(f'Writing state file with {self.status.name} {self.state}')
-        with open(self.statefile, 'w') as filestream:
+        with open(self._statefile, 'w') as filestream:
             print(self.status.name, self.state, file=filestream)
 
     def done(self) -> None:
@@ -119,8 +119,8 @@ class StateMachine:
         Returns:
             Nothing.
         """
-        self.logger.shutdown()
-        self.locker.close()
+        self._logger.shutdown()
+        self._locker.close()
 
     def enter_next_state(self) -> None:
         """Enter the next state.
@@ -133,15 +133,15 @@ class StateMachine:
             StateMachineError.DONE: If the state machine has already completed.
             StateMachineError.NOT_STARTED: If the state machine has not been started.
         """
-        if not self.started:
+        if not self._started:
             raise StateMachineError(StateMachineError.NOT_STARTED)
         if self.status != StateStatus.exited:
             raise StateMachineError(StateMachineError.BAD_ENTRY)
-        next_state_index = self.states.index(self.state) + 1
-        if next_state_index >= len(self.states):
+        next_state_index = self._states.index(self.state) + 1
+        if next_state_index >= len(self._states):
             raise StateMachineError(StateMachineError.DONE)
         self.status = StateStatus.entering
-        self.state = self.states[next_state_index]
+        self.state = self._states[next_state_index]
         self._writestate()
 
     def exit_state(self) -> None:
@@ -154,7 +154,7 @@ class StateMachine:
             StateMachineError.BAD_EXIT: If the state machine has not entered a state.
             StateMachineError.NOT_STARTED: If the state machine has not been started.
         """
-        if not self.started:
+        if not self._started:
             raise StateMachineError(StateMachineError.NOT_STARTED)
         if self.status != StateStatus.entering:
             raise StateMachineError(StateMachineError.BAD_EXIT)
@@ -167,9 +167,9 @@ class StateMachine:
         Returns:
             Nothing.
         """
-        if self.statefile.exists():
-            self.statefile.unlink()
-        (self.status, self.state) = (StateStatus.exited, self.states[0])
+        if self._statefile.exists():
+            self._statefile.unlink()
+        (self.status, self.state) = (StateStatus.exited, self._states[0])
         self._writestate()
 
     def rollback(self) -> None:
@@ -184,7 +184,7 @@ class StateMachine:
         if self.status != StateStatus.entering:
             raise StateMachineError(StateMachineError.BAD_ROLLBACK)
         self.status = StateStatus.exited
-        self.state = self.states[self.states.index(self.state) - 1]
+        self.state = self._states[self._states.index(self.state) - 1]
         self._writestate()
 
     def start(self) -> None:
@@ -197,8 +197,8 @@ class StateMachine:
             StateMachineError.CRASHED: If the state machine crashed on the previous run.
             StateMachineError.ALREADY_STARTED: If the state machine has already been started.
         """
-        if self.started:
+        if self._started:
             raise StateMachineError(StateMachineError.ALREADY_STARTED)
         if self.status == StateStatus.entering:
             raise StateMachineError(StateMachineError.CRASHED, state=self.state)
-        self.started = True
+        self._started = True

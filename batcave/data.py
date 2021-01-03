@@ -132,26 +132,26 @@ class DataSource:
             create (optional, default=False): If True, the data source will be created if it does not exist.
 
         Attributes:
-            name: The value of the name argument.
-            type: The value of the data_type argument.
             _closer: This is the method used to close the data source.
             _connectinfo: The value of the connectinfo argument.
             _connection: For XML_* data source types, this it the parsed XML tree,
                 otherwise it is a temporary file object.
+            _name: The value of the name argument.
             _schema: The value of the schema argument.
             _source: The value depends on the data source type.
                 TEXT: the file contents
                 PICKLE: the top dictionary
                 INI: The RawConfigParser object from the INI file
                 XML_*: The XML root of the file
+            _type: The value of the data_type argument.
 
         Raises:
             DataError.FILE_OPEN: If the data source file is already open.
         """
-        self.type = data_type
-        self.name = name
+        self._name = name
         self._schema = schema
         self._source: Any = None
+        self._type = data_type
         self._connectinfo = connectinfo
         self._connection: Optional[Union[IO, ElementTree]] = None
         self._closer: Optional[IO] = None
@@ -289,6 +289,8 @@ class DataSource:
             raise DataError(DataError.INVALID_TYPE)
 
     filename = property(lambda s: s._connectinfo, doc='A read-only property which returns the file name of the data source.')
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the data source.')
+    type = property(lambda s: s._type, doc='A read-only property which returns the type of the data source.')
 
     @property
     def dict_repr(self) -> dict:
@@ -501,13 +503,13 @@ class DataRow:
             parent: This is a reference to the table containing the row.
 
         Attributes:
-            type: The value of the data_type argument.
             _parent: The value of the parent argument.
             _row: The value of the raw argument.
+            _type: The value of the data_type argument.
         """
-        self.type = data_type
         self._row = raw
         self._parent = parent
+        self._type = data_type
 
     def __enter__(self):
         return self
@@ -519,6 +521,7 @@ class DataRow:
         return self.getvalue(attr)
 
     raw = property(lambda s: s._row, doc='A read-only property which returns the raw contents of the data row.')
+    type = property(lambda s: s._type, doc='A read-only property which returns the type of the data source.')
 
     def delcolumn(self, col: str) -> None:
         """Delete the named column from the row.
@@ -706,15 +709,15 @@ class DataTable:
             parent: This is a reference to the data source containing the table.
 
         Attributes:
-            name: The value of the name argument.
-            type: The value of the data_type argument.
+            _name: The value of the name argument.
             _parent: The value of the parent argument.
             _table: The value of the raw argument.
+            _type: The value of the data_type argument.
         """
-        self.type = data_type
-        self.name = name
+        self._name = name
         self._parent = parent
         self._table = raw
+        self._type = data_type
 
     def __enter__(self):
         return self
@@ -743,7 +746,9 @@ class DataTable:
                 return self._parent
         raise DataError(DataError.INVALID_TYPE)
 
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the data table.')
     raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
+    type = property(lambda s: s._type, doc='A read-only property which returns the type of the data source.')
 
     def addrow(self, **values) -> None:
         """Create a new row with the specified values.

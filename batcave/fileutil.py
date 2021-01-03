@@ -76,31 +76,9 @@ class CompressedFile:  # pylint: disable=too-few-public-methods
 class BatCaveGzipFile(GzipFile, CompressedFile):  # pylint: disable=too-many-ancestors
     """Add CompressedFile class methods to the GzipFile class."""
 
-    def __init__(self, filename: PathName, **attr):
-        """
-        Args:
-            filename: The name of the compressed file.
-            **attr: The list of attributes to pass to the base class.
-
-        Attributes:
-            _filename: The value of the filename argument.
-        """
-        super().__init__(filename, **attr)
-
 
 class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore # pylint: disable=too-many-ancestors
     """Add CompressedFile class methods to the BZ2File class."""
-
-    def __init__(self, filename: PathName, **attr):
-        """
-        Args:
-            filename: The name of the compressed file.
-            **attr: The list of attributes to pass to the base class.
-
-        Attributes:
-            _filename: The value of the filename argument.
-        """
-        super().__init__(filename, **attr)
 
 
 PACKER_CLASSES = {'zip': ZipFile, 'gz': BatCaveGzipFile, 'bz2': BatCaveBZ2File, 'xz': LZMAFile}

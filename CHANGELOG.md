@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - More variable renames due to rename to BatCave. (GitLab #27)
   - Improved docstrings. (GitLab #29)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
+  - Protect read-only public members behind property definition. (GitLab #38)
   - Don't install PyQt5 on Android architectures. (GitLab #39)
   - Don't install psutil on arm architectures. (GitLab #39)
   - Use splitlines() instead of split('\n'). (GitLab #40)
