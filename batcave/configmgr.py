@@ -48,7 +48,6 @@ class ConfigCollection:
             suffix (optional, default=_config.xml): The suffix to add to the name to derive the configuration file name.
 
         Attributes:
-            name: The value of the name argument.
             params: This is the list of configuration parameters read from the configuration section.
             parent: The parent configuration.
             _config_filename: The derived name of the configuration file.
@@ -57,6 +56,7 @@ class ConfigCollection:
             _data_source: A reference to the DataSource instance read from the configuration file.
             _mask_missing: This value is read from the configuration section and
                 if True will prevent missing values from the parent from creating values.
+            _name: The value of the name argument.
 
         Raises:
             ConfigurationError.BAD_FORMAT: The the format of the configuration file is not valid.
@@ -64,7 +64,7 @@ class ConfigCollection:
             ConfigurationError.CONFIG_NOT_FOUND: If the derived configuration file is not found.
         """
         path_name = Path(name)
-        self.name = path_name.name
+        self._name = path_name.name
         self._config_filename = path_name.parent / (path_name.name + suffix)
         try:
             self._data_source = DataSource(SourceType.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
@@ -111,6 +111,8 @@ class ConfigCollection:
             raise StopIteration()
         self._current += 1
         return self._configs[self._current - 1]
+
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')
 
     def add(self, name: str) -> str:
         """Add an item to the configuration collection.

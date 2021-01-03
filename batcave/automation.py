@@ -67,9 +67,9 @@ class Action:
             **_unused_kwargs: All arguments passed are ignored by the time they reach this initializer.
 
         Attributes:
-            project_root: The parent directory from where the current action is run.
+            _project_root: The parent directory from where the current action is run.
         """
-        self.project_root = Path.cwd().parent
+        self._project_root = Path.cwd().parent
 
     def __enter__(self):
         return self
@@ -80,6 +80,8 @@ class Action:
     @abstractmethod
     def _execute(self) -> None:
         pass
+
+    project_root = property(lambda s: s._project_root, doc='A read-only property which returns the root of the automation.')
 
     def pre(self) -> None:
         """Executed before _execute().

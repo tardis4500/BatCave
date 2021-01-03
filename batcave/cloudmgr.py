@@ -62,12 +62,12 @@ class Cloud:
 
         Attributes:
             auth: The value of the auth argument.
-            type: The value of the ctype argument.
             _client: A reference to the underlying client API object.
+            _type: The value of the ctype argument.
         """
-        self.type = ctype
-        self.auth = auth
         self._client: Any = False
+        self._type = ctype
+        self.auth = auth
         validatetype(self.type)
         if login:
             self.login()
@@ -78,7 +78,8 @@ class Cloud:
     def __exit__(self, *exc_info):
         return False
 
-    client = property(lambda s: s._client)
+    client = property(lambda s: s._client, doc='A read-only property which returns the client reference.')
+    type = property(lambda s: s._type, doc='A read-only property which returns the cloud type.')
 
     def exec(self, *args, **kwargs) -> CommandResult:
         """Execute a command against the cloud API.
@@ -173,16 +174,16 @@ class Image:
             name: The image name.
 
         Attributes:
-            cloud: The value of the cloud argument.
-            name: The value of the name argument.
+            _cloud: The value of the cloud argument.
             _docker_client: A reference to the client from the Docker API.
+            _name: The value of the name argument.
             _ref: A reference to the underlying API object.
 
         Raises:
             CloudError.INVALID_OPERATION: If the specified cloud type is not supported.
         """
-        self.cloud = cloud
-        self.name = name
+        self._cloud = cloud
+        self._name = name
         self._docker_client: DockerClient = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()
         self._ref: Any
         for case in switch(self.cloud.type):
@@ -200,6 +201,9 @@ class Image:
 
     def __exit__(self, *exc_info):
         return False
+
+    cloud = property(lambda s: s._cloud, doc='A read-only property which returns the container cloud object.')
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the image.')
 
     containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
                           doc='A read-only property which returns all the containers for this image.')
@@ -313,15 +317,15 @@ class Container:
             name: The container name.
 
         Attributes:
-            cloud: The value of the cloud argument.
-            name: The value of the name argument.
+            _cloud: The value of the cloud argument.
+            _name: The value of the name argument.
             _ref: A reference to the underlying API object.
 
         Raises:
             CloudError.INVALID_OPERATION: If the specified cloud type is not supported.
         """
-        self.cloud = cloud
-        self.name = name
+        self._cloud = cloud
+        self._name = name
         self._ref: Any
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):
@@ -335,6 +339,9 @@ class Container:
 
     def __exit__(self, *exc_info):
         return False
+
+    cloud = property(lambda s: s._cloud, doc='A read-only property which returns the container cloud object.')
+    name = property(lambda s: s._name, doc='A read-only property which returns the name of the container.')
 
     def stop(self) -> DockerContainer:
         """Stop a running container.
