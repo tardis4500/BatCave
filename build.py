@@ -177,7 +177,7 @@ def post_release_update(args: Namespace) -> None:
     if args.tag_source:
         MESSAGE_LOGGER(f'Tagging the source with v{args.release}')
         git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
-        git_client.add_label(f'v{args.release}', exists_ok=True)
+        git_client.add_label(f'v{args.release}', tag_message=f'version {args.release}', exists_ok=True)
     if args.checkin:
         git_client.checkin_files('Automated pipeline checking', remote='user_origin', tags=True)
 

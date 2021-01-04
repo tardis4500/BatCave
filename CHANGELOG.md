@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Create PyPi facing DOCUMENTATION.md. (GitLab #26)
   - More variable renames due to rename to BatCave. (GitLab #27)
   - Improved docstrings. (GitLab #29)
+  - Create an annotated tag on release. (GitLab #30)
   - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
   - Protect read-only public members behind property definition. (GitLab #38)
   - Don't install PyQt5 on Android architectures. (GitLab #39)

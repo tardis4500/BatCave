@@ -677,26 +677,30 @@ class Client:
                 return self._p4run('add', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
-    def add_label(self, tag_name: str, exists_ok: bool = False, no_execute: bool = False) -> List[str]:
+    def add_label(self, tag_name: str, tag_message: str, exists_ok: bool = False, no_execute: bool = False) -> List[str]:
         """Add a label.
 
         Args:
             tag_name: The name of the label to add.
+            tag_message: The message used as a tag annotation.
             exists_ok (optional, default=False): If True and the label already exists, delete the label before adding it.
             no_execute (optional, default=False): If True, run the command but don't revert the files.
 
         Returns:
-            The result of the add label command.
+            The list of label objects.
 
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         for case in switch(self._type):
             if case(ClientType.git):
+                args: Dict[str, Any] = dict()
                 if not no_execute:
-                    if exists_ok and tag_name in self._client.tags:
-                        self._client.delete_tag(tag_name)
-                    return self._client.create_tag(tag_name)
+                    if exists_ok:
+                        args['force'] = True
+                    if tag_message:
+                        args['message'] = tag_message
+                    return [self._client.create_tag(tag_name, **args)]
                 return list()
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
