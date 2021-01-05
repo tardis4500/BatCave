@@ -9,6 +9,7 @@ Attributes:
 # pylint: disable=too-many-lines,too-many-arguments,too-many-branches,too-many-public-methods,too-many-locals,too-many-statements,c-extension-no-member
 
 # Import standard modules
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from glob import glob
@@ -1503,54 +1504,48 @@ class Client:
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
 
-class FileRevision:  # pylint: disable=too-few-public-methods
-    """This class describes information about a file revision."""
-
-    def __init__(self, filename: str, revision: str, author: str, date: str, labels: List, description: str):
-        """
-        Args/Attributes:
+@dataclass(frozen=True)
+class FileRevision:
+    """This class describes information about a file revision.
+        Attributes:
             filename: The name of the file.
             revision: The revision number for this revision.
             description: The description for this revision.
             author: The user that made this revision.
             labels: A list of labels on this revision.
-        """
-
-        self.filename: str = filename
-        self.revision: str = revision
-        self.author: str = author
-        self.date: str = date
-        self.labels: List[str] = labels
-        self.description: str = description
+    """
+    filename: str
+    revision: str
+    author: str
+    date: str
+    labels: List[str]
+    description: str
 
     def __str__(self):
         return f'{self.filename}#{self.revision} by {self.author} on {self.date}\nLabels: {self.labels}\nDescription: {self.description}\n'
 
 
+@dataclass(frozen=True)
 class FileChangeRecord:
-    """This class describes information about a file change."""
-
-    def __init__(self, client: Client, filename: str, revision: str, mod_type: str, changelist: str):
-        """
-        Args/Attributes:
+    """This class describes information about a file change.
+        Attributes:
             client: The CMS Client object where this file change record is located.
             filename: The name of the file.
             revision: The revision number for this revision.
             mod_type: The type of modification for the file.
             changelist: The changelist number for the change record.
-        """
-
-        self._client: Client = client
-        self.filename: str = filename
-        self.revision: str = revision
-        self.type: str = mod_type
-        self.changelist: str = changelist
+    """
+    client: Client
+    filename: str
+    revision: str
+    type: str
+    changelist: str
 
     def __str__(self):
-        for case in switch(self._client.type):
+        for case in switch(self.client.type):
             if case(ClientType.perforce):
                 return f'{self.filename}#{self.revision} {self.type} {self.changelist}'
-        raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
+        raise CMSError(CMSError.INVALID_OPERATION, ctype=self.client.type.name)
 
     fullname = property(lambda s: f'{s.filename}#{s.revision}', doc='A read-only property which returns the full name of the changed file.')
 

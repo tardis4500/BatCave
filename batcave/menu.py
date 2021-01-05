@@ -1,64 +1,38 @@
 """This module provides utilities for creating command line menus."""
 
 # Import standard modules
+from dataclasses import dataclass
 from typing import cast, List, Union
 
 
-class MenuItem:  # pylint: disable=too-few-public-methods
-    """Class to represent a single menu item."""
-
-    def __init__(self, key: str, desc: str):
-        """
-        Args:
+@dataclass(frozen=True)
+class MenuItem:
+    """Class to represent a single menu item.
+        Attributes:
             key: The key input for the menu selection.
             desc: The text description for the menu selection.
-
-        Attributes:
-            desc: The value of the desc argument.
-            key: The value of the key argument.
-        """
-        self.key = key
-        self.desc = desc
-
-
-class Menu:  # pylint: disable=too-few-public-methods
-    """Class to create a universal abstract interface for a command-line menu.
-
-    Attributes:
-        _DEFAULT_INVALID_MESSAGE: The default message to use for an invalid choice.
-        _DEFAULT_TITLE: The default menu title
-        _DEFAULT_PROMPT: The default choice prompt.
     """
-    _DEFAULT_INVALID_MESSAGE = '\nInvalid choice\n'
-    _DEFAULT_PROMPT = '-> '
-    _DEFAULT_TITLE = '\nSelect one of the following\n'
+    key: str
+    desc: str
 
-    def __init__(self, items: List[MenuItem],  # pylint: disable=too-many-arguments
-                 title: str = _DEFAULT_TITLE, prompt: str = _DEFAULT_PROMPT, invalidmsg: str = _DEFAULT_INVALID_MESSAGE,
-                 multiselect: bool = False, ignorecase: bool = True):
-        """
-        Args:
+
+@dataclass
+class Menu:
+    """Class to create a universal abstract interface for a command-line menu.
+        Attributes:
             items: The list of items for the menu.
             title (optional, default=_DEFAULT_TITLE): The title for the menu.
             prompt (optional, default=_DEFAULT_PROMPT): The prompt for the menu.
             invalidmsg (optional, default=_DEFAULT_INVALID_MESSAGE): The invalid choice message.
             multiselect (optional, default=False): If True, multiple options can be selected.
             ignorecase (optional, default=True): If True, menu input will be case insensitive.
-
-        Attributes:
-            ignorecase: The value of the ignorecase argument.
-            invalidmsg: The value of the invalidmsg argument.
-            items: The value of the items argument.
-            multiselect: The value of the multiselect argument.
-            prompt: The value of the prompt argument.
-            title: The value of the title argument.
-        """
-        self.items = items
-        self.title = title
-        self.prompt = prompt
-        self.invalidmsg = invalidmsg
-        self.multiselect = multiselect
-        self.ignorecase = ignorecase
+    """
+    items: List[MenuItem]
+    title: str = '\nSelect one of the following\n'
+    prompt: str = '-> '
+    invalidmsg: str = '\nInvalid choice\n'
+    multiselect: bool = False
+    ignorecase: bool = True
 
     def show(self) -> Union[str, List[str]]:
         """Show the menu.
@@ -93,23 +67,17 @@ class Menu:  # pylint: disable=too-few-public-methods
         return choices if self.multiselect else choices[0]
 
 
-class SimpleMenu(Menu):  # pylint: disable=too-few-public-methods
-    """A simplified version of the Menu class."""
-
-    def __init__(self, itemlist: List[str], return_text: bool = False, **args):
-        """
-        Args:
-            itemlist: The list of items for the menu to which an 'Exit' option will be appended.
-            return_text (optional, default=False): If True the text of the menu selection will be returned instead of the key.
-            args (optional): A dictionary of arguments to pass to the base Menu class.
-
+@dataclass
+class SimpleMenu(Menu):
+    """A simplified version of the Menu class.
         Attributes:
-            itemlist: The value of the itemlist argument with ['Exit'] appended.
-            return_text: The value of the return_text argument.
-        """
-        self.itemlist = list(itemlist) + ['Exit']
-        self.return_text = return_text
-        super().__init__([MenuItem(str(i), itemlist[i - 1]) for i in range(1, len(itemlist) + 1)] + [MenuItem('0', 'Exit')], **args)
+            return_text (optional, default=False): If True the text of the menu selection will be returned instead of the key.
+    """
+    return_text: bool = False
+
+    def __post_init__(self):
+        itemlist = list(self.itemlist) + ['Exit']  # pylint: disable=access-member-before-definition
+        self.itemlist = [MenuItem(str(i), itemlist[i - 1]) for i in range(1, len(itemlist) + 1)] + [MenuItem('0', 'Exit')]
 
     def show(self) -> str:
         """Show the menu.

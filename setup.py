@@ -35,14 +35,14 @@ setup(
         'License :: OSI Approved :: MIT License',
 
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
 
         'Intended Audience :: Developers',
         'Topic :: Software Development',
         'Natural Language :: English',
     ],
 
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     packages=find_packages(),
     install_requires=['docker >= 4.0',
                       'GitPython >= 3.0',

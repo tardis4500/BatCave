@@ -2,6 +2,7 @@
 
 # Import standard modules
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, HelpFormatter, Namespace, REMAINDER, _MutuallyExclusiveGroup
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Type, Union
 
 # Import internal modules
@@ -26,24 +27,17 @@ class Argument:  # pylint: disable=too-few-public-methods
         self.options: Dict = options
 
 
-class SubParser:  # pylint: disable=too-few-public-methods
-    """This is a simple container class to encapsulate a subparser definition."""
-
-    def __init__(self, subcommand: str, command_runner: Callable, arguments: Sequence[Argument] = tuple()):
-        """
-        Args:
+@dataclass(frozen=True)
+class SubParser:
+    """This is a simple container class to encapsulate a subparser definition.
+        Attributes:
             subcommand: The subcommand name for the subparser.
             command_runner: The function which runs the commands for the subparser.
             arguments (optional, default=None): A list of arguments for the subparser.
-
-        Attributes:
-            arguments: The value of the arguments argument.
-            command_runner: The value of the command_runner argument.
-            subcommand: The value of the subcommand argument.
-        """
-        self.subcommand = subcommand
-        self.command_runner = command_runner
-        self.arguments = arguments
+    """
+    subcommand: str
+    command_runner: Callable
+    arguments: Sequence[Argument] = field(default_factory=tuple)
 
 
 class Commander:

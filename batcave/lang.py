@@ -8,6 +8,7 @@ Attributes:
 """
 
 # Import standard modules
+from dataclasses import dataclass
 from os import getenv
 from pathlib import Path, PurePath
 from string import Template
@@ -105,20 +106,15 @@ class BatCaveException(Exception, MsgStr):
     code = property(lambda s: s._errobj.code, doc='A read-only property which returns the error code from the error object.')
 
 
-class BatCaveError:  # pylint: disable=too-few-public-methods
-    """A class to provide an interface for inspecting exceptions."""
-    def __init__(self, code: int, msg: MessageString):
-        """
-        Args:
+@dataclass(frozen=True)
+class BatCaveError:
+    """A class to provide an interface for inspecting exceptions.
+        Attributes:
             code: A unique error code for this error.
             msg: A user-facing message for this error.
-
-        Attributes:
-            code: The value of the code argument.
-            msg: The value of the msg argument.
-        """
-        self.code = code
-        self.msg = msg
+    """
+    code: int
+    msg: MessageString
 
 
 class PythonVersionError(BatCaveException):
