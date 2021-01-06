@@ -16,6 +16,7 @@ import sys
 from copy import copy as copy_object
 from enum import Enum
 from errno import EACCES, EAGAIN, ECHILD
+from logging import Logger
 from os import chdir, getenv, remove, unlink, walk
 from pathlib import Path
 from shutil import rmtree, chown as os_chown
@@ -26,7 +27,6 @@ from typing import cast, Any, Callable, IO, Iterable, List, Optional, Tuple, Tex
 
 # Import internal modules
 from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
-from .logger import Logger
 
 if WIN32:
     import msvcrt  # pylint: disable=import-error

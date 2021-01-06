@@ -4,10 +4,9 @@
 from enum import Enum
 from pathlib import Path
 from string import Template
-from typing import Dict, Optional, Sequence
+from typing import Sequence
 
 # Import internal modules
-from .logger import Logger
 from .sysutil import LockFile
 from .lang import is_debug, BatCaveError, BatCaveException, PathName
 
@@ -46,25 +45,20 @@ class StateMachine:
         _DEFAULT_LOCKFILE: The default file to use for file locking.
     """
     _DEFAULT_LOCKFILE = Path('lock')
-    _DEFAULT_LOGFILE = Path('log')
     _DEFAULT_STATEFILE = Path('state')
 
-    def __init__(self, states: Sequence, statefile: PathName = _DEFAULT_STATEFILE, logfile: PathName = _DEFAULT_LOGFILE,  # pylint: disable=too-many-arguments
-                 lockfile: PathName = _DEFAULT_LOCKFILE, logger_args: Optional[Dict] = None, autostart: bool = True):
+    def __init__(self, states: Sequence, statefile: PathName = _DEFAULT_STATEFILE, lockfile: PathName = _DEFAULT_LOCKFILE, autostart: bool = True):
         """
         Args:
             states: The list of states for the state machine.
             statefile (optional, default=_DEFAULT_STATEFILE): The value of the file in which to store the state machine state.
-            logfile (optional, default=_DEFAULT_LOGFILE): The log file to use for logging.
             lockfile (optional, default=_DEFAULT_LOCKFILE): The file to use to lock the state machine.
-            logger_args (optional, default=None): The arguments to pass to the Logger instance.
             autostart (optional, default=True): If True, start the state machine when the instance is created.
 
         Attributes:
             state: Indicates the current state of the state machine.
             status: Indicates the current status of the state machine.
             _locker: The value of the lockfile argument.
-            _logger: The logging instance created from the logfile and logger_args arguments.
             _started: Indicates if the state machine is running.
             _statefile: The value of the statefile argument.
             _states: The value of the states argument prepended by 'None.'
@@ -74,7 +68,6 @@ class StateMachine:
         """
         self._statefile = Path(statefile)
         self._locker = LockFile(lockfile)
-        self._logger = Logger(logfile, **(logger_args if logger_args else dict()))
         self._states = ['None'] + list(states)
         self._started = False
         if self._statefile.exists():
@@ -119,7 +112,6 @@ class StateMachine:
         Returns:
             Nothing.
         """
-        self._logger.shutdown()
         self._locker.close()
 
     def enter_next_state(self) -> None:

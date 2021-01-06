@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Only install WMI module on Windows platform.
   - Improve freeze utility function.
 
+- Removed
+  - Removed logger module. (GitLab #37)
+
 <!-- This comment will prevent merge conflicts -->
 ## Release History
 
