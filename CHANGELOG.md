@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### [39.0.0] - Unreleased
 
+- Added
+  - Added close/__enter__/__exit__ to ConfigurationSet and Configuration in configmgr. (GitLab #35)
+
 - Changed
   - Upgrade minimum Python to 3.7 and use dataclasses where applicable. (GitLab #5)
   - Create PyPi facing DOCUMENTATION.md. (GitLab #26)

@@ -92,6 +92,13 @@ class ConfigCollection:
             self._configs += [c for c in self.parent if c.name not in config_names]
         self._current = 0
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
+        return False
+
     def __getattr__(self, attr: str):
         if self._data_source.hastable(attr):
             parent_config = getattr(self.parent, attr) if (self.parent and hasattr(self.parent, attr)) else None
@@ -127,6 +134,10 @@ class ConfigCollection:
         self._data_source.commit()
         return getattr(self, name)
 
+    def close(self) -> None:
+        """Close the underlying data source."""
+        self._data_source.close()
+
 
 class Configuration:
     """This is a container class to hold an individual configuration in a collection."""
@@ -151,6 +162,12 @@ class Configuration:
         self._data_table = self._data_source.gettable(name)
         self._parent = parent
         self._include = include
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
 
     def __getattr__(self, attr: str) -> str:
         # First check this configuration to see if it has the requested attribute
