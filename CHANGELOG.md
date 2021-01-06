@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Don't install psutil on arm architectures. (GitLab #39)
   - Use splitlines() instead of split('\n'). (GitLab #40)
   - Fixed failure on cloudmgr.Image.pull method. (GitLab #41)
+  - Move build.py to root of project. (GitLab #45)
   - Use exception chaining where appropriate. (GitLab #49)
   - Fix errors in cms.Client.switch method for existing branches in Git. (GitLab #50)
   - Fix pylance linting errors.
