@@ -13,7 +13,7 @@ from typing import cast, Any, Callable, List, Optional, Type, TypeVar
 
 # # Import third-party modules
 from kubernetes import config as k8s_config  # type: ignore
-from kubernetes.client import BatchV1Api, CoreV1Api  # type: ignore
+from kubernetes.client import BatchV1Api, CoreV1Api, V1Namespace, V1ObjectMeta  # type: ignore
 from kubernetes.stream import stream as k8s_process  # type: ignore
 from yaml import safe_load as yaml_load
 
@@ -21,9 +21,9 @@ from yaml import safe_load as yaml_load
 from .lang import BatCaveError, BatCaveException, CommandResult, PathName
 from .sysutil import SysCmdRunner
 
-kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
+K8sObject = TypeVar('K8sObject', 'Pod', 'Job', 'Namespace')
 
-K8sObject = TypeVar('K8sObject', 'Pod', 'Job')
+kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
 
 
 class ClusterError(BatCaveException):
@@ -86,10 +86,30 @@ class Cluster:
             item_class = globals()[item_class_name.capitalize()]
             method = getattr(self, f'{verb}_item{plural}')
             return lambda *a, **k: method(item_class, *a, **k)
-        raise AttributeError(f'No attribute for cluster: {attr}')
+        try:
+            return getattr(self, f'get_{attr}')()
+        except KeyError as err:
+            raise AttributeError(f'No attribute for cluster: {attr}') from err
 
     config = property(lambda s: s._config, doc='A read-only property which returns configuration file for the cluster.')
     pod_exec = property(lambda s: s._core_api.connect_get_namespaced_pod_exec, doc='A read-only property which returns the pd exec function for the cluster.')
+
+    def create_namespace(self, name: str, exists_ok: bool = False) -> 'Namespace':
+        """Create a namespace.
+
+        Args:
+            name: The name of the namespace to create.
+            exists_ok (optional, default=False): If True and the item already exists, delete before creating.
+
+        Returns:
+            The created namespace.
+        """
+        if not (self.has_item(Namespace, name) and exists_ok):
+            namespace = V1Namespace()
+            namespace.metadata = V1ObjectMeta()
+            namespace.metadata.name = name
+            self._core_api.create_namespace(namespace)
+        return self.get_item(Namespace, name)
 
     def create_item(self, item_class: Type[K8sObject], item_spec: PathName, namespace: str = 'default', exists_ok: bool = False) -> K8sObject:
         """Create a new item using the specified spec.
@@ -178,7 +198,10 @@ class Cluster:
         Raises:
             AttributeError: If the method is not found.
         """
-        method_name = f'{method}_namespaced_{item_class.__name__.lower()}'
+        method_name = method
+        if item_class._NAMESPACED:
+            method_name += '_namespaced'
+        method_name += f'_{item_class.__name__.lower()}'
         if suffix:
             method_name += f'_{suffix}'
         for api in (self._core_api, self._batch_api):
@@ -197,7 +220,10 @@ class Cluster:
         Returns:
             The requested item.
         """
-        return item_class(self, self.find_method(item_class, 'read')(name, namespace))
+        args = [name]
+        if item_class._NAMESPACED:
+            args.append(namespace)
+        return item_class(self, self.find_method(item_class, 'read')(*args))
 
     def get_items(self, item_class: Type[K8sObject], namespace: str = 'default', **keys) -> List[K8sObject]:
         """Get all the item of the requested type.
@@ -210,7 +236,9 @@ class Cluster:
         Returns:
             The requested item list.
         """
-        return [item_class(self, i) for i in self.find_method(item_class, 'list')(namespace, **keys).items]
+        if item_class._NAMESPACED:
+            keys['namespace'] = namespace
+        return [item_class(self, i) for i in self.find_method(item_class, 'list')(**keys).items]
 
     def has_item(self, item_class: Type[K8sObject], item_name: str, namespace: str = 'default') -> bool:
         """Determine if the named items of the specified class exists.
@@ -243,7 +271,12 @@ class Cluster:
 
 
 class ClusterObject:  # pylint: disable=too-few-public-methods
-    """Class to create a universal abstract interface for a Kubernetes cluster object."""
+    """Class to create a universal abstract interface for a Kubernetes cluster object.
+
+    Attributes:
+        _NAMESPACED: If True, the object is a cluster namespaced object.
+    """
+    _NAMESPACED = True
 
     def __init__(self, cluster: Cluster, object_ref: Any):
         """
@@ -262,6 +295,11 @@ class ClusterObject:  # pylint: disable=too-few-public-methods
         if hasattr(self._object_ref, attr):
             return getattr(self._object_ref, attr)
         return getattr(self._object_ref.metadata, attr)
+
+
+class Namespace(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes namespace."""
+    _NAMESPACED = False
 
 
 class Pod(ClusterObject):

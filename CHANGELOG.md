@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added
   - Added close/__enter__/__exit__ to ConfigurationSet and Configuration in configmgr. (GitLab #35)
+  - Added Namespace support to k8s module. (GitLab #44)
 
 - Changed
   - Upgrade minimum Python to 3.7 and use dataclasses where applicable. (GitLab #5)
