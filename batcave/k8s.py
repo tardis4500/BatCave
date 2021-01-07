@@ -199,7 +199,7 @@ class Cluster:
             AttributeError: If the method is not found.
         """
         method_name = method
-        if item_class._NAMESPACED:
+        if item_class.NAMESPACED:
             method_name += '_namespaced'
         method_name += f'_{item_class.__name__.lower()}'
         if suffix:
@@ -221,7 +221,7 @@ class Cluster:
             The requested item.
         """
         args = [name]
-        if item_class._NAMESPACED:
+        if item_class.NAMESPACED:
             args.append(namespace)
         return item_class(self, self.find_method(item_class, 'read')(*args))
 
@@ -236,7 +236,7 @@ class Cluster:
         Returns:
             The requested item list.
         """
-        if item_class._NAMESPACED:
+        if item_class.NAMESPACED:
             keys['namespace'] = namespace
         return [item_class(self, i) for i in self.find_method(item_class, 'list')(**keys).items]
 
@@ -274,9 +274,9 @@ class ClusterObject:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Kubernetes cluster object.
 
     Attributes:
-        _NAMESPACED: If True, the object is a cluster namespaced object.
+        NAMESPACED: If True, the object is a cluster namespaced object.
     """
-    _NAMESPACED = True
+    NAMESPACED = True
 
     def __init__(self, cluster: Cluster, object_ref: Any):
         """
@@ -299,7 +299,7 @@ class ClusterObject:  # pylint: disable=too-few-public-methods
 
 class Namespace(ClusterObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Kubernetes namespace."""
-    _NAMESPACED = False
+    NAMESPACED = False
 
 
 class Pod(ClusterObject):
