@@ -22,18 +22,20 @@ from docker.models.containers import Container as DockerContainer  # type: ignor
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, WIN32
 from .sysutil import SysCmdRunner
 
-CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))  # pylint: disable=invalid-name
+CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))
 
+# pylint: disable=invalid-name
 if WIN32:
     user_install = Path(getenv('USERPROFILE', '')) / 'APPDATA/LOCAL'
-    gcloud_command_location = 'Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd'  # pylint: disable=invalid-name
+    gcloud_command_location = 'Google/Cloud SDK/google-cloud-sdk/bin/gcloud.cmd'
     if (user_install / gcloud_command_location).exists():
-        gcloud_command = str(user_install / gcloud_command_location)  # pylint: disable=invalid-name
+        gcloud_command = str(user_install / gcloud_command_location)
     else:
-        gcloud_command = str(Path(getenv('ProgramFiles(x86)', '')) / gcloud_command_location)  # pylint: disable=invalid-name
+        gcloud_command = str(Path(getenv('ProgramFiles(x86)', '')) / gcloud_command_location)
 else:
-    gcloud_command = 'gcloud'  # pylint: disable=invalid-name
-gcloud = SysCmdRunner(gcloud_command, '-q', use_shell=WIN32).run  # pylint: disable=invalid-name
+    gcloud_command = 'gcloud'
+gcloud = SysCmdRunner(gcloud_command, '-q', use_shell=WIN32).run
+# pylint: enable=invalid-name
 
 
 class CloudError(BatCaveException):
@@ -295,8 +297,7 @@ class Image:
             if case(CloudType.local, CloudType.dockerhub):
                 self.pull()
                 self._ref.tag(new_tag)
-                new_ref = Image(self.cloud, new_tag)
-                new_ref.push()
+                (new_ref := Image(self.cloud, new_tag)).push()
                 break
             if case(CloudType.gcloud):
                 self.cloud.exec('container', 'images', 'add-tag', self.name, new_tag, ignore_stderr=True)
@@ -326,7 +327,7 @@ class Container:
         """
         self._cloud = cloud
         self._name = name
-        self._ref: Any
+        self._ref: Any = None
         for case in switch(self.cloud.type):
             if case(CloudType.local, CloudType.dockerhub):
                 self._ref = self.cloud.client.containers.get(self.name)

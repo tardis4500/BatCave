@@ -130,9 +130,8 @@ class Action:
         Returns:
             Nothing.
         """
-        the_guard: str = self.MESSAGE_GUARD if (guard is True) else ''
         the_leader: str = f'{leader} ' if leader else ''
-        if the_guard:
+        if the_guard := (self.MESSAGE_GUARD if (guard is True) else ''):
             print(f'{the_leader}{the_guard}')
         print(f'{the_leader}{message}')
         sys.stdout.flush()

@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Added Namespace support to k8s module. (GitLab #44)
 
 - Changed
-  - Upgrade minimum Python to 3.7 and use dataclasses where applicable. (GitLab #5)
+  - Use dataclasses where applicable. (GitLab #5)
+  - Upgrade minimum Python to 3.8. (GitLab #6)
+  - Use walrus operator where applicable. (GitLab #6)
   - Create PyPi facing DOCUMENTATION.md. (GitLab #26)
   - More variable renames due to rename to BatCave. (GitLab #27)
   - Improved docstrings. (GitLab #29)

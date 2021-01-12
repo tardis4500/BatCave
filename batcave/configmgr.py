@@ -63,8 +63,7 @@ class ConfigCollection:
             ConfigurationError.BAD_SCHEMA: If the schema of the configuration file is not supported.
             ConfigurationError.CONFIG_NOT_FOUND: If the derived configuration file is not found.
         """
-        path_name = Path(name)
-        self._name = path_name.name
+        self._name = (path_name := Path(name)).name
         self._config_filename = path_name.parent / (path_name.name + suffix)
         try:
             self._data_source = DataSource(SourceType.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
@@ -159,7 +158,7 @@ class Configuration:
         """
         self._name = name
         self._data_source = config_source
-        self._data_table = self._data_source.gettable(name)
+        self._data_table = self._data_source.gettable(self._name)
         self._parent = parent
         self._include = include
 
@@ -171,8 +170,7 @@ class Configuration:
 
     def __getattr__(self, attr: str) -> str:
         # First check this configuration to see if it has the requested attribute
-        values = self._data_table.getrows(attr)
-        if values:
+        if values := self._data_table.getrows(attr):
             return values[0].getvalue(attr)
 
         # Next check the include configuration without considering its parents
@@ -201,8 +199,7 @@ class Configuration:
         if attr.startswith('_'):
             super().__setattr__(attr, value)
             return
-        data_row = self._data_table.getrows()[0]
-        data_row.setvalue(attr, value)
+        self._data_table.getrows()[0].setvalue(attr, value)
         self._data_source.commit()
 
     name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')

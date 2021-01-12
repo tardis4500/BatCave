@@ -31,8 +31,8 @@ from .sysutil import popd, pushd, rmtree_hard
 from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle, WIN32
 
 if WIN32:
-    import win32api  # type: ignore # pylint: disable=import-error
-    import win32con  # type: ignore # pylint: disable=import-error
+    import win32api  # type: ignore
+    import win32con  # type: ignore
 
 P4_LOADED: str
 try:  # Load the Perforce API if available
@@ -42,21 +42,15 @@ except Exception:  # pylint: disable=broad-except
 else:
     P4_LOADED = str(P4.P4().api_level)
 
-GIT_LOADED: str
-try:  # Load the Git API if available
-    import git  # type: ignore
-except Exception:  # pylint: disable=broad-except
-    GIT_LOADED = ''
-else:
-    GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
-import git  # noqa:E402, fixes pylance linting error  # pylint: disable=wrong-import-order,wrong-import-position
+import git  # type: ignore  # noqa:E402  # pylint: disable=wrong-import-order,wrong-import-position
+GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
 
-CleanType = Enum('CleanType', ('none', 'members', 'all'))  # pylint: disable=invalid-name
-ClientType = Enum('ClientType', ('file', 'git', 'perforce'))  # pylint: disable=invalid-name
-InfoType = Enum('InfoType', ('archive',))  # pylint: disable=invalid-name
-LabelType = Enum('LabelType', ('file', 'project'))  # pylint: disable=invalid-name
-LineStyle = Enum('LineStyle', ('local', 'unix', 'mac', 'win', 'share', 'native', 'lf', 'crlf'))  # pylint: disable=invalid-name
-ObjectType = Enum('ObjectType', ('changelist', 'string'))  # pylint: disable=invalid-name
+CleanType = Enum('CleanType', ('none', 'members', 'all'))
+ClientType = Enum('ClientType', ('file', 'git', 'perforce'))
+InfoType = Enum('InfoType', ('archive',))
+LabelType = Enum('LabelType', ('file', 'project'))
+LineStyle = Enum('LineStyle', ('local', 'unix', 'mac', 'win', 'share', 'native', 'lf', 'crlf'))
+ObjectType = Enum('ObjectType', ('changelist', 'string'))
 
 
 class CMSError(BatCaveException):
@@ -644,10 +638,7 @@ class Client:
                 popd()
                 return files
             if case(ClientType.git):
-                file_list: List[str] = list()
-                for (root, _unused_dirs, files) in walk_git_tree(self._client.tree()):
-                    file_list += [f'{root}/{f}' for f in files]
-                return file_list
+                return [f'{root}/{f}' for (root, _unused_dirs, files) in walk_git_tree(self._client.tree()) for f in files]
             if case(ClientType.perforce):
                 return self._p4run('have')
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -884,9 +875,9 @@ class Client:
                     args.append(branch_from)
                 self._client.create_head(*args)
                 getattr(self._client.heads, name).checkout()
-                if not no_execute:
-                    return self._client.git.push('origin', name, set_upstream=True)
-                return list()
+                if no_execute:
+                    return list()
+                return self._client.git.push('origin', name, set_upstream=True)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def create_repo(self, repository: str, repo_type: Optional[str] = None, no_execute: bool = False) -> List[str]:
@@ -908,9 +899,9 @@ class Client:
                 depotspec: Dict[str, Any] = self._p4fetch('depot', repository)
                 if repo_type:
                     depotspec['Type'] = repo_type
-                if not no_execute:
-                    return self._p4save('depot', depotspec)
-                return list()
+                if no_execute:
+                    return list()
+                return self._p4save('depot', depotspec)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def find(self, file_regex: str = '') -> List[str]:

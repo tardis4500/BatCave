@@ -1,4 +1,4 @@
-image: python:3.7-alpine
+image: python:3.8-alpine
 
 stages:
   - static_analysis
@@ -58,7 +58,7 @@ ci_build:
 
 install_test:
   stage: install_test
-  image: python:3.7
+  image: python:3.8
   except:
     - tags
   before_script:
