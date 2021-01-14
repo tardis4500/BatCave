@@ -100,8 +100,7 @@ def eol_convert(filename: PathName, mode: ConversionMode, backup: bool = True) -
     """
     filename = Path(filename)
     if backup:
-        backupfile = filename.parent / f'{filename.name}.bak'
-        if backupfile.exists():
+        if (backupfile := filename.parent / f'{filename.name}.bak').exists():
             raise ConvertError(ConvertError.BACKUP_EXISTS, file=backupfile)
         copy(filename, backupfile)
 
@@ -144,9 +143,7 @@ def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None,
         pkgfile = PACKER_CLASSES[arctype](archive, 'w', ZIP_DEFLATED)
         adder = 'write'
     else:
-        compression = COMPRESSION_TYPE.get(arctype, '')
-
-        if compression:
+        if compression := COMPRESSION_TYPE.get(arctype, ''):
             tar_name = archive.with_suffix('.tar')
             tarbug = True
         else:

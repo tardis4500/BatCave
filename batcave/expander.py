@@ -170,8 +170,7 @@ class Formatter:
         if not line or (self._LINK_PRELIM not in line):
             return line
 
-        match = self.link_regex.search(line)
-        if not match:
+        if not (match := self.link_regex.search(line)):
             raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         replace_what = match.group(0)
         link = match.group(1)
@@ -481,23 +480,13 @@ class Procedure:
         self.formatter: Formatter
         self.expander: Expander
 
-        xmlroot = xmlparse(slurp(procfile))
-        schema = str_to_pythonval(xmlroot.get(self._SCHEMA_ATTR, '0'))
-        if schema != self._REQUIRED_PROCEDURE_SCHEMA:
+        if (schema := str_to_pythonval((xmlroot := xmlparse(slurp(procfile))).get(self._SCHEMA_ATTR, '0'))) != self._REQUIRED_PROCEDURE_SCHEMA:
             raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
         self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
-
-        flags_element = xmlroot.find(self._FLAGS_TAG)
-        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if flags_element else dict()
-
-        directories_element = xmlroot.find(self._DIRECTORIES_TAG)
-        self.directories = [str(d.text) for d in list(directories_element)] if directories_element else list()
-
-        steps_element = xmlroot.find(self._STEPS_TAG)
-        self.steps = [Step(s) for s in list(steps_element)] if steps_element else list()
-
-        library_element = xmlroot.find(self._LIBRARY_TAG)
-        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if library_element else dict()
+        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xmlroot.find(self._FLAGS_TAG)) else dict()
+        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xmlroot.find(self._DIRECTORIES_TAG)) else list()
+        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xmlroot.find(self._STEPS_TAG)) else list()
+        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xmlroot.find(self._LIBRARY_TAG)) else dict()
 
         environments_element = xmlroot.find(self._ENVIRONMENTS_TAG)
         self.environments: Dict = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else dict()
@@ -521,8 +510,7 @@ class Procedure:
         # set the Environment variable and
         # set IsEnvironment to True for that environment
         for env in self.environments:
-            env_dict = deepcopy(common_environment)
-            env_dict.update(self.environments[env])
+            (env_dict := deepcopy(common_environment)).update(self.environments[env])
             if variable_overrides:
                 env_dict.update(variable_overrides)
             self.environments[env] = env_dict
@@ -583,8 +571,7 @@ class Procedure:
         """
         self.setup_expander(env)
         for dirname in self.directories:
-            dirpath = Path(dirname)
-            if not dirpath.is_absolute():
+            if not (dirpath := Path(dirname)).is_absolute():
                 dirpath = Path(source_root) / dirpath
             self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
 
@@ -689,8 +676,7 @@ class Procedure:
                 output = start_of_step + output + self.formatter.eos
             self.formatter.outdent()
         else:
-            output = self.format(step.text)
-            if output:
+            if output := self.format(step.text):
                 output = self.formatter.bol + output + self.formatter.eol
                 self.formatter.increment()
 
@@ -752,8 +738,7 @@ class Step:  # pylint: disable=too-few-public-methods
         self.repeat = step_def.get(self._REPEAT_ATTR, '')
         self.text = step_def.text.strip() if step_def.text else ''
         self.substeps = [Step(s) for s in list(step_def)]
-        var = step_def.get(self._VARS_ATTR, '')
-        self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if var else dict()
+        self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if (var := step_def.get(self._VARS_ATTR, '')) else dict()
 
     def dump(self) -> List:
         """Dump out the step contents.
@@ -776,8 +761,7 @@ def parse_flag(flag: str) -> Any:
     Raises:
         ProcedureError.BAD_FLAG: If the evaluated flag is not of type bool.
     """
-    value = str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False'))
-    if not isinstance(value, bool):
+    if not isinstance(value := str_to_pythonval(flag.lower().replace('0', 'False').replace('1', 'True').replace('yes', 'True').replace('no', 'False')), bool):
         raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
     return value
 

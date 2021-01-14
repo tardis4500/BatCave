@@ -196,8 +196,7 @@ class DataSource:
                 self._connection = xml_etree.ElementTree(self._source)
                 break
         if self.type != SourceType.xml_single:
-            source_info = self.addtable(self.INFO_TABLE)
-            source_info.addrow(schema=str(self._schema))
+            self.addtable(self.INFO_TABLE).addrow(schema=str(self._schema))
         self.commit()
 
     def _load(self) -> None:  # pylint: disable=too-many-branches
@@ -215,11 +214,9 @@ class DataSource:
             if case(SourceType.text):
                 self._source = dict()
                 table_name: str = ''
-                for line in open(self._connectinfo):
-                    line = line.strip()
-                    if line.startswith(self._TEXT_TABLE_DELIMITER):
-                        table_name = line.lstrip(self._TEXT_TABLE_DELIMITER)
-                        self._source[table_name] = list()
+                for raw_line in open(self._connectinfo):
+                    if (line := raw_line.strip()).startswith(self._TEXT_TABLE_DELIMITER):
+                        self._source[(table_name := line.lstrip(self._TEXT_TABLE_DELIMITER))] = list()
                         continue
                     row = dict()
                     for pair in line.split(self._TEXT_TABLE_DELIMITER):
@@ -750,7 +747,7 @@ class DataTable:
     raw = property(lambda s: s._table, doc='A read-only property which returns the raw contents of the data table.')
     type = property(lambda s: s._type, doc='A read-only property which returns the type of the data source.')
 
-    def addrow(self, **values) -> None:
+    def addrow(self, **values) -> DataRow:
         """Create a new row with the specified values.
 
         Args:
@@ -759,7 +756,7 @@ class DataTable:
         Returns:
             Nothing.
         """
-        row: Any = None
+        raw_row: Any = None
         for case in switch(self.type):
             if case(SourceType.text):
                 pass
@@ -770,18 +767,18 @@ class DataTable:
                 self._parent.add_section(self._INI_ROW_FORMAT % (self.name, row_num))
                 self._table.append(row_num)
                 self._parent.set(self.name, DataSource.INI_ROWLIST_OPT, ','.join([str(r) for r in self._table]))
-                row = self._INI_ROW_FORMAT % (self.name, row_num)
+                raw_row = self._INI_ROW_FORMAT % (self.name, row_num)
                 break
             if case(SourceType.xml_single):
-                row = xml_etree.SubElement(self._parent, self._XML_SINGLE_ROW_TAG)
+                raw_row = xml_etree.SubElement(self._parent, self._XML_SINGLE_ROW_TAG)
                 break
             if case(SourceType.xml_flat):
-                row = xml_etree.SubElement(self._parent, self.name)
+                raw_row = xml_etree.SubElement(self._parent, self.name)
                 break
             if case(SourceType.xml):
-                row = xml_etree.SubElement(self._table, self._XML_ROW_TAG)
+                raw_row = xml_etree.SubElement(self._table, self._XML_ROW_TAG)
                 break
-        row = DataRow(self.type, row, self._get_row_parent())
+        row = DataRow(self.type, raw_row, self._get_row_parent())
         for (var, val) in values.items():
             row.setvalue(var, val)
         return row
