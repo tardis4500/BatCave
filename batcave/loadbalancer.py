@@ -162,8 +162,7 @@ class LoadBalancer:
         Returns:
             The result of the flush call.
         """
-        group_ref = self.get_cache_content_group(group_name)
-        return NetScalerCacheContentGroup.flush(self._api, group_ref)
+        return NetScalerCacheContentGroup.flush(self._api, self.get_cache_content_group(group_name))
 
     def get_cache_content_group(self, group_name: str) -> str:
         """Get the specified load balancer cache content group.

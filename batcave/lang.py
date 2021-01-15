@@ -227,8 +227,7 @@ def is_debug(test_value: Optional[str] = None) -> bool:
     Return:
         True if the OS environment variable BATCAVE_DEBUG is set, False otherwise.
     """
-    debug_value = getenv('BATCAVE_DEBUG')
-    if not debug_value:
+    if not (debug_value := getenv('BATCAVE_DEBUG')):
         return False
     if not test_value:
         return True

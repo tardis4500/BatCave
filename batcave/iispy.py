@@ -443,17 +443,14 @@ class IISConfigurationSection:
         return ''.join([line for line in self._run_appcmd('list', 'config', self._path, f'/section:{self._name}') if line.strip()])
 
     def __getattr__(self, attr: str) -> str:
-        config = xmlparse_str(str(self))[0]
-        if config.attrib['CONFIG.SECTION'] != self._name:
+        if (config := xmlparse_str(str(self))[0]).attrib['CONFIG.SECTION'] != self._name:
             raise IISConfigurationError(IISConfigurationError.PARSE_ERROR, expected=self._name)
         result = None
-        cfg_section = config.find(self._name.replace('/', '-'))
-        if cfg_section:
+        if cfg_section := config.find(self._name.replace('/', '-')):
             if attr in cfg_section.attrib:
                 return str_to_pythonval(cfg_section.attrib[attr])
             if attr.endswith('s'):
-                cfg_section_plural = cfg_section.findall('.//' + attr.rstrip('s'))[0]
-                if cfg_section_plural:
+                if cfg_section_plural := cfg_section.findall('.//' + attr.rstrip('s'))[0]:
                     return str(cfg_section_plural.text)
             result = cfg_section.find(f'./[@{attr}]')
         if not result:
@@ -708,8 +705,7 @@ def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> CommandResult:
         if ('outlines' not in err.vars) or not err.vars['outlines']:
             raise
 
-        errmsg = xmlparse_list(err.vars['outlines']).find('ERROR')
-        if errmsg is None:
+        if (errmsg := xmlparse_list(err.vars['outlines']).find('ERROR')) is None:
             raise
         return_code = err.vars['returncode']
 

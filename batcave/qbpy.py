@@ -268,8 +268,7 @@ class QuickBuildConsole:
         xml_data: Union[str, Element] = str(dashboard) if isinstance(dashboard, QuickBuildDashboard) else dashboard
         if isinstance(xml_data, str):
             xml_data = fromstring(xml_data)
-        id_tag = xml_data.find('id')
-        if id_tag is not None:
+        if (id_tag := xml_data.find('id')) is not None:
             xml_data.remove(id_tag)
         cast(Element, xml_data.find('name')).text = name
         return QuickBuildDashboard(self, str(self.qb_runner('dashboards', xmldata=xml_data).text))
@@ -316,8 +315,7 @@ class QuickBuildConsole:
         else:
             caller = req_post
             api_args['data'] = xmldata if isinstance(xmldata, str) else tostring(xmldata)
-        result = caller(api_call, **api_args)
-        if result.status_code != codes.ok:  # pylint: disable=no-member
+        if (result := caller(api_call, **api_args)).status_code != codes.ok:  # pylint: disable=no-member
             result.raise_for_status()
         return result
 

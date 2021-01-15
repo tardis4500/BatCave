@@ -52,8 +52,7 @@ class Platform:  # pylint: disable=too-few-public-methods
                     build = 'unknown'
 
                 p4ver = batcave_version
-                p4_arch = sys_info.processor.replace(' ', '_')
-                if p4_arch in ('i686', 'i386', 'athalon'):
+                if (p4_arch := sys_info.processor.replace(' ', '_')) in ('i686', 'i386', 'athalon'):
                     p4_arch = 'x86'
                 break
 
@@ -62,8 +61,7 @@ class Platform:  # pylint: disable=too-few-public-methods
                 batcave_arch = bartarch = sys_info.machine
                 build = f'{sys_info.system} {sys_info.release} {sys_info.machine}'
                 p4ver = '80'
-                p4_arch = sys_info.processor.replace(' ', '_')
-                if p4_arch in ('i686', 'i386', 'athalon'):
+                if (p4_arch := sys_info.processor.replace(' ', '_')) in ('i686', 'i386', 'athalon'):
                     p4_arch = 'x86'
                 break
 

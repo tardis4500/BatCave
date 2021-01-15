@@ -216,8 +216,7 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
             Nothing.
         """
         edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
-        dirpath = Path(QFileDialog.getExistingDirectory(self))
-        if dirpath:
+        if dirpath := Path(QFileDialog.getExistingDirectory(self)):
             edit_control.setText(dirpath)
 
     def onGetFile(self, file_filter: Optional[str] = None) -> None:
@@ -230,8 +229,7 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
             Nothing.
         """
         edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
-        filepath = Path(QFileDialog.getOpenFileName(self, filter=file_filter)[0])
-        if filepath:
+        if filepath := Path(QFileDialog.getOpenFileName(self, filter=file_filter)[0]):
             edit_control.setText(filepath)
 
 
