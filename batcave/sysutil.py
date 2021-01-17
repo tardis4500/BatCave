@@ -235,8 +235,7 @@ def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] =
     Returns:
         Nothing.
     """
-    path = Path(pathname)
-    os_chown(path, user, group)
+    os_chown(path := Path(pathname), user, group)
     if recursive:
         for (root, dirs, files) in walk(path):
             for sub_path in dirs + files:
@@ -329,8 +328,7 @@ def rmpath(path_name: PathName) -> None:
     Returns:
         Nothing.
     """
-    path_name = Path(path_name)
-    if path_name.is_dir():
+    if (path_name := Path(path_name)).is_dir():
         rmtree_hard(path_name)
     else:
         path_name.unlink()

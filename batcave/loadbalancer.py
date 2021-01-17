@@ -19,7 +19,7 @@ from nssrc.com.citrix.netscaler.nitro.resource.config.lb.lbvserver_service_bindi
 
 # Import internal modules
 from .lang import BatCaveError, BatCaveException
-from .servermgr import _get_server_object, Server, ServerType
+from .servermgr import get_server_object, Server, ServerType
 
 _STATUS_CHECK_INTERVAL = 2
 
@@ -82,7 +82,7 @@ class LoadBalancer:
         Returns:
             The result of the server add call.
         """
-        server_object = _get_server_object(server_info)
+        server_object = get_server_object(server_info)
         ns_server = NetScalerServer()
         ns_server.name = server_object.hostname
         ns_server.ipaddress = server_object.ip
@@ -118,12 +118,12 @@ class LoadBalancer:
         else:
             port_value = port
 
-        server_objects = [_get_server_object(s) for s in (list(servers) if isinstance(servers, (tuple, list)) else [servers])]  # pylint: disable=superfluous-parens
+        server_objects = [get_server_object(s) for s in (list(servers) if isinstance(servers, (tuple, list)) else [servers])]  # pylint: disable=superfluous-parens
         service_objects = list(services) if isinstance(services, (tuple, list)) else [services]
         certificates = certificates if isinstance(certificates, (tuple, list)) else [certificates]
         responder_policies = responder_policies if isinstance(responder_policies, (tuple, list)) else [responder_policies]
 
-        server_object = _get_server_object(server_info)
+        server_object = get_server_object(server_info)
         ns_virtual_server = NetScalerVirtualServer()
         ns_virtual_server.name = server_object.hostname
         ns_virtual_server.servicetype = 'HTTP' if (service_type == LbVipType.SSL_OFFLOAD) else service_type.name
@@ -147,7 +147,7 @@ class LoadBalancer:
             for cert in certificates:
                 virtual_server.bind_certificate(cert)
         elif service_type == LbVipType.SSL_OFFLOAD:
-            server_object = _get_server_object(server_info)
+            server_object = get_server_object(server_info)
             offload_server_object = Server(f'{server_object.hostname}_offload', ip=server_object.ip)
             offload_server = self.add_virtual_server(offload_server_object, service_type=LbVipType.SSL, services=service_objects, certificates=certificates)
 
@@ -197,7 +197,7 @@ class LoadBalancer:
         Raises:
             LoadBalancerError.BAD_OBJECT: If the requested server could not be found.
         """
-        server_hostname = _get_server_object(server_info).hostname
+        server_hostname = get_server_object(server_info).hostname
         try:
             return LoadBalancerServer(self, NetScalerServer.get(self._api, server_hostname))
         except NetScalerError as err:
@@ -217,7 +217,7 @@ class LoadBalancer:
         Raises:
             LoadBalancerError.BAD_OBJECT: If the requested virtual server could not be found.
         """
-        server_hostname = _get_server_object(server_name).hostname
+        server_hostname = get_server_object(server_name).hostname
         try:
             return LoadBalancerVirtualServer(self, NetScalerVirtualServer.get(self._api, server_hostname))
         except NetScalerError as err:
@@ -261,7 +261,7 @@ class LoadBalancer:
             raise LoadBalancerError(LoadBalancerError.BAD_SERVER_SIGNAL, signal=signal.name)
 
         server_list = servers if isinstance(servers, (tuple, list)) else [cast(ServerType, servers)]
-        for server in [_get_server_object(s) for s in server_list]:
+        for server in [get_server_object(s) for s in server_list]:
             getattr(NetScalerServer, signal.name)(self._api, server.hostname)
             while validate and (self.get_server(server).state.lower() != (signal.name + 'd')):
                 sleep(_STATUS_CHECK_INTERVAL)

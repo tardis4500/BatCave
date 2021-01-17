@@ -297,8 +297,7 @@ class ReportObject:
         Returns:
             A value of the requested attribute.
         """
-        attr_ref = self._get_attr_ref(attr)
-        if isinstance(attr_ref, MetaAttribute):
+        if isinstance((attr_ref := self._get_attr_ref(attr)), MetaAttribute):
             sub_attr_ref = cast(SimpleAttribute, self._get_attr_ref(attr_ref.simple_attr_name))
             return attr_ref.get_value(sub_attr_ref.value)
         return attr_ref.value
@@ -314,9 +313,8 @@ class ReportObject:
             Nothing.
         """
         if attr not in self._attributes:
-            attr_ref = self._get_attr_ref(attr)
-            self._attributes[attr] = deepcopy(attr_ref)
-            if isinstance(attr_ref, MetaAttribute):
+            self._attributes[attr] = deepcopy(self._get_attr_ref(attr))
+            if isinstance(self._attributes[attr], MetaAttribute):
                 cast(MetaAttribute, self._attributes[attr]).values = val
             else:
                 cast(SimpleAttribute, self._attributes[attr]).value = val
@@ -607,8 +605,7 @@ class LinkList(Section):
         super().__init__(cont=cont, **attr)
         self._list = list()
         for key in sorted(urls.keys()):
-            link = Link(key, urls[key])
-            self.register_link(link)
+            self.register_link(link := Link(key, urls[key]))
             self._list.append(link)
 
     def __str__(self):

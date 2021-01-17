@@ -9,13 +9,6 @@ Attributes:
 from enum import Enum
 from sys import version as sys_version
 
-# Import internal modules
-from . import __copyright__, __title__, __version__, __builddate__, __buildname__
-from .platarch import Platform
-
-VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
-
-
 # Import third-party modules
 try:
     import PyQt5.QtCore as pyqt  # type: ignore
@@ -23,6 +16,12 @@ except ImportError:
     PYQT_LOADED = ''
 else:
     PYQT_LOADED = pyqt.__dict__['PYQT_VERSION_STR']
+
+# Import internal modules
+from . import __copyright__, __title__, __version__, __builddate__, __buildname__
+from .platarch import Platform
+
+VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
 
 
 def get_version_info(style: VersionStyle = VersionStyle.full, plattype: str = 'batcave_run', extra_info: str = '') -> str:

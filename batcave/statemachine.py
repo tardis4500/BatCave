@@ -129,8 +129,7 @@ class StateMachine:
             raise StateMachineError(StateMachineError.NOT_STARTED)
         if self.status != StateStatus.exited:
             raise StateMachineError(StateMachineError.BAD_ENTRY)
-        next_state_index = self._states.index(self.state) + 1
-        if next_state_index >= len(self._states):
+        if (next_state_index := self._states.index(self.state) + 1) >= len(self._states):
             raise StateMachineError(StateMachineError.DONE)
         self.status = StateStatus.entering
         self.state = self._states[next_state_index]

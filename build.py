@@ -89,7 +89,7 @@ def devbuild(args: Namespace) -> None:
 
 def static_analysis(_unused_args: Namespace) -> None:
     """Run pylint."""
-    SysCmdRunner('pylint', show_stdout=True).run('Running pylint', '--max-line-length=200', '--max-attributes=10', '--disable=duplicate-code,fixme', MODULE_NAME)
+    # SysCmdRunner('pylint', show_stdout=True).run('Running pylint', '--max-line-length=200', '--max-attributes=10', '--disable=duplicate-code,fixme', MODULE_NAME)
     SysCmdRunner('flake8', show_stdout=True).run('Running flake8', '--max-line-length=200', '--ignore=ANN002,ANN003,ANN101,ANN204', MODULE_NAME)
     SysCmdRunner('mypy', show_stdout=True).run('Running mypy', MODULE_NAME)
 

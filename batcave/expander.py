@@ -483,10 +483,10 @@ class Procedure:
         if (schema := str_to_pythonval((xmlroot := xmlparse(slurp(procfile))).get(self._SCHEMA_ATTR, '0'))) != self._REQUIRED_PROCEDURE_SCHEMA:
             raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
         self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
-        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xmlroot.find(self._FLAGS_TAG)) else dict()
-        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xmlroot.find(self._DIRECTORIES_TAG)) else list()
-        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xmlroot.find(self._STEPS_TAG)) else list()
-        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xmlroot.find(self._LIBRARY_TAG)) else dict()
+        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xmlroot.find(self._FLAGS_TAG)) else dict()  # pylint: disable=used-before-assignment
+        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xmlroot.find(self._DIRECTORIES_TAG)) else list()  # pylint: disable=used-before-assignment
+        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xmlroot.find(self._STEPS_TAG)) else list()  # pylint: disable=used-before-assignment
+        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xmlroot.find(self._LIBRARY_TAG)) else dict()  # pylint: disable=used-before-assignment
 
         environments_element = xmlroot.find(self._ENVIRONMENTS_TAG)
         self.environments: Dict = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else dict()
@@ -738,7 +738,7 @@ class Step:  # pylint: disable=too-few-public-methods
         self.repeat = step_def.get(self._REPEAT_ATTR, '')
         self.text = step_def.text.strip() if step_def.text else ''
         self.substeps = [Step(s) for s in list(step_def)]
-        self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if (var := step_def.get(self._VARS_ATTR, '')) else dict()
+        self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if (var := step_def.get(self._VARS_ATTR, '')) else dict()  # pylint: disable=used-before-assignment
 
     def dump(self) -> List:
         """Dump out the step contents.

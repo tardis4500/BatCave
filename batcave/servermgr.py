@@ -239,10 +239,8 @@ class Server:
         creation_args = {unique_key: unique_id, 'DisplayName': unique_id}
 
         created_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
-        if error_if_exists or not created_object:
-            result = getattr(manager, ManagementObject.OBJECT_PREFIX + item_type).Create(**creation_args, **key_args)[0]
-        else:
-            result = False
+        result = getattr(manager, ManagementObject.OBJECT_PREFIX + item_type).Create(**creation_args, **key_args)[0] \
+            if error_if_exists or not created_object else False
 
         if result:
             msg = self._WMI_SERVICE_CREATE_ERRORS[result] if (result in self._WMI_SERVICE_CREATE_ERRORS) else f'Return value: {result}'
@@ -275,10 +273,9 @@ class Server:
             exe_args = exe[1:]
             exe = exe[0]
 
-        create_base = ['/Create', '/F', '/TN', task]
-        cmd_args = create_base + ['/TR', ' '.join([f'"{exe}"'] + exe_args),
-                                  '/SC', schedule_type,
-                                  ('/ST' if (schedule_type.lower() == 'daily') else '/MO'), schedule]
+        cmd_args = (create_base := ['/Create', '/F', '/TN', task]) + ['/TR', ' '.join([f'"{exe}"'] + exe_args),
+                                                                      '/SC', schedule_type,
+                                                                      ('/ST' if (schedule_type.lower() == 'daily') else '/MO'), schedule]
 
         if user:
             cmd_args += ['/RU', user]
@@ -297,8 +294,7 @@ class Server:
         if start_in is None:
             start_in = Path(exe).parent
         if start_in:
-            task_file = ScheduledTask.TASK_HOME / task
-            task_xml = xmlparse(task_file)
+            task_xml = xmlparse(task_file := ScheduledTask.TASK_HOME / task)
             exec_el = cast(Element, task_xml.find('ns:Actions/ns:Exec', {'ns': ScheduledTask.TASK_NAMESPACE}))
             SubElement(exec_el, f'{{{ScheduledTask.TASK_NAMESPACE}}}WorkingDirectory').text = str(start_in)
             task_xml.write(task_file)
@@ -479,8 +475,7 @@ class Server:
         Raises:
             ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
         """
-        results = self.get_management_objects(item_type, wmi, **filters)
-        for case in switch(len(results)):
+        for case in switch(len(results := self.get_management_objects(item_type, wmi, **filters))):
             if case(0):
                 return None
             if case(1):
@@ -506,8 +501,7 @@ class Server:
         removal_object = cast('ManagementObject', self.get_unique_object(item_type, wmi, **{unique_key: unique_id}))
         if error_if_not_exists and not removal_object:
             raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=item_type)
-        result = removal_object.Delete()[0] if removal_object else False
-        if result:
+        if (result := removal_object.Delete()[0] if removal_object else False):
             msg = self._WMI_SERVICE_CREATE_ERRORS[result] if (result in self._WMI_SERVICE_CREATE_ERRORS) else f'Return value: {result}'
             raise ServerObjectManagementError(ServerObjectManagementError.WMI_ERROR, server=self.hostname, msg=msg)
 
@@ -701,13 +695,11 @@ class LinuxService(NamedOSObject):
     @property
     def state(self) -> str:
         """A read-only property which returns the state value of the service."""
-        result = self._manage('status')
-        if result and isinstance(result, list) and ('stop' in result[0]):
+        if (result := self._manage('status')) and isinstance(result, list) and ('stop' in result[0]):
             return 'Stopped'
         if not hasattr(result, 'vars'):
             return 'Running'
-        error = cast(CMDError, result)
-        if error.vars['returncode'] == 3:
+        if (error := cast(CMDError, result)).vars['returncode'] == 3:
             return 'Stopped'
         raise error
 
@@ -1002,8 +994,7 @@ class ManagementObject:
             ServerObjectManagementError.NOT_UNIQUE: If the object is not unique.
         """
         if self.object_ref:
-            results = getattr(self.manager, self.type)(**{self.key: self.value}, **self.key_values)
-            if len(results) > 1:
+            if len(results := getattr(self.manager, self.type)(**{self.key: self.value}, **self.key_values)) > 1:
                 raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=self.type, key=self.key, val=self.value)
             self.object_ref = results[0] if results else None
 
@@ -1163,7 +1154,7 @@ class ScheduledTask(ManagementObject):  # pylint: disable=too-few-public-methods
     TASK_NAMESPACE = 'http://schemas.microsoft.com/windows/2004/02/mit/task'
 
 
-def _get_server_object(server: ServerType) -> Server:
+def get_server_object(server: ServerType) -> Server:
     """Get a server object for the specific fqdn.
 
     Args:
