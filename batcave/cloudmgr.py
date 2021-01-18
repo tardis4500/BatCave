@@ -54,7 +54,7 @@ class CloudError(BatCaveException):
 class Cloud:
     """Class to create a universal abstract interface for a cloud instance."""
 
-    def __init__(self, ctype: CloudType, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
+    def __init__(self, ctype: CloudType, /, *, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
         """
         Args:
             ctype: The cloud provider for this instance. Must be a member of CloudType.
@@ -101,7 +101,7 @@ class Cloud:
                 return gcloud('', *args, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
-    def get_container(self, name: str) -> 'Container':
+    def get_container(self, name: str, /) -> 'Container':
         """Get a container from the cloud.
 
         Args:
@@ -112,7 +112,7 @@ class Cloud:
         """
         return Container(self, name)
 
-    def get_containers(self, filters: str = None) -> List['Container']:
+    def get_containers(self, filters: str = None, /) -> List['Container']:
         """Get a possibly filtered list of containers.
 
         Args:
@@ -131,7 +131,7 @@ class Cloud:
 
     containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')
 
-    def get_image(self, tag: str) -> 'Image':
+    def get_image(self, tag: str, /) -> 'Image':
         """Get an image from the cloud container registry.
 
         Args:
@@ -169,7 +169,7 @@ class Cloud:
 class Image:
     """Class to create a universal abstract interface to a container image."""
 
-    def __init__(self, cloud: Cloud, name: str):
+    def __init__(self, cloud: Cloud, name: str, /):
         """
         Args:
             cloud: The API cloud reference.
@@ -210,7 +210,7 @@ class Image:
     containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
                           doc='A read-only property which returns all the containers for this image.')
 
-    def get_tags(self, image_filter: str = None) -> List[str]:
+    def get_tags(self, image_filter: str = None, /) -> List[str]:
         """Get a list of tags applied to the image.
 
         Args:
@@ -262,7 +262,7 @@ class Image:
                 return docker_log
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
-    def run(self, detach: bool = True, update: bool = True, **kwargs) -> DockerContainer:
+    def run(self, *, detach: bool = True, update: bool = True, **kwargs) -> DockerContainer:
         """Run an image to create an active container.
 
         Args:
@@ -283,7 +283,7 @@ class Image:
                 return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
-    def tag(self, new_tag: str) -> Optional['Image']:
+    def tag(self, new_tag: str, /) -> Optional['Image']:
         """Tag an image in the registry.
 
         Returns:
@@ -311,7 +311,7 @@ class Image:
 class Container:
     """Class to create a universal abstract interface to a container."""
 
-    def __init__(self, cloud: Cloud, name: str):
+    def __init__(self, cloud: Cloud, name: str, /):
         """
         Args:
             cloud: The API cloud reference.

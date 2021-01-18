@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Use dataclasses where applicable. (GitLab #5)
   - Upgrade minimum Python to 3.8. (GitLab #6)
   - Use walrus operator where applicable. (GitLab #6)
+  - Use position only parameters where applicable. (GitLab #6)
   - Create PyPi facing DOCUMENTATION.md. (GitLab #26)
   - More variable renames due to rename to BatCave. (GitLab #27)
   - Improved docstrings. (GitLab #29)

@@ -40,7 +40,7 @@ class ConfigCollection:
 
     INCLUDE_CONFIG_TAG = 'include'
 
-    def __init__(self, name: PathName, create: bool = False, suffix: str = '_config.xml'):
+    def __init__(self, name: PathName, /, *, create: bool = False, suffix: str = '_config.xml'):
         """
         Args:
             name: The configuration collection name.
@@ -101,9 +101,9 @@ class ConfigCollection:
     def __getattr__(self, attr: str):
         if self._data_source.hastable(attr):
             parent_config = getattr(self.parent, attr) if (self.parent and hasattr(self.parent, attr)) else None
-            config = Configuration(self._data_source, attr, parent_config)
+            config = Configuration(self._data_source, attr, parent=parent_config)
             if hasattr(config, self.INCLUDE_CONFIG_TAG):
-                config = Configuration(self._data_source, attr, parent_config, getattr(self, getattr(config, self.INCLUDE_CONFIG_TAG)))
+                config = Configuration(self._data_source, attr, parent=parent_config, include=getattr(self, getattr(config, self.INCLUDE_CONFIG_TAG)))
             return config
         if self.parent and not self._mask_missing:
             return getattr(self.parent, attr)
@@ -120,7 +120,7 @@ class ConfigCollection:
 
     name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')
 
-    def add(self, name: str) -> str:
+    def add(self, name: str, /) -> str:
         """Add an item to the configuration collection.
 
         Args:
@@ -141,7 +141,7 @@ class ConfigCollection:
 class Configuration:
     """This is a container class to hold an individual configuration in a collection."""
 
-    def __init__(self, config_source: DataSource, name: str, parent: Optional['Configuration'] = None, include: Optional['Configuration'] = None):
+    def __init__(self, config_source: DataSource, name: str, /, *, parent: Optional['Configuration'] = None, include: Optional['Configuration'] = None):
         """
         Args:
             config_source: The configuration source.

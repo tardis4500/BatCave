@@ -13,7 +13,7 @@ from .sysutil import popd, SysCmdRunner
 class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-methods
     """Class to wrap SysCmdRunner for simple usage with auto-logging."""
 
-    def __init__(self, command: str, guard: str = '', default_args: tuple = tuple(), **kwargs: Any):
+    def __init__(self, command: str, /, guard: str = '', default_args: tuple = tuple(), **kwargs: Any):
         """
         Args:
             command: The command passed to SysCmdRunner.
@@ -28,7 +28,7 @@ class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-metho
         super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
         self.guard = guard
 
-    def run(self, message: str, *args: Any, **kwargs: Any) -> Union[str, List[str]]:
+    def run(self, message: str, /, *args: Any, **kwargs: Any) -> Union[str, List[str]]:
         """Run the action.
 
         Args:
@@ -118,7 +118,7 @@ class Action:
         finally:
             self.always_post()
 
-    def log_message(self, message: str, guard: bool = False, leader: str = 'INFO') -> None:
+    def log_message(self, message: str, /, guard: bool = False, leader: str = 'INFO') -> None:
         """Log a message to stdout and flushes the stream.
 
         Args:

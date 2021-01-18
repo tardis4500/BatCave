@@ -162,7 +162,7 @@ class LockFile:
 class SysCmdRunner:  # pylint: disable=too-few-public-methods
     """This class provides a simplified interface to sysutil.syscmd()."""
 
-    def __init__(self, command: str, *default_args, logger: Optional[Logger] = None, **default_kwargs):
+    def __init__(self, command: str, /, *default_args, logger: Optional[Logger] = None, **default_kwargs):
         """
         Args:
             command: The command to run.
@@ -181,7 +181,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
         self.default_args = list(default_args)
         self.default_kwargs = default_kwargs
 
-    def run(self, message: str, *args, **kwargs) -> CommandResult:
+    def run(self, message: str, /, *args, **kwargs) -> CommandResult:
         """Run the defined command with the additional specified arguments.
 
         Args:

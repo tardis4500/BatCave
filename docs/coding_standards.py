@@ -17,6 +17,9 @@
 # Step13: Add linting and type checking to build pipeline.
 # Step14: Change pylint numericals
 
+# Step15: Walrus operator (:=)
+# Step16: Positional arguments (/, *)
+
 # Fixed refactor linting in servermgr, serverpath, statemachine, and sysutil modules. (GitLab #29)
 
 # -*- coding: utf-8 -*-
