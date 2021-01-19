@@ -44,7 +44,7 @@ class IISAdvancedLogError(BatCaveException):
 class IISObject:
     """Class to create a universal abstract interface for an IIS object."""
 
-    def __init__(self, name: str, iis_ref: 'IISInstance'):
+    def __init__(self, name: str, iis_ref: 'IISInstance', /):
         """
         Args:
             name: The name of the object.
@@ -66,7 +66,7 @@ class IISObject:
     iis_ref = property(lambda s: s._iis_ref, doc='A read-only property which returns the reference to the IIS object.')
     name = property(lambda s: s._name, doc='A read-only property which returns the name of the IIS object.')
 
-    def manage_item(self, action: str) -> None:
+    def manage_item(self, action: str, /) -> None:
         """Perform action on this object.
 
         Args:
@@ -125,7 +125,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
                      WebApplicationPool: 'APPPOOL',
                      WebSite: 'SITE'}
 
-    def __init__(self, hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
+    def __init__(self, hostname: Optional[str] = None, /, *, remote_powershell: Optional[bool] = None):
         """
         Args:
             hostname (optional, default=localhost): The name of the IIS server hosting the instance.
@@ -154,7 +154,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
 
     hostname = property(lambda s: s._hostname, doc='A read-only property which returns the hostname of the IIS server.')
 
-    def create_virtual_dir(self, vdir_name: str, vdir_location: PathName, website: str) -> VirtualDirectory:
+    def create_virtual_dir(self, vdir_name: str, /, vdir_location: PathName, website: str) -> VirtualDirectory:
         """Create the specified virtual directory in the IIS instance.
 
         Args:
@@ -183,7 +183,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         self.manage_item('add', WebApplication, f'/site.name:{website}', f'/path:/{app_name}/', f'/physicalPath:{appdir}', f'/applicationPool:{pool}' if pool else '')
         return self.get_webapp(app_name)
 
-    def create_webapp_pool(self, pool_name: str) -> WebApplicationPool:
+    def create_webapp_pool(self, pool_name: str, /) -> WebApplicationPool:
         """Create the specified web application pool in the IIS instance.
 
         Args:
@@ -220,11 +220,11 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         Returns:
             The specified advanced logger.
         """
-        return IISAdvancedLogger(path=path, logtype=logtype, set_location=set_location, hostname=self.hostname)
+        return IISAdvancedLogger(path, logtype=logtype, set_location=set_location, hostname=self.hostname)
 
     advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
-    def get_configuration_section(self, name: str, path: Optional[PathName] = None, set_location: str = 'apphost') -> 'IISConfigurationSection':
+    def get_configuration_section(self, name: str, /, path: Optional[PathName] = None, set_location: str = 'apphost') -> 'IISConfigurationSection':
         """Get the named configuration section from the IIS configuration files.
 
         Args:
@@ -235,9 +235,9 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         Returns:
             The specified configuration section.
         """
-        return IISConfigurationSection(name=name, path=path, set_location=set_location, hostname=self.hostname, remote_powershell=self._remote_powershell)
+        return IISConfigurationSection(name, path=path, set_location=set_location, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
-    def get_virtual_dir(self, vdir_name: str) -> VirtualDirectory:
+    def get_virtual_dir(self, vdir_name: str, /) -> VirtualDirectory:
         """Get the specified virtual directory from the IIS instance.
 
         Args:
@@ -248,7 +248,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return VirtualDirectory(vdir_name, self)
 
-    def get_webapp(self, app_name: str) -> WebApplication:
+    def get_webapp(self, app_name: str, /) -> WebApplication:
         """Get the specified web application from the IIS instance.
 
         Args:
@@ -259,7 +259,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return WebApplication(app_name, self)
 
-    def get_webapp_pool(self, pool_name: str) -> WebApplicationPool:
+    def get_webapp_pool(self, pool_name: str, /) -> WebApplicationPool:
         """Get the specified web application pool from the IIS instance.
 
         Args:
@@ -270,7 +270,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return WebApplicationPool(pool_name, self)
 
-    def get_website(self, site_name: str) -> WebSite:
+    def get_website(self, site_name: str, /) -> WebSite:
         """Get the specified website from the IIS instance.
 
         Args:
@@ -281,7 +281,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return WebSite(site_name, self)
 
-    def has_item(self, item_type: Type[IISObject], item_name: str) -> bool:
+    def has_item(self, item_type: Type[IISObject], item_name: str, /) -> bool:
         """Determine if the specified item of the specified type exists in the IIS instance.
 
         Args:
@@ -293,7 +293,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return item_name in getattr(self, f'{self._IIS_TYPE_MAP[item_type]}s')
 
-    def has_virtual_dir(self, vdir_name: str) -> bool:
+    def has_virtual_dir(self, vdir_name: str, /) -> bool:
         """Determine if the IIS instance has the specified virtual directory.
 
         Args:
@@ -304,7 +304,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return self.has_item(VirtualDirectory, vdir_name)
 
-    def has_webapp(self, app_name: str) -> bool:
+    def has_webapp(self, app_name: str, /) -> bool:
         """Determine if the IIS instance has the specified web application.
 
         Args:
@@ -315,7 +315,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return self.has_item(WebApplication, app_name)
 
-    def has_webapp_pool(self, pool_name: str) -> bool:
+    def has_webapp_pool(self, pool_name: str, /) -> bool:
         """Determine if the IIS instance has the specified web application pool.
 
         Args:
@@ -326,7 +326,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return self.has_item(WebApplicationPool, pool_name)
 
-    def has_website(self, site_name: str) -> bool:
+    def has_website(self, site_name: str, /) -> bool:
         """Determine if the IIS instance has the specified website.
 
         Args:
@@ -337,7 +337,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return self.has_item(WebSite, site_name)
 
-    def manage_item(self, action: str, item_type: Type[IISObject], *args) -> CommandResult:
+    def manage_item(self, action: str, item_type: Type[IISObject], /, *args) -> CommandResult:
         """Manage an IIS object using the standard IIS appcmd.
 
         Args:
@@ -350,7 +350,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return appcmd(action, self._IIS_TYPE_MAP[item_type], *args, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
-    def remove_webapp(self, appname: str) -> None:
+    def remove_webapp(self, appname: str, /) -> None:
         """Remove the specified web application from the IIS instance.
 
         Args:
@@ -361,7 +361,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         self.manage_item('delete', WebApplication, appname)
 
-    def remove_webapp_pool(self, pool_name: str) -> None:
+    def remove_webapp_pool(self, pool_name: str, /) -> None:
         """Remove the specified web application pool from the IIS instance.
 
         Args:
@@ -409,7 +409,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
 class IISConfigurationSection:
     """Class to create a universal abstract interface for an IIS configuration section."""
 
-    def __init__(self, name: str, path: Optional[PathName], set_location: Optional[str] = None,  # pylint: disable=too-many-arguments
+    def __init__(self, name: str, /, path: Optional[PathName], set_location: Optional[str] = None,  # pylint: disable=too-many-arguments
                  hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
@@ -479,7 +479,7 @@ class IISConfigurationSection:
             cmd_args += [f'/commit:{self._set_location}']
         return appcmd(*cmd_args, hostname=self._hostname, remote_powershell=self._remote_powershell)
 
-    def add_collection_member(self, collection: str, properties: Dict, changes: Optional[Dict]) -> None:
+    def add_collection_member(self, collection: str, /, properties: Dict, changes: Optional[Dict]) -> None:
         """Add the specified properties to the collection.
 
         Args:
@@ -494,7 +494,7 @@ class IISConfigurationSection:
             properties.update(changes)
         self.add_property(collection, dict2expat(properties))
 
-    def add_property(self, propname: str, value: str) -> None:
+    def add_property(self, propname: str, value: str, /) -> None:
         """Add a property with the specified value.
 
         Args:
@@ -506,7 +506,7 @@ class IISConfigurationSection:
         """
         self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/+{propname}.{value}')
 
-    def has_collection_member(self, collection: str, filter_on: str, value: str) -> bool:
+    def has_collection_member(self, collection: str, /, filter_on: str, value: str) -> bool:
         """Determine if a collection has a specified member.
 
         Args:
@@ -519,7 +519,7 @@ class IISConfigurationSection:
         """
         return bool([m for m in getattr(self, collection) if m.attrib[filter_on] == value])
 
-    def rm_collection_member(self, collection: str, selectors: Dict) -> None:
+    def rm_collection_member(self, collection: str, /, selectors: Dict) -> None:
         """Remove the specified properties from the collection.
 
         Args:
@@ -531,7 +531,7 @@ class IISConfigurationSection:
         """
         self.rm_property(collection, dict2expat(selectors))
 
-    def rm_property(self, propname: str, value: Optional[str] = None) -> None:
+    def rm_property(self, propname: str, value: Optional[str] = None, /) -> None:
         """Remove a property conditionally with the specified value.
 
         Args:
@@ -548,7 +548,7 @@ class IISConfigurationSection:
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path: Optional[PathName], logtype: str, set_location: str,  # pylint: disable=too-many-arguments
+    def __init__(self, path: Optional[PathName], /, logtype: str, set_location: str,  # pylint: disable=too-many-arguments
                  hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
@@ -577,7 +577,7 @@ class IISAdvancedLogger(IISConfigurationSection):
                 raise
         raise IISAdvancedLogError(IISAdvancedLogError.NOT_INSTALLED)
 
-    def add_field(self, field_id: str, field_values: Optional[Dict] = None) -> None:
+    def add_field(self, field_id: str, field_values: Optional[Dict] = None, /) -> None:
         """Add a field to the advanced logger configuration.
 
         Args:
@@ -599,7 +599,7 @@ class IISAdvancedLogger(IISConfigurationSection):
             default_values['sourceName'] = field_id
         self.add_collection_member('fields', default_values, field_values)
 
-    def add_log(self, log_name: str, log_values: Optional[Dict] = None, fields: Optional[Dict] = None) -> None:
+    def add_log(self, log_name: str, /, log_values: Optional[Dict] = None, fields: Optional[Dict] = None) -> None:
         """Add a log definition to the advanced logger configuration.
 
         Args:
@@ -627,7 +627,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         for (field, values) in fields.items():
             self.add_logfield(log_name, field, values)
 
-    def add_logfield(self, log_name: str, field_name: str, field_values: Optional[Dict] = None) -> None:
+    def add_logfield(self, log_name: str, field_name: str, field_values: Optional[Dict] = None, /) -> None:
         """Add a field to an advanced logger log definition.
 
         Args:
@@ -647,7 +647,7 @@ class IISAdvancedLogger(IISConfigurationSection):
                                     'defaultValue': ''},
                                    field_values)
 
-    def has_field(self, field_id: str) -> bool:
+    def has_field(self, field_id: str, /) -> bool:
         """Determine if the advanced logger configuration has the specified field.
 
         Args:
@@ -658,7 +658,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         return self.has_collection_member('fields', 'id', field_id)
 
-    def rm_field(self, field_id: str) -> None:
+    def rm_field(self, field_id: str, /) -> None:
         """Remove a field from the advanced logger configuration.
 
         Args:
@@ -669,7 +669,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         self.rm_collection_member('fields', {'id': field_id})
 
-    def rm_log(self, log_name: str) -> None:
+    def rm_log(self, log_name: str, /) -> None:
         """Remove a log definition to the advanced logger configuration.
 
         Args:
@@ -714,7 +714,7 @@ def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> CommandResult:
     raise err_object
 
 
-def dict2expat(py_dict: Dict) -> str:
+def dict2expat(py_dict: Dict, /) -> str:
     """Converts Python dictionaries to the syntax understood by the IIS appcmd command-line tool.
 
     Args:

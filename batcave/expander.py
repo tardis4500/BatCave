@@ -93,7 +93,7 @@ class Formatter:
     """
     _LINK_PRELIM = '{link:'
 
-    def __init__(self, output_format: OutputFormat):
+    def __init__(self, output_format: OutputFormat, /):
         """
         Args:
             output_format: The output format.
@@ -155,7 +155,7 @@ class Formatter:
             return f'{self._bol}{space}{self.prefix}{self.count}{sep}'
         raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
 
-    def format_hyperlinks(self, line: str) -> str:
+    def format_hyperlinks(self, line: str, /) -> str:
         """Format the hyperlinks in a line.
 
         Args:
@@ -239,7 +239,7 @@ class Expander:
     _PRELIM_DEFAULT = '{var:'
     _POSTLIM_DEFAULT = '}'
 
-    def __init__(self, vardict: Optional[Dict[str, str]] = None, varprops: Any = None, prelim: str = _PRELIM_DEFAULT, postlim: str = _POSTLIM_DEFAULT):
+    def __init__(self, *, vardict: Optional[Dict[str, str]] = None, varprops: Any = None, prelim: str = _PRELIM_DEFAULT, postlim: str = _POSTLIM_DEFAULT):
         """
         Args:
             vardict: A dictionary of expansion variables.
@@ -265,7 +265,7 @@ class Expander:
             postlim_re = postlim_re.replace(spec, '\\' + spec)
         self.re_var = re_compile(f'{prelim_re}([.a-zA-Z0-9_:]+){postlim_re}')
 
-    def evaluate_expression(self, expression: str) -> bool:
+    def evaluate_expression(self, expression: str, /) -> bool:
         """Evaluate an expression in the expansion.
 
         Args:
@@ -306,7 +306,7 @@ class Expander:
             raise ExpanderError(ExpanderError.NO_REPLACEMENT, var=str(err), thing=expression) from err
         return result
 
-    def expand(self, thing: Any) -> Any:
+    def expand(self, thing: Any, /) -> Any:
         """Perform an expansion on a Python object.
 
         Args:
@@ -357,7 +357,7 @@ class Expander:
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
 
-    def expand_directory(self, source_dir: PathName, target_dir: Optional[PathName] = None,  # pylint: disable=too-many-arguments
+    def expand_directory(self, source_dir: PathName, /, target_dir: Optional[PathName] = None, *,  # pylint: disable=too-many-arguments
                          ignore_files: Sequence[str] = tuple(), no_expand_files: Sequence[str] = tuple(), err_if_exists: bool = True) -> None:
         """Perform an expansion on an entire directory tree.
 
@@ -395,7 +395,7 @@ class Expander:
                         print(f'Expanding {source_file} to {target_file} (root={root})')
                     self.expand_file(source_file, target_file)
 
-    def expand_file(self, in_file: PathName, out_file: PathName) -> None:
+    def expand_file(self, in_file: PathName, out_file: PathName, /) -> None:
         """Perform an expansion on an entire file.
 
         Args:
@@ -413,7 +413,7 @@ class Expander:
                     outstream.write(line)
 
 
-def file_expander(in_file: PathName, out_file: PathName, vardict: Optional[Dict[str, str]] = None, varprops: Any = None) -> None:
+def file_expander(in_file: PathName, out_file: PathName, /, *, vardict: Optional[Dict[str, str]] = None, varprops: Any = None) -> None:
     """Quick function for one-time file expansion.
 
     Args:
@@ -425,7 +425,7 @@ def file_expander(in_file: PathName, out_file: PathName, vardict: Optional[Dict[
     Returns:
         Nothing.
     """
-    Expander(vardict, varprops).expand_file(in_file, out_file)
+    Expander(vardict=vardict, varprops=varprops).expand_file(in_file, out_file)
 
 
 class Procedure:
@@ -456,7 +456,7 @@ class Procedure:
     _SCHEMA_ATTR = 'schema'
     _STEPS_TAG = 'steps'
 
-    def __init__(self, procfile: PathName, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):  # pylint: disable=too-many-locals
+    def __init__(self, procfile: PathName, /, *, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):  # pylint: disable=too-many-locals
         """
         Args:
             procfile: The procedure file.
@@ -538,7 +538,7 @@ class Procedure:
         result[self._STEPS_TAG] = [s.dump() for s in self.steps]
         return result
 
-    def expand(self, text: str) -> str:
+    def expand(self, text: str, /) -> str:
         """Expand the Procedure.
 
         Args:
@@ -557,7 +557,7 @@ class Procedure:
                 raise ProcedureError(ProcedureError.EXPANSION_ERROR, err=str(err), text=text) from err
             raise
 
-    def expand_directories(self, env: str, destination_root: PathName, source_root: PathName = Path(), err_if_exists: bool = True) -> None:
+    def expand_directories(self, env: str, /, destination_root: PathName, *, source_root: PathName = Path(), err_if_exists: bool = True) -> None:
         """Perform variable expansion on the directories defined in the procedure.
 
         Args:
@@ -575,7 +575,7 @@ class Procedure:
                 dirpath = Path(source_root) / dirpath
             self.expander.expand_directory(dirpath, Path(destination_root, dirname), err_if_exists=err_if_exists)
 
-    def format(self, text: str) -> str:
+    def format(self, text: str, /) -> str:
         """Format an output line including hyperlinks.
 
         Args:
@@ -586,7 +586,7 @@ class Procedure:
         """
         return self.formatter.format_hyperlinks(self.expand(text))
 
-    def realize(self, env: str) -> str:
+    def realize(self, env: str, /) -> str:
         """Realize the procedure for the specified environments based on the variables.
 
         Args:
@@ -626,7 +626,7 @@ class Procedure:
                 self.formatter.increment()
         return self.format(header) + content + footer
 
-    def realize_step(self, step: 'Step') -> str:  # pylint: disable=too-many-branches
+    def realize_step(self, step: 'Step', /) -> str:  # pylint: disable=too-many-branches
         """Realize a step in the procedure.
 
         Args:
@@ -684,7 +684,7 @@ class Procedure:
             self.expander.vardict = expander_vars_keeper
         return output
 
-    def setup_expander(self, environment: str) -> None:
+    def setup_expander(self, environment: str, /) -> None:
         """Setup the Expander for the requested environment.
 
         Args:
@@ -698,7 +698,7 @@ class Procedure:
         """
         if environment not in self.environments:
             ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
-        self.expander = Expander(self.environments[environment])
+        self.expander = Expander(vardict=self.environments[environment])
 
 
 class Step:  # pylint: disable=too-few-public-methods
@@ -718,7 +718,7 @@ class Step:  # pylint: disable=too-few-public-methods
 
     NAME_ATTR = 'name'
 
-    def __init__(self, step_def: Element):
+    def __init__(self, step_def: Element, /):
         """
         Args:
             step_def: The dictionary which defined the step.
@@ -749,7 +749,7 @@ class Step:  # pylint: disable=too-few-public-methods
         return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [str(s.dump()) for s in self.substeps]
 
 
-def parse_flag(flag: str) -> Any:
+def parse_flag(flag: str, /) -> Any:
     """Evaluate a parsing flag.
 
     Args:

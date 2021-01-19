@@ -98,7 +98,7 @@ class BatCaveValidator:
 class BatCaveGUIOutput:
     """Class to manage output to a widget."""
 
-    def __init__(self, widget: QWidget):
+    def __init__(self, widget: QWidget, /):
         """
         Args:
             widget: The widget to which output will be sent.
@@ -108,7 +108,7 @@ class BatCaveGUIOutput:
         """
         self.widget = widget
 
-    def write(self, output: str) -> None:
+    def write(self, output: str, /) -> None:
         """Write to the widget.
 
         Args:
@@ -145,7 +145,7 @@ class BatCaveBaseGUI:
         if icon:
             self.setWindowIcon(QIcon(str(find_image(icon))))  # type: ignore # pylint: disable=no-member
 
-    def closeEvent(self, event: QEvent) -> None:
+    def closeEvent(self, event: QEvent, /) -> None:
         """Overload of standard Qt method called when the object is closed.
 
         Returns:
@@ -155,7 +155,7 @@ class BatCaveBaseGUI:
             if self._saved_output_streams:
                 (sys.stdout, sys.stderr) = self._saved_output_streams  # pylint: disable=unbalanced-tuple-unpacking
 
-    def redirect_output(self, widget: QWidget) -> None:
+    def redirect_output(self, widget: QWidget, /) -> None:
         """Redirect stdout and stderr to the specified widget.
 
         Returns:
@@ -219,7 +219,7 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
         if dirpath := Path(QFileDialog.getExistingDirectory(self)):
             edit_control.setText(dirpath)
 
-    def onGetFile(self, file_filter: Optional[str] = None) -> None:
+    def onGetFile(self, file_filter: Optional[str] = None, /) -> None:
         """Show a simplified file dialog.
 
         Args:
@@ -246,7 +246,7 @@ class MessageBox(QMessageBox):
                       MessageType.error: QMessageBox.Critical,
                       MessageType.results: QMessageBox.Information}
 
-    def __init__(self, parent: QWidget, message: str, msg_type: MessageType = MessageType.info, detail: str = '', image: Optional[QImage] = None):  # pylint: disable=too-many-arguments
+    def __init__(self, parent: QWidget, message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[QImage] = None):  # pylint: disable=too-many-arguments
         """
         Args:
             parent: The parent for the message box.
@@ -267,7 +267,7 @@ class MessageBox(QMessageBox):
             self.setDetailedText(detail)
 
 
-def find_image(name: str) -> QImage:
+def find_image(name: str, /) -> QImage:
     """Locate the image based on whether the application has been frozen.
 
     Args:

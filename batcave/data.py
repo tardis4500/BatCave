@@ -122,7 +122,7 @@ class DataSource:
     INI_ROW_TAG = ' ROW '
     INI_ROWLIST_OPT = 'ROWS'
 
-    def __init__(self, data_type: SourceType, connectinfo: PathName, name: str, schema: int, create: bool = False):  # pylint: disable=too-many-arguments
+    def __init__(self, data_type: SourceType, connectinfo: PathName, /, name: str, *, schema: int, create: bool = False):  # pylint: disable=too-many-arguments
         """
         Args:
             data_type: The data source type.
@@ -310,7 +310,7 @@ class DataSource:
                 raise
             return 0
 
-    def addtable(self, name: str) -> 'DataTable':
+    def addtable(self, name: str, /) -> 'DataTable':
         """Create a new table with the specified name.
 
         Args:
@@ -386,7 +386,7 @@ class DataSource:
                 cast(ElementTree, self._connection).write(cast(str, self._connectinfo), 'ISO-8859-1')
                 break
 
-    def gettable(self, name: str) -> 'DataTable':  # pylint: disable=too-many-branches
+    def gettable(self, name: str, /) -> 'DataTable':  # pylint: disable=too-many-branches
         """Get the requested data table.
 
         Args:
@@ -455,7 +455,7 @@ class DataSource:
                 break
         return [self.gettable(t) for t in table_names]
 
-    def hastable(self, name: str) -> bool:
+    def hastable(self, name: str, /) -> bool:
         """Determine if the named table exists in the data source.
 
         Args:
@@ -492,7 +492,7 @@ class DataSource:
 class DataRow:
     """Class to create a universal abstract interface for a data row."""
 
-    def __init__(self, data_type: SourceType, raw: Any, parent: Any):
+    def __init__(self, data_type: SourceType, raw: Any, parent: Any, /):
         """
         Args:
             data_type: The data source type.
@@ -520,7 +520,7 @@ class DataRow:
     raw = property(lambda s: s._row, doc='A read-only property which returns the raw contents of the data row.')
     type = property(lambda s: s._type, doc='A read-only property which returns the type of the data source.')
 
-    def delcolumn(self, col: str) -> None:
+    def delcolumn(self, col: str, ) -> None:
         """Delete the named column from the row.
 
         Args:
@@ -589,7 +589,7 @@ class DataRow:
                 return [e.tag for e in list(self._row) if e.tag != self._XML_ROW_TAG]
         return list()
 
-    def getvalue(self, col: str) -> str:
+    def getvalue(self, col: str, /) -> str:
         """Get the value of the specified column.
 
         Args:
@@ -619,7 +619,7 @@ class DataRow:
                 return self._row.findtext(col)
         return ''
 
-    def hascol(self, col: str) -> bool:  # pylint: disable=too-many-return-statements
+    def hascol(self, col: str, /) -> bool:  # pylint: disable=too-many-return-statements
         """Determine if the named column exists in the row.
 
         Args:
@@ -646,7 +646,7 @@ class DataRow:
                 return bool(self._row.get(col))
         return False
 
-    def setvalue(self, col: str, value: str) -> None:
+    def setvalue(self, col: str, value: str, /) -> None:
         """Set the value of the specified column.
 
         Args:
@@ -697,7 +697,7 @@ class DataTable:
     _XML_ROW_TAG = 'ROW'
     _XML_SINGLE_ROW_TAG = 'environment'
 
-    def __init__(self, data_type: SourceType, name: str, raw: Any, parent: Any):
+    def __init__(self, data_type: SourceType, name: str, raw: Any, parent: Any, /):
         """
         Args:
             data_type: The data source type.
@@ -783,7 +783,7 @@ class DataTable:
             row.setvalue(var, val)
         return row
 
-    def delrow(self, col: str, value: str) -> None:
+    def delrow(self, col: str, value: str, /) -> None:
         """Delete the rows with the specified column value.
 
         Args:

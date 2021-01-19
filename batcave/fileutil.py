@@ -53,7 +53,7 @@ ConversionMode = Enum('ConversionMode', ('to_unix', 'to_dos'))
 class CompressedFile:  # pylint: disable=too-few-public-methods
     """Class to add support for compressed file types which are missing some methods."""
 
-    def __init__(self, filename: PathName, **_unused_attr):
+    def __init__(self, filename: PathName, /, **_unused_attr):
         """
         Args:
             filename: The name of the compressed file.
@@ -84,7 +84,7 @@ class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore # pylint: disable
 PACKER_CLASSES = {'zip': ZipFile, 'gz': BatCaveGzipFile, 'bz2': BatCaveBZ2File, 'xz': LZMAFile}
 
 
-def eol_convert(filename: PathName, mode: ConversionMode, backup: bool = True) -> None:
+def eol_convert(filename: PathName, mode: ConversionMode, /, *, backup: bool = True) -> None:
     """Perform end-of-line conversions from Windows to UNIX or vice versa.
 
     Attributes:
@@ -113,7 +113,7 @@ def eol_convert(filename: PathName, mode: ConversionMode, backup: bool = True) -
         stream.write(data)
 
 
-def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None, arctype: str = '', ignore_empty: bool = True) -> None:  # pylint: disable=too-many-locals,too-many-branches
+def pack(arcfile: PathName, items: Iterable, /, itemloc: Optional[PathName] = None, *, arctype: str = '', ignore_empty: bool = True) -> None:  # pylint: disable=too-many-locals,too-many-branches
     """Create a compressed archive.
 
     Attributes:
@@ -175,7 +175,7 @@ def pack(arcfile: PathName, items: Iterable, itemloc: Optional[PathName] = None,
         popd()
 
 
-def slurp(filename: PathName) -> List[str]:
+def slurp(filename: PathName, /) -> List[str]:
     """Return all the lines of a file as a list.
 
     Args:
@@ -187,7 +187,7 @@ def slurp(filename: PathName) -> List[str]:
     return [line for line in open(filename)]  # pylint: disable=unnecessary-comprehension
 
 
-def spew(filename: PathName, outlines: Iterable) -> None:
+def spew(filename: PathName, outlines: Iterable, /) -> None:
     """Write the list of lines to a file.
 
     Args:
@@ -200,7 +200,7 @@ def spew(filename: PathName, outlines: Iterable) -> None:
     open(filename, 'w').writelines(outlines)
 
 
-def unpack(arcfile: PathName, dest: Optional[PathName] = None, arctype: str = '') -> None:
+def unpack(arcfile: PathName, dest: Optional[PathName] = None, /, *, arctype: str = '') -> None:
     """Extract the contents of a compressed file.
 
     Attributes:
