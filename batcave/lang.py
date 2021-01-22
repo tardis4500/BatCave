@@ -71,7 +71,7 @@ class MsgStr:
     def __str__(self):
         return self._self_to_str(self._str)
 
-    def _self_to_str(self, _str: MessageString) -> str:
+    def _self_to_str(self, _str: MessageString, /) -> str:
         """Convert this message to a string and apply any transforms.
 
         Returns:
@@ -85,7 +85,7 @@ class MsgStr:
 
 class BatCaveException(Exception, MsgStr):
     """A base class to provide easier Exception management."""
-    def __init__(self, errobj: 'BatCaveError', **variables):
+    def __init__(self, errobj: 'BatCaveError', /, **variables):
         """
         Args:
             errobj: The input message string.
@@ -143,7 +143,7 @@ class switch:  # pylint: disable=invalid-name
         structure with reasonable accuracy.
     """
 
-    def __init__(self, value: Any):
+    def __init__(self, value: Any, /):
         self.value = value
         self.fall = False
         self.first = True
@@ -165,7 +165,7 @@ class switch:  # pylint: disable=invalid-name
         return False
 
 
-def bool_to_str(expr: Union[bool, str]) -> str:
+def bool_to_str(expr: Union[bool, str], /) -> str:
     """Converts an expression to a lowercase boolean string value.
 
     Args:
@@ -177,7 +177,7 @@ def bool_to_str(expr: Union[bool, str]) -> str:
     return str(bool(expr)).lower()
 
 
-def flatten(thing: Iterable[Iterable], recursive: bool = True) -> Iterable:
+def flatten(thing: Iterable[Iterable], /, *, recursive: bool = True) -> Iterable:
     """Flatten an iterable of iterables.
 
     Args:
@@ -202,7 +202,7 @@ def flatten(thing: Iterable[Iterable], recursive: bool = True) -> Iterable:
     return type(thing)(result)  # type: ignore
 
 
-def flatten_string_list(iter_of_string: Iterable[str], remove_newlines: bool = True) -> str:
+def flatten_string_list(iter_of_string: Iterable[str], /, *, remove_newlines: bool = True) -> str:
     """Flatten an iterable of strings to a single string.
 
     Args:
@@ -218,7 +218,7 @@ def flatten_string_list(iter_of_string: Iterable[str], remove_newlines: bool = T
     return result
 
 
-def is_debug(test_value: Optional[str] = None) -> bool:
+def is_debug(test_value: Optional[str] = None, /) -> bool:
     """Determine if the BATCAVE_DEBUG environment variable is set.
 
     Args:
@@ -236,7 +236,7 @@ def is_debug(test_value: Optional[str] = None) -> bool:
     return False
 
 
-def str_to_pythonval(the_string: str, parse_python: bool = False) -> Any:
+def str_to_pythonval(the_string: str, /, *, parse_python: bool = False) -> Any:
     """Converts a string to the closest Python object.
 
     Args:
@@ -278,7 +278,7 @@ def str_to_pythonval(the_string: str, parse_python: bool = False) -> Any:
     return the_string
 
 
-def validate_python(test_against: Tuple[int, int] = (3, 6)) -> None:
+def validate_python(test_against: Tuple[int, int] = (3, 6), /) -> None:
     """Checks to make sure that a minimum version of Python is used.
 
     Args:
@@ -296,7 +296,7 @@ def validate_python(test_against: Tuple[int, int] = (3, 6)) -> None:
         raise PythonVersionError(PythonVersionError.BAD_VERSION, used=used, needed=needed)
 
 
-def xor(value1: Any, value2: Any) -> bool:
+def xor(value1: Any, value2: Any, /) -> bool:
     """Perform a logical exclusive-or evaluation.
 
     Args:
