@@ -117,7 +117,7 @@ class Server:
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
 
-    def __init__(self, hostname: str = None, domain: str = None, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',  # pylint: disable=too-many-arguments
+    def __init__(self, hostname: str = None, domain: str = None, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
                  os_type: OsType = OsType.windows if WIN32 else OsType.linux):
         """
         Args:
@@ -250,7 +250,7 @@ class Server:
             created_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
         return globals()[item_type](created_object, manager, unique_key, unique_id)
 
-    def create_scheduled_task(self, task: str, exe: str, schedule_type: str, schedule: str, user: str = '', password: str = '',  # pylint: disable=too-many-arguments,too-many-locals
+    def create_scheduled_task(self, task: str, exe: str, schedule_type: str, schedule: str, user: str = '', password: str = '',  # pylint: disable=too-many-locals
                               start_in: Optional[PathName] = None, disable: bool = False) -> 'ScheduledTask':
         """Create a scheduled task.
 
@@ -305,7 +305,7 @@ class Server:
 
         return task_object
 
-    def create_service(self, service: str, exe: str, user: str = '', password: str = '', start: bool = False,  # pylint: disable=too-many-arguments
+    def create_service(self, service: str, exe: str, user: str = '', password: str = '', start: bool = False,
                        timeout: int = 0, error_if_exists: bool = True) -> 'Service':
         """Create a service.
 

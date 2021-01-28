@@ -129,7 +129,7 @@ TBL_ROW_TRM_ATTR = 'tbl_row_trm'
 class SimpleAttribute:
     """Class to create a universal abstract interface for a report attribute which has a default value and a list of valid values."""
 
-    def __init__(self, default: str, *other):
+    def __init__(self, default: str, /, *other):
         """
         Args:
             default: The default value of the attribute.
@@ -151,12 +151,12 @@ class SimpleAttribute:
         return self._value
 
     @value.setter
-    def value(self, val: str) -> None:
+    def value(self, val: str, /) -> None:
         if not self.is_valid(val):
             raise ValueError('invalid value for SimpleAttribute: ' + val)
         self._value = val
 
-    def is_valid(self, attr: str) -> bool:
+    def is_valid(self, attr: str, /) -> bool:
         """Determine if the specified attribute is valid.
 
         Args:
@@ -171,7 +171,7 @@ class SimpleAttribute:
 class MetaAttribute:
     """Class to create a universal abstract interface for a report attribute which returns a value based on the value of a SimpleAttribute."""
 
-    def __init__(self, attr: str, **valmap):
+    def __init__(self, attr: str, /, **valmap):
         """
         Args:
             attr: The attribute.
@@ -184,7 +184,7 @@ class MetaAttribute:
         self._attr = attr
         self._valuemap = valmap
 
-    def _set_values(self, valmap: Dict[str, str]) -> None:
+    def _set_values(self, valmap: Dict[str, str], /) -> None:
         """Set the value of a collection of attributes.
 
         Args:
@@ -198,7 +198,7 @@ class MetaAttribute:
     simple_attr_name = property(lambda s: s._attr, doc='A read-only property which returns the simple attribute name.')
     values = property(fset=_set_values, doc='A read-only property which returns the values of the attribute as a dictionary.')
 
-    def get_value(self, attr: str) -> str:
+    def get_value(self, attr: str, /) -> str:
         """Get the value of an attribute.
 
         Args:
@@ -253,7 +253,7 @@ _ATTRIBUTES = {OUTPUT_ATTR: SimpleAttribute('html', 'text'),
 class ReportObject:
     """Class to create a universal abstract interface for a report object."""
 
-    def __init__(self, container: Optional[Type['ReportObject']] = None, **attributes):
+    def __init__(self, container: Optional[Type['ReportObject']] = None, /, **attributes):
         """
         Args:
             container: The container for this object.
@@ -268,7 +268,7 @@ class ReportObject:
             self._set_attribute(attr, val)
         self.container: Optional[Type[ReportObject]] = container
 
-    def _get_attr_ref(self, attr: str) -> Attribute:
+    def _get_attr_ref(self, attr: str, /) -> Attribute:
         """Get a reference to the requested attributes.
 
         Args:
@@ -288,7 +288,7 @@ class ReportObject:
             return cast(Attribute, _ATTRIBUTES[attr])
         raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
 
-    def _get_attribute(self, attr: str) -> str:
+    def _get_attribute(self, attr: str, /) -> str:
         """Get the value of the requested attributes.
 
         Args:
@@ -302,7 +302,7 @@ class ReportObject:
             return attr_ref.get_value(sub_attr_ref.value)
         return attr_ref.value
 
-    def _set_attribute(self, attr: str, val: str) -> None:
+    def _set_attribute(self, attr: str, val: str, /) -> None:
         """Set the value of the requested attributes.
 
         Args:
@@ -367,7 +367,7 @@ class ReportObject:
 class Section(ReportObject):
     """Class to create a universal abstract interface for a report section."""
 
-    def __init__(self, header: str = '', footer: str = '', cont: Optional[Type[ReportObject]] = None, **attr):
+    def __init__(self, /, *, header: str = '', footer: str = '', cont: Optional[Type[ReportObject]] = None, **attr):
         """
         Args:
             header (optional, default=''): The section header.
@@ -394,7 +394,7 @@ class Section(ReportObject):
             the_str += self.sec_ftr_ldr + str(Line(self.footer, self)) + self.sec_ftr_trm
         return the_str + self.sec_trm
 
-    def add_line(self, line: Type['Line']) -> None:
+    def add_line(self, line: Type['Line'], /) -> None:
         """Add a line to the section.
 
         Args:
@@ -405,7 +405,7 @@ class Section(ReportObject):
         """
         self.add_member(line)
 
-    def add_member(self, thing: Type[ReportObject]) -> None:
+    def add_member(self, thing: Type[ReportObject], /) -> None:
         """Add a member to the section.
 
         Args:
@@ -417,7 +417,7 @@ class Section(ReportObject):
         self._members.append(thing)
         thing.container = cast(Type[ReportObject], self)
 
-    def add_section(self, section: Type['Section']) -> None:
+    def add_section(self, section: Type['Section'], /) -> None:
         """Add a sub-section to the section.
 
         Args:
@@ -428,7 +428,7 @@ class Section(ReportObject):
         """
         self.add_member(section)
 
-    def add_table(self, table: Type['Table']) -> None:
+    def add_table(self, table: Type['Table'], /) -> None:
         """Add a table to the section.
 
         Args:
@@ -439,7 +439,7 @@ class Section(ReportObject):
         """
         self.add_member(table)
 
-    def register_link(self, link: 'Link') -> None:
+    def register_link(self, link: 'Link', /) -> None:
         """Register a hyperlink in the section.
 
         Args:
@@ -467,7 +467,7 @@ class Report(Section):
 class Cell(ReportObject):
     """Class to create a universal abstract interface for a cell in a table in a report."""
 
-    def __init__(self, data: str, cont: Optional[Type[ReportObject]] = None, **attr):
+    def __init__(self, data: str, cont: Optional[Type[ReportObject]] = None, /, **attr):
         """
         Args:
             data: The cell data.
@@ -490,7 +490,7 @@ class Cell(ReportObject):
 class Table(ReportObject):
     """Class to create a universal abstract interface for a report section table."""
 
-    def __init__(self, data: str, header: str = '', footer: str = '', **attr):
+    def __init__(self, data: str, /, *, header: str = '', footer: str = '', **attr):
         """
         Args:
             data: The table data.
@@ -545,7 +545,7 @@ class Table(ReportObject):
 class Line(ReportObject):
     """Class to create a universal abstract interface for a report section line."""
 
-    def __init__(self, text: str, cont: Optional[Type[ReportObject]] = None, **attr):
+    def __init__(self, text: str, cont: Optional[Type[ReportObject]] = None, /, **attr):
         """
         Args:
             text: The line text.
@@ -565,7 +565,7 @@ class Line(ReportObject):
 class Link(Line):
     """Class to create a universal abstract interface for a report hyperlink."""
 
-    def __init__(self, text: str, url: str = '', cont: Optional[Type[ReportObject]] = None, **attr):
+    def __init__(self, text: str, /, url: str = '', cont: Optional[Type[ReportObject]] = None, **attr):
         """
         Args:
             text: The link text.
@@ -592,7 +592,7 @@ class Link(Line):
 class LinkList(Section):
     """Class to create a universal abstract interface for a list of hyperlinks in a report."""
 
-    def __init__(self, urls: Dict[str, str], cont: Optional[Type[ReportObject]] = None, **attr):
+    def __init__(self, urls: Dict[str, str], cont: Optional[Type[ReportObject]] = None, /, **attr):
         """
         Args:
             urls: The list of URLs the section.

@@ -409,7 +409,7 @@ class IISInstance:  # pylint: disable=too-many-public-methods
 class IISConfigurationSection:
     """Class to create a universal abstract interface for an IIS configuration section."""
 
-    def __init__(self, name: str, /, path: Optional[PathName], set_location: Optional[str] = None,  # pylint: disable=too-many-arguments
+    def __init__(self, name: str, /, path: Optional[PathName], set_location: Optional[str] = None,
                  hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
@@ -548,7 +548,7 @@ class IISConfigurationSection:
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path: Optional[PathName], /, logtype: str, set_location: str,  # pylint: disable=too-many-arguments
+    def __init__(self, path: Optional[PathName], /, logtype: str, set_location: str,
                  hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:

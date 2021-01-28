@@ -6,7 +6,7 @@ Attributes:
     ClientType (Enum): The CMS providers supported by the Client class.
 """
 
-# pylint: disable=too-many-lines,too-many-arguments,too-many-branches,too-many-public-methods,too-many-locals,too-many-statements,c-extension-no-member
+# pylint: disable=too-many-lines,too-many-branches,too-many-public-methods,too-many-locals,too-many-statements,c-extension-no-member
 
 # Import standard modules
 from dataclasses import dataclass
@@ -1727,7 +1727,7 @@ def walk_git_tree(tree: git.Tree, /, *, parent: Optional[git.Tree] = None) -> Ge
 
     new_parent: str = f'{parent}/{tree.name}' if parent else tree.name
     for subtree in trees:
-        yield from walk_git_tree(subtree, new_parent)
+        yield from walk_git_tree(subtree, parent=new_parent)
 
     yield new_parent, tree_names, blobs
 

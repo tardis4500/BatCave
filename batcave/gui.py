@@ -246,7 +246,7 @@ class MessageBox(QMessageBox):
                       MessageType.error: QMessageBox.Critical,
                       MessageType.results: QMessageBox.Information}
 
-    def __init__(self, parent: QWidget, message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[QImage] = None):  # pylint: disable=too-many-arguments
+    def __init__(self, parent: QWidget, message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[QImage] = None):
         """
         Args:
             parent: The parent for the message box.

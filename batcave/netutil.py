@@ -11,7 +11,7 @@ from requests import get as url_get
 from .lang import is_debug
 
 
-def download(url: str, target: Optional[str] = None, auth: Optional[str] = None) -> None:
+def download(url: str, /, target: Optional[str] = None, *, auth: Optional[str] = None) -> None:
     """Download a file from a URL target.
 
     Args:
@@ -32,7 +32,7 @@ def download(url: str, target: Optional[str] = None, auth: Optional[str] = None)
     open(target, 'wb').write(response.content)
 
 
-def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body: str,   # pylint: disable=too-many-arguments
+def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body: str, /,
                content_type: str = 'text/plain') -> Dict[str, Tuple[int, bytes]]:
     """Send an SMTP email message.
 

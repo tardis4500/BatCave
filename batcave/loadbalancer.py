@@ -42,7 +42,7 @@ class LoadBalancerError(BatCaveException):
 class LoadBalancer:
     """Class to create a universal abstract interface for a load balancer."""
 
-    def __init__(self, lb_type: LbType, ip_address: str, user: str, password: str):
+    def __init__(self, lb_type: LbType, ip_address: str, /, user: str, password: str):
         """
         Args:
             lb_type: The load balancer type.
@@ -73,7 +73,7 @@ class LoadBalancer:
     ip_address = property(lambda s: s._ip_address, doc='A read-only property which returns the IP address of the load balancer.')
     type = property(lambda s: s._type, doc='A read-only property which returns the type of the load balancer.')
 
-    def add_server(self, server_info: ServerType) -> 'LoadBalancerServer':
+    def add_server(self, server_info: ServerType, /) -> 'LoadBalancerServer':
         """Add the specified server to the load balancer.
 
         Args:
@@ -89,7 +89,7 @@ class LoadBalancer:
         NetScalerServer.add(self._api, ns_server)
         return self.get_server(server_info)
 
-    def add_virtual_server(self, server_info: ServerType, service_type: LbVipType = LbVipType.HTTP,  # pylint: disable=too-many-arguments,too-many-locals
+    def add_virtual_server(self, server_info: ServerType, /, *, service_type: LbVipType = LbVipType.HTTP,  # pylint: disable=too-many-locals
                            port: Optional[int] = None, servers: Iterable[ServerType] = tuple(),
                            services: Iterable = tuple(), certificates: Iterable = tuple(),
                            responder_policies: Iterable = tuple()) -> Union['LoadBalancerVirtualServer', Tuple['LoadBalancerVirtualServer', 'LoadBalancerVirtualServer']]:
@@ -153,7 +153,7 @@ class LoadBalancer:
 
         return (virtual_server, offload_server) if offload_server else virtual_server  # type: ignore
 
-    def flush_cache_content(self, group_name: str) -> str:
+    def flush_cache_content(self, group_name: str, /) -> str:
         """Flush the specified load balancer cache content group.
 
         Args:
@@ -164,7 +164,7 @@ class LoadBalancer:
         """
         return NetScalerCacheContentGroup.flush(self._api, self.get_cache_content_group(group_name))
 
-    def get_cache_content_group(self, group_name: str) -> str:
+    def get_cache_content_group(self, group_name: str, /) -> str:
         """Get the specified load balancer cache content group.
 
         Args:
@@ -185,7 +185,7 @@ class LoadBalancer:
                 raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='cache content group', name=group_name) from err
             raise
 
-    def get_server(self, server_info: ServerType) -> 'LoadBalancerServer':
+    def get_server(self, server_info: ServerType, /) -> 'LoadBalancerServer':
         """Get the specified server from the load balancer.
 
         Args:
@@ -205,7 +205,7 @@ class LoadBalancer:
                 raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='server', name=server_hostname) from err
             raise
 
-    def get_virtual_server(self, server_name: ServerType) -> 'LoadBalancerVirtualServer':
+    def get_virtual_server(self, server_name: ServerType, /) -> 'LoadBalancerVirtualServer':
         """Get the specified virtual server from the load balancer.
 
         Args:
@@ -225,7 +225,7 @@ class LoadBalancer:
                 raise LoadBalancerError(LoadBalancerError.BAD_OBJECT, type='virtual server', name=server_hostname) from err
             raise
 
-    def has_server(self, server_info: ServerType) -> bool:
+    def has_server(self, server_info: ServerType, /) -> bool:
         """Determine if the load balancer server exists.
 
         Args:
@@ -243,7 +243,7 @@ class LoadBalancer:
         else:
             return True
 
-    def manage_servers(self, signal: LbServerSignal, servers: Union[ServerType, Iterable[ServerType]], validate: bool = True) -> None:
+    def manage_servers(self, signal: LbServerSignal, servers: Union[ServerType, Iterable[ServerType]], /, *, validate: bool = True) -> None:
         """Perform an action on servers managed by the load balancer.
 
         Args:
@@ -270,7 +270,7 @@ class LoadBalancer:
 class LoadBalancerObject:
     """Class to create a universal abstract interface for an object in a load balancer."""
 
-    def __init__(self, load_balancer_ref: NetScalerServer, lb_object_ref: Type['LoadBalancerObject']):
+    def __init__(self, load_balancer_ref: NetScalerServer, lb_object_ref: Type['LoadBalancerObject'], /):
         """
         Args:
             load_balancer_ref: The load balancer API object reference.
@@ -296,7 +296,7 @@ class LoadBalancerObject:
 class LoadBalancerServer(LoadBalancerObject):
     """Class to create a universal abstract interface for a load balancer server."""
 
-    def add_service(self, service_name: str, service_type: str = 'HTTP', port: int = 80) -> 'LoadBalancerService':
+    def add_service(self, service_name: str, /, *, service_type: str = 'HTTP', port: int = 80) -> 'LoadBalancerService':
         """Add a service to a server in the load balancer.
 
         Args:
@@ -315,7 +315,7 @@ class LoadBalancerServer(LoadBalancerObject):
         NetScalerServerService.add(self._load_balancer_ref.ns_session, ns_service)
         return self.get_service(service_name)
 
-    def get_service(self, service_name: str) -> 'LoadBalancerService':
+    def get_service(self, service_name: str, /) -> 'LoadBalancerService':
         """Get the specified service.
 
         Args:
@@ -342,7 +342,7 @@ class LoadBalancerService(LoadBalancerObject):  # pylint: disable=too-few-public
 class LoadBalancerVirtualServer(LoadBalancerObject):
     """Class to create a universal abstract interface for a load balancer virtual server."""
 
-    def bind_certificate(self, cert_name: str) -> None:
+    def bind_certificate(self, cert_name: str, /) -> None:
         """Bind a certificate to the virtual server.
 
         Args:
@@ -356,7 +356,7 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
         ns_certificate_binding.certkeyname = cert_name
         NetScalerCertificateBinding.add(self._load_balancer_ref.ns_session, ns_certificate_binding)
 
-    def bind_responder_policy(self, policy_name: str, policy_priority: int = 100) -> None:
+    def bind_responder_policy(self, policy_name: str, /, *, policy_priority: int = 100) -> None:
         """Bind a responder policy to the virtual server.
 
         Args:
@@ -372,7 +372,7 @@ class LoadBalancerVirtualServer(LoadBalancerObject):
         ns_policy_binding.priority = policy_priority
         NetScalerResponderPolicyBinding.add(self._load_balancer_ref.ns_session, ns_policy_binding)
 
-    def bind_service(self, service: LoadBalancerService) -> None:
+    def bind_service(self, service: LoadBalancerService, /) -> None:
         """Bind a service to the virtual server.
 
         Args:

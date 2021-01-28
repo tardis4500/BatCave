@@ -122,7 +122,7 @@ class DataSource:
     INI_ROW_TAG = ' ROW '
     INI_ROWLIST_OPT = 'ROWS'
 
-    def __init__(self, data_type: SourceType, connectinfo: PathName, /, name: str, *, schema: int, create: bool = False):  # pylint: disable=too-many-arguments
+    def __init__(self, data_type: SourceType, connectinfo: PathName, /, name: str, *, schema: int, create: bool = False):
         """
         Args:
             data_type: The data source type.

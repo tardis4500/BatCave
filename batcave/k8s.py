@@ -130,7 +130,7 @@ class Cluster:
                 self.find_method(item_class, 'delete')(item_name, namespace)
             return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec_content))
 
-    def create_job(self, job_spec: PathName, /, *, namespace: str = 'default', exists_ok: bool = False,  # pylint: disable=too-many-arguments
+    def create_job(self, job_spec: PathName, /, *, namespace: str = 'default', exists_ok: bool = False,
                    wait_for: bool = False, check_every: int = 2, timeout: bool = False) -> 'Job':
         """Create a job and wait for the specified condition.
 

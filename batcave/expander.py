@@ -357,7 +357,7 @@ class Expander:
             thing = thing.replace(f'{self.prelim}{var}{self.postlim}', str(replacer))
         return thing
 
-    def expand_directory(self, source_dir: PathName, /, target_dir: Optional[PathName] = None, *,  # pylint: disable=too-many-arguments
+    def expand_directory(self, source_dir: PathName, /, target_dir: Optional[PathName] = None, *,
                          ignore_files: Sequence[str] = tuple(), no_expand_files: Sequence[str] = tuple(), err_if_exists: bool = True) -> None:
         """Perform an expansion on an entire directory tree.
 

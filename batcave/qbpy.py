@@ -15,7 +15,7 @@ from .lang import bool_to_str
 class QuickBuildObject:
     """Class to create a universal abstract interface for a QuickBuild object."""
 
-    def __init__(self, console: 'QuickBuildConsole', object_id: Union[int, str]):
+    def __init__(self, console: 'QuickBuildConsole', object_id: Union[int, str], /):
         """
         Args:
             console: The QuickBuild console containing this object.
@@ -56,7 +56,7 @@ class QuickBuildObject:
         object_xml = fromstring(self._console.qb_runner(self._object_path).text)
         attr_element = cast(Element, object_xml.find(attr))
         attr_element.text = value
-        self._console.qb_runner(f'{self._object_type}s', object_xml)
+        self._console.qb_runner(f'{self._object_type}s', xmldata=object_xml)
 
     def __str__(self):
         return self._console.qb_runner(self._object_path).text
@@ -75,7 +75,7 @@ class QuickBuildDashboard(QuickBuildObject):  # pylint: disable=too-few-public-m
 class QuickBuildCfg(QuickBuildObject):
     """Class to create a universal abstract interface for a QuickBuild configuration."""
 
-    def _get_id(self, thing: Union[int, 'QuickBuildCfg']) -> int:
+    def _get_id(self, thing: Union[int, 'QuickBuildCfg'], /) -> int:
         """Get the ID of the specified configuration.
 
         Args:
@@ -96,7 +96,7 @@ class QuickBuildCfg(QuickBuildObject):
         build_element = str(cast(Element, fromstring(self._console.qb_runner(f'latest_builds/{self._object_id}').text).find('id')).text)
         return QuickBuildBuild(self._console, build_element)
 
-    def change_var(self, var: str, val: str) -> 'QuickBuildCfg':
+    def change_var(self, var: str, val: str, /) -> 'QuickBuildCfg':
         """Change the value of a variable in this configuration.
 
         Args:
@@ -111,10 +111,10 @@ class QuickBuildCfg(QuickBuildObject):
             if cast(Element, varxml.find('name')).text == var:
                 valref = cast(Element, cast(Element, varxml.find('valueProvider')).find('value'))
                 valref.text = val
-        self._console.qb_runner('configurations', cfgxml)
+        self._console.qb_runner('configurations', xmldata=cfgxml)
         return self
 
-    def copy(self, parent: 'QuickBuildCfg', name: str, recurse: bool = False) -> 'QuickBuildCfg':
+    def copy(self, parent: 'QuickBuildCfg', name: str, /, *, recurse: bool = False) -> 'QuickBuildCfg':
         """Copy this configuration to a new configuration.
 
         Args:
@@ -130,7 +130,7 @@ class QuickBuildCfg(QuickBuildObject):
         self._console.updater()
         return new_cfg
 
-    def disable(self, wait: bool = False) -> None:
+    def disable(self, /, *, wait: bool = False) -> None:
         """Disable this configuration.
 
         Args:
@@ -151,7 +151,7 @@ class QuickBuildCfg(QuickBuildObject):
         """
         self.disabled = 'false'  # pylint: disable=attribute-defined-outside-init
 
-    def get_children(self, recurse: bool = False) -> List['QuickBuildCfg']:
+    def get_children(self, /, *, recurse: bool = False) -> List['QuickBuildCfg']:
         """Get the child configurations.
 
         Args:
@@ -173,7 +173,7 @@ class QuickBuildCfg(QuickBuildObject):
         """
         self._console.qb_runner(f'configurations/{self._object_id}', delete=True)
 
-    def rename(self, newname: str) -> 'QuickBuildCfg':
+    def rename(self, newname: str, /) -> 'QuickBuildCfg':
         """Rename this configuration.
 
         Args:
@@ -185,11 +185,11 @@ class QuickBuildCfg(QuickBuildObject):
         cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
         name = cast(Element, cfgxml.find('name'))
         name.text = newname
-        self._console.qb_runner('configurations', cfgxml)
+        self._console.qb_runner('configurations', xmldata=cfgxml)
         self._console.updater()
         return self
 
-    def reparent(self, newparent: 'QuickBuildCfg', rename: bool = False) -> 'QuickBuildCfg':
+    def reparent(self, newparent: 'QuickBuildCfg', /, *, rename: bool = False) -> 'QuickBuildCfg':
         """Reparent this configuration.
 
         Args:
@@ -205,7 +205,7 @@ class QuickBuildCfg(QuickBuildObject):
         if rename:
             name = cast(Element, cfgxml.find('name'))
             name.text = bool_to_str(rename)
-        self._console.qb_runner('configurations', cfgxml)
+        self._console.qb_runner('configurations', xmldata=cfgxml)
         self._console.updater()
         return self
 
@@ -213,7 +213,7 @@ class QuickBuildCfg(QuickBuildObject):
 class QuickBuildConsole:
     """Class to create a universal abstract interface for a QuickBuild console."""
 
-    def __init__(self, host: str, user: str, password: str):
+    def __init__(self, host: str, /, *, user: str, password: str):
         """
         Args:
             host: The server hosting the QuickBuild console.
@@ -255,7 +255,7 @@ class QuickBuildConsole:
         self._update = val
         self.updater()
 
-    def create_dashboard(self, name: str, dashboard: Union[str, QuickBuildDashboard]) -> QuickBuildDashboard:
+    def create_dashboard(self, name: str, dashboard: Union[str, QuickBuildDashboard], /) -> QuickBuildDashboard:
         """Create a dashboard from an existing one.
 
         Args:
@@ -273,7 +273,7 @@ class QuickBuildConsole:
         cast(Element, xml_data.find('name')).text = name
         return QuickBuildDashboard(self, str(self.qb_runner('dashboards', xmldata=xml_data).text))
 
-    def get_dashboard(self, dashboard: str) -> QuickBuildDashboard:
+    def get_dashboard(self, dashboard: str, /) -> QuickBuildDashboard:
         """Get the named dashboard.
 
         Args:
@@ -284,7 +284,7 @@ class QuickBuildConsole:
         """
         return self.dashboards[dashboard]
 
-    def has_dashboard(self, dashboard: str) -> bool:
+    def has_dashboard(self, dashboard: str, /) -> bool:
         """Determine if the specified dashboard exists.
 
         Args:
@@ -295,7 +295,7 @@ class QuickBuildConsole:
         """
         return dashboard in self.dashboards
 
-    def qb_runner(self, cmd: str, xmldata: Optional[Any] = None, delete: bool = False) -> Response:
+    def qb_runner(self, cmd: str, /, *, xmldata: Optional[Any] = None, delete: bool = False) -> Response:
         """Provide an interface to the RESTful API.
 
         Args:
@@ -327,7 +327,7 @@ class QuickBuildConsole:
         """
         if self._update:
             top = QuickBuildCfg(self, 1)
-            self.configs = {str(c.path): c for c in top.get_children(True)}
+            self.configs = {str(c.path): c for c in top.get_children(recurse=True)}
             self.configs[str(top.path)] = top
 
             for dashboard in fromstring(self.qb_runner('dashboards').text).iter('com.pmease.quickbuild.model.Dashboard'):
