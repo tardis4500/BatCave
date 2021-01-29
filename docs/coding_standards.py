@@ -1,6 +1,6 @@
 # flake8: noqa
 # pylint: disable-all
-# cSpell:ignore unindented todos
+# cSpell:ignore unindented todos numericals
 
 # Step1: Add module level docstrings, including attributes.
 # Step2: Add module level function docstrings.
@@ -16,11 +16,8 @@
 # Step12: Add PEP526 variable type annotations
 # Step13: Add linting and type checking to build pipeline.
 # Step14: Change pylint numericals
-
 # Step15: Walrus operator (:=)
 # Step16: Positional arguments (/, *)
-
-# Fixed refactor linting in servermgr, serverpath, statemachine, and sysutil modules. (GitLab #29)
 
 # -*- coding: utf-8 -*-
 """Example Google style docstrings.

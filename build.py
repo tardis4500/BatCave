@@ -18,7 +18,7 @@ from venv import EnvBuilder
 # Import third-party-modules
 from requests import delete as rest_delete, post as rest_post
 from twine.commands.upload import main as upload
-from xmlrunner import XMLTestRunner
+from xmlrunner import XMLTestRunner  # type: ignore
 
 # Import BatCave modules
 from batcave.automation import Action
@@ -177,7 +177,7 @@ def post_release_update(args: Namespace) -> None:
     if args.tag_source:
         MESSAGE_LOGGER(f'Tagging the source with v{args.release}')
         git_client.add_remote_ref('user_origin', f'https://{args.gitlab_user}:{args.gitlab_password}@gitlab.com/arisilon/batcave.git', exists_ok=True)
-        git_client.add_label(f'v{args.release}', tag_message=f'version {args.release}', exists_ok=True)
+        git_client.add_label(f'v{args.release}', f'version {args.release}', exists_ok=True)
     if args.checkin:
         git_client.checkin_files('Automated pipeline checking', remote='user_origin', tags=True)
 
@@ -211,7 +211,7 @@ def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool
     else:
         VERSION_FILE.chmod(VERSION_FILE.stat().st_mode | S_IWUSR)
         copyfile(VERSION_FILE, file_orig)
-        file_expander(file_orig, VERSION_FILE, use_vars)
+        file_expander(file_orig, VERSION_FILE, vardict=use_vars)
         replacers = {'title': PRODUCT_NAME, 'version': use_vars['release']}
         file_update = list()
         for line in slurp(VERSION_FILE):

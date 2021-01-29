@@ -66,7 +66,7 @@ class ConfigCollection:
         self._name = (path_name := Path(name)).name
         self._config_filename = path_name.parent / (path_name.name + suffix)
         try:
-            self._data_source = DataSource(SourceType.xml, self._config_filename, self.name, self._CURRENT_CONFIG_SCHEMA, create)
+            self._data_source = DataSource(SourceType.xml, self._config_filename, name=self.name, schema=self._CURRENT_CONFIG_SCHEMA, create=create)
         except DataError as err:
             for case in switch(err.code):
                 if case(DataError.FILE_OPEN.code):

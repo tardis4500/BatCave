@@ -90,7 +90,7 @@ class OSUtilError(BatCaveException):
 class LockFile:
     """Class to create a universal abstract interface for an OS lock file."""
 
-    def __init__(self, filename: PathName, handle: Optional[TextIO] = None, cleanup: bool = True):
+    def __init__(self, filename: PathName, /, handle: Optional[TextIO] = None, *, cleanup: bool = True):
         """
         Args:
             filename: The file name for the lock file.
@@ -127,7 +127,7 @@ class LockFile:
         self.close()
         return False
 
-    def action(self, mode: LockMode) -> None:
+    def action(self, mode: LockMode, /) -> None:
         """Perform the requested action on the lock file.
 
         Args:
@@ -203,7 +203,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
         return syscmd(self.command, *use_args, **use_keys)
 
 
-def chmod(dirname: PathName, mode: int, recursive: bool = False, files_only: bool = False) -> None:
+def chmod(dirname: PathName, /, mode: int, *, recursive: bool = False, files_only: bool = False) -> None:
     """Perform chmod recursively if requested.
 
     Args:
@@ -224,7 +224,7 @@ def chmod(dirname: PathName, mode: int, recursive: bool = False, files_only: boo
                 Path(root, pathname).chmod(mode)
 
 
-def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] = None, recursive: bool = False) -> None:
+def chown(pathname: PathName, /, user: Optional[str] = None, group: Optional[str] = None, *, recursive: bool = False) -> None:
     """Perform chown and chgrp together, recursively if requested.
 
     Args:
@@ -242,7 +242,7 @@ def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] =
                 os_chown(Path(root, sub_path), user, group)
 
 
-def create_group(group_name: str, exists_ok: bool = True) -> None:
+def create_group(group_name: str, /, *, exists_ok: bool = True) -> None:
     """Create the system group at the OS level.
 
     Args:
@@ -269,7 +269,7 @@ def create_group(group_name: str, exists_ok: bool = True) -> None:
         syscmd('groupadd', group_name)
 
 
-def create_user(username: str, groups: Tuple = tuple(), exists_ok: bool = True) -> None:
+def create_user(username: str, /, groups: Tuple = tuple(), *, exists_ok: bool = True) -> None:
     """Create the user account at the OS level.
 
     Args:
@@ -288,7 +288,7 @@ def create_user(username: str, groups: Tuple = tuple(), exists_ok: bool = True) 
     """
     if WIN32:
         raise OSUtilError(OSUtilError.INVALID_OPERATION, platform='Windows')
-    create_group(username, exists_ok)
+    create_group(username, exists_ok=exists_ok)
     try:
         getpwnam(username)
         if not exists_ok:
@@ -319,7 +319,7 @@ def is_user_administrator() -> bool:
     return True
 
 
-def rmpath(path_name: PathName) -> None:
+def rmpath(path_name: PathName, /) -> None:
     """Remove the specified path object. If a directory, remove recursively.
 
     Args:
@@ -334,7 +334,7 @@ def rmpath(path_name: PathName) -> None:
         path_name.unlink()
 
 
-def rmtree_hard(tree: PathName) -> None:
+def rmtree_hard(tree: PathName, /) -> None:
     """Recursively, remove a directory and try to avoid non-fatal errors.
 
     Args:
@@ -367,7 +367,7 @@ def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
     pathstr.unlink()
 
 
-def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
            ignore_stderr: bool = False, append_stderr: bool = False, fail_on_error: bool = True, show_cmd: bool = False,
            use_shell: bool = False, flatten_output: bool = False, remote: Optional[Union[bool, str]] = False,
            remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[Tuple[str, str]] = None,
@@ -507,7 +507,7 @@ def syscmd(command: str, *cmd_args, input_lines: Optional[Iterable] = None, show
 _DIRECTORY_STACK = list()
 
 
-def pushd(dirname: PathName) -> PathName:
+def pushd(dirname: PathName, /) -> PathName:
     """Implements the push function for a directory stack.
 
     Args:

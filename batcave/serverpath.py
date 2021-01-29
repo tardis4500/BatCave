@@ -36,7 +36,7 @@ class ServerPath:
                                 OsType.linux: ['-r', '-batch']}
     DEFAULT_REMOTE_COPY_COMMAND = {OsType.windows: 'robocopy', OsType.linux: 'pscp' if WIN32 else 'scp'}
 
-    def __init__(self, server: Server, the_path: PathName):
+    def __init__(self, server: Server, the_path: PathName, /):
         """
         Args:
             server: The server for which the file path is a reference.
@@ -73,7 +73,7 @@ class ServerPath:
             return WindowsPath(f'//{self.server.fqdn}/{self.local}'.replace(':', '$'))
         return f'{self.server.fqdn}:{self.local}'
 
-    def copy(self, sp_dest: 'ServerPath', remote_cp_command: Optional[str] = None, remote_cp_args: Optional[List[str]] = None) -> CommandResult:
+    def copy(self, sp_dest: 'ServerPath', /, remote_cp_command: Optional[str] = None, remote_cp_args: Optional[List[str]] = None) -> CommandResult:
         """Implementation of shutil.copy() adding remote server support.
 
         Args:
@@ -156,7 +156,7 @@ class ServerPath:
             return [i for i in cast(Path, self.remote).iterdir()]  # pylint: disable=unnecessary-comprehension
         return self.server.run_command('dir' if self.is_win else 'ls', self.local)
 
-    def mkdir(self, mode: int = 0o777, parents: bool = False, exist_ok: bool = False) -> None:
+    def mkdir(self, mode: int = 0o777, /, *, parents: bool = False, exist_ok: bool = False) -> None:
         """Implementation of pathlib.Path.mkdir() adding remote server support.
 
         Args:
@@ -177,7 +177,7 @@ class ServerPath:
         cmd.append(self.local)
         self.server.run_command(*cmd)  # type: ignore
 
-    def rename(self, new: str) -> Union[CommandResult, PathName]:
+    def rename(self, new: str, /) -> Union[CommandResult, PathName]:
         """Implementation of pathlib.Path.rename() adding remote server support.
 
         Args:
@@ -194,7 +194,7 @@ class ServerPath:
             return Path(new)  # TODO: In 3.8, the rename will return the correct value.
         return self.server.run_command('ren' if self.is_win else 'mv', self.local, new)
 
-    def rmdir(self, remote_rm_command: Optional[List[PathName]] = None, recursive: bool = False) -> None:
+    def rmdir(self, remote_rm_command: Optional[List[PathName]] = None, *, recursive: bool = False) -> None:
         """Implementation of pathlib.Path.rmdir() adding remote server support.
 
         Args:

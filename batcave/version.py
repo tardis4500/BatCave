@@ -24,7 +24,7 @@ from .platarch import Platform
 VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
 
 
-def get_version_info(style: VersionStyle = VersionStyle.full, plattype: str = 'batcave_run', extra_info: str = '') -> str:
+def get_version_info(style: VersionStyle = VersionStyle.full, /, plattype: str = 'batcave_run', extra_info: str = '') -> str:
     """Get the version information about the currently running application.
 
     Args:

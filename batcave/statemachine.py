@@ -47,7 +47,7 @@ class StateMachine:
     _DEFAULT_LOCKFILE = Path('lock')
     _DEFAULT_STATEFILE = Path('state')
 
-    def __init__(self, states: Sequence, statefile: PathName = _DEFAULT_STATEFILE, lockfile: PathName = _DEFAULT_LOCKFILE, autostart: bool = True):
+    def __init__(self, states: Sequence, /, *, statefile: PathName = _DEFAULT_STATEFILE, lockfile: PathName = _DEFAULT_LOCKFILE, autostart: bool = True):
         """
         Args:
             states: The list of states for the state machine.

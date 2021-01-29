@@ -39,18 +39,18 @@ class TestLockFile(TestCase):
             self._fn.unlink()
 
     def test_cleanup(self):
-        with LockFile(filename=self._fn, handle=self._fh, cleanup=True):
+        with LockFile(self._fn, handle=self._fh, cleanup=True):
             pass
         self.assertFalse(self._fn.exists())
 
     def test_no_cleanup(self):
-        with LockFile(filename=self._fn, handle=self._fh, cleanup=False):
+        with LockFile(self._fn, handle=self._fh, cleanup=False):
             pass
         self.assertTrue(self._fn.exists())
 
     @skip('Problems with secondary process')
     def test_lock(self):
-        with LockFile(filename=self._fn, handle=self._fh, cleanup=True):
+        with LockFile(self._fn, handle=self._fh, cleanup=True):
             self._lockagain.start()
             gotlock = self._gotlock.get()
             self._lockagain.join()
@@ -58,7 +58,7 @@ class TestLockFile(TestCase):
 
     @skip('Problems with secondary process')
     def test_unlock(self):
-        with LockFile(filename=self._fn, handle=self._fh, cleanup=True) as lockfile:
+        with LockFile(self._fn, handle=self._fh, cleanup=True) as lockfile:
             lockfile.action(LockMode.unlock)
             self._lockagain.start()
             gotlock = self._gotlock.get()
@@ -69,7 +69,7 @@ class TestLockFile(TestCase):
 
 def secondary_lock_process(filename, queue):
     try:
-        with LockFile(filename=filename, cleanup=False) as lockagain:
+        with LockFile(filename, cleanup=False) as lockagain:
             lockagain.action(LockMode.unlock)
             queue.put(LockSignal.true)
     except LockError:

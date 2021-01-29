@@ -15,8 +15,6 @@ class TestStateMachine(TestCase):
     def setUp(self):
         if StateMachine._DEFAULT_STATEFILE.exists():
             StateMachine._DEFAULT_STATEFILE.unlink()
-        if StateMachine._DEFAULT_LOGFILE.exists():
-            StateMachine._DEFAULT_LOGFILE.unlink()
         if StateMachine._DEFAULT_LOCKFILE.exists():
             StateMachine._DEFAULT_LOCKFILE.unlink()
 
@@ -28,7 +26,6 @@ class TestStateMachine(TestCase):
             self.assertEqual(sm.status, StateStatus.exited)
             self.assertEqual(sm.state, 'None')
             self.assertTrue(StateMachine._DEFAULT_STATEFILE.exists())
-            self.assertTrue(StateMachine._DEFAULT_LOGFILE.exists())
             self.assertTrue(StateMachine._DEFAULT_LOCKFILE.exists())
             for state in self.STATES:
                 sm.enter_next_state()
@@ -43,7 +40,6 @@ class TestStateMachine(TestCase):
             except StateMachineError as err:
                 self.assertEqual(StateMachineError.DONE.code, err.code)
         self.assertTrue(StateMachine._DEFAULT_STATEFILE.exists())
-        self.assertTrue(StateMachine._DEFAULT_LOGFILE.exists())
         self.assertFalse(StateMachine._DEFAULT_LOCKFILE.exists())
 
     def test_statemachine_savestate(self):

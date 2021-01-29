@@ -117,7 +117,7 @@ class Server:
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
 
-    def __init__(self, hostname: str = None, domain: str = None, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
+    def __init__(self, hostname: str = None, domain: str = None, *, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
                  os_type: OsType = OsType.windows if WIN32 else OsType.linux):
         """
         Args:
@@ -192,7 +192,7 @@ class Server:
         except x_wmi as err:
             raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self.hostname, msg=str(err)) from err
 
-    def _get_object_manager(self, item_type: str, wmi: WMI) -> ServerManager:
+    def _get_object_manager(self, item_type: str, wmi: WMI, /) -> ServerManager:
         """Return the correct object manager for the platform and item type.
 
         Args:
@@ -218,7 +218,7 @@ class Server:
     is_local = property(lambda s: getfqdn().lower() == s.fqdn, doc='A read-only property which returns True if the server is the local host.')
     os_type = property(lambda s: s._os_type, doc='A read-only property which returns the OS type of the server.')
 
-    def create_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, error_if_exists: bool = True, **key_args) -> 'ManagementObject':
+    def create_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, /, *, error_if_exists: bool = True, **key_args) -> 'ManagementObject':
         """Create a management object of the specified type.
 
         Args:
@@ -250,7 +250,7 @@ class Server:
             created_object = self.get_unique_object(item_type, wmi, **{unique_key: unique_id})
         return globals()[item_type](created_object, manager, unique_key, unique_id)
 
-    def create_scheduled_task(self, task: str, exe: str, schedule_type: str, schedule: str, user: str = '', password: str = '',  # pylint: disable=too-many-locals
+    def create_scheduled_task(self, task: str, /, *, exe: str, schedule_type: str, schedule: str, user: str = '', password: str = '',  # pylint: disable=too-many-locals
                               start_in: Optional[PathName] = None, disable: bool = False) -> 'ScheduledTask':
         """Create a scheduled task.
 
@@ -305,7 +305,7 @@ class Server:
 
         return task_object
 
-    def create_service(self, service: str, exe: str, user: str = '', password: str = '', start: bool = False,
+    def create_service(self, service: str, /, *, exe: str, user: str = '', password: str = '', start: bool = False,
                        timeout: int = 0, error_if_exists: bool = True) -> 'Service':
         """Create a service.
 
@@ -333,7 +333,7 @@ class Server:
         """
         return IISInstance(self.fqdn if not self.is_local else None)
 
-    def get_management_objects(self, item_type: str, wmi: bool = _DEFAULT_WMI, **filters) -> List['NamedOSObject']:
+    def get_management_objects(self, item_type: str, wmi: bool = _DEFAULT_WMI, /, **filters) -> List['NamedOSObject']:
         """Get a list of management objects.
 
         Args:
@@ -355,7 +355,7 @@ class Server:
                     del filters[key]
         return [globals()[item_type](r, manager, unique_key, getattr(r, unique_key), **extra_keys) for r in getattr(manager, ManagementObject.OBJECT_PREFIX + item_type)(**filters)]
 
-    def get_object_by_name(self, item_type: str, name: str, wmi: bool = _DEFAULT_WMI, **filters) -> Optional['NamedOSObject']:
+    def get_object_by_name(self, item_type: str, name: str, wmi: bool = _DEFAULT_WMI, /, **filters) -> Optional['NamedOSObject']:
         """Get a management object by name.
 
         Args:
@@ -372,7 +372,7 @@ class Server:
         """
         return self.get_unique_object(item_type, wmi, Name=name, **filters)
 
-    def get_path(self, the_path: str) -> ServerPath:
+    def get_path(self, the_path: str, /) -> ServerPath:
         """Get the specified path as a ServerPath object.
 
         Args:
@@ -383,7 +383,7 @@ class Server:
         """
         return ServerPath(self, the_path)
 
-    def get_process_connection(self, process: str) -> 'COMObject':
+    def get_process_connection(self, process: str, /) -> 'COMObject':
         """Get a COM connection to the specified process.
 
         Returns:
@@ -399,7 +399,7 @@ class Server:
         """
         return cast(List['Process'], self.get_management_objects('Process', **filters))
 
-    def get_scheduled_task(self, task: str) -> 'ScheduledTask':
+    def get_scheduled_task(self, task: str, /) -> 'ScheduledTask':
         """Get the specified scheduled task.
 
         Returns:
@@ -420,7 +420,7 @@ class Server:
             cmd_args += ('/U', self._auth[0], '/P', self._auth[1])
         return [self.get_scheduled_task(t['TaskName']) for t in DictReader(_run_task_scheduler(*cmd_args))]
 
-    def get_service(self, service: str, **key_args) -> 'Service':
+    def get_service(self, service: str, /, **key_args) -> 'Service':
         """Get the specified service.
 
         Args:
@@ -441,7 +441,7 @@ class Server:
             key_args['service_type'] = service_type
         return cast('Service', self.get_object_by_name('Service', service, **key_args))
 
-    def get_service_list(self, service_type: Optional[ServiceType] = None) -> List['Service']:
+    def get_service_list(self, service_type: Optional[ServiceType] = None, /) -> List['Service']:
         """Get the services for this server.
 
         Args:
@@ -461,7 +461,7 @@ class Server:
                 service_type = ServiceType.sysv
         return cast(List['Service'], self.get_management_objects('Service', service_type=service_type))
 
-    def get_unique_object(self, item_type: str, wmi: bool = _DEFAULT_WMI, **filters) -> Optional['NamedOSObject']:
+    def get_unique_object(self, item_type: str, wmi: bool = _DEFAULT_WMI, /, **filters) -> Optional['NamedOSObject']:
         """Get the requested management object which must be unique.
 
         Args:
@@ -482,7 +482,7 @@ class Server:
                 return results[0]
         raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=item_type, filters=filters)
 
-    def remove_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, error_if_not_exists: bool = False) -> None:
+    def remove_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, /, *, error_if_not_exists: bool = False) -> None:
         """Remove a management object.
 
         Args:
@@ -505,7 +505,7 @@ class Server:
             msg = self._WMI_SERVICE_CREATE_ERRORS[result] if (result in self._WMI_SERVICE_CREATE_ERRORS) else f'Return value: {result}'
             raise ServerObjectManagementError(ServerObjectManagementError.WMI_ERROR, server=self.hostname, msg=msg)
 
-    def remove_scheduled_task(self, task: str) -> None:
+    def remove_scheduled_task(self, task: str, /) -> None:
         """Remove the specified scheduled task.
 
         Args:
@@ -516,7 +516,7 @@ class Server:
         """
         self.get_scheduled_task(task).remove()
 
-    def remove_service(self, service: str, error_if_not_exists: bool = False) -> None:
+    def remove_service(self, service: str, /, *, error_if_not_exists: bool = False) -> None:
         """Remove the specified service.
 
         Args:
@@ -528,7 +528,7 @@ class Server:
         """
         self.remove_management_object('Service', service, error_if_not_exists=error_if_not_exists)
 
-    def run_command(self, command: str, *cmd_args, **sys_cmd_args) -> CommandResult:
+    def run_command(self, command: str, /, *cmd_args, **sys_cmd_args) -> CommandResult:
         """Run a command on the server.
 
         Args:
@@ -560,7 +560,7 @@ class OSManager:
         self.computer = computer
         self.auth = auth
 
-    def get_object_as_list(self, object_type: str, Name: str, **key_args) -> List['ManagementObject']:
+    def get_object_as_list(self, object_type: str, /, *, Name: str, **key_args) -> List['ManagementObject']:
         """Get the specified OS object.
 
         Args:
@@ -612,7 +612,7 @@ class OSManager:
             return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]
         return list()
 
-    def LinuxService(self, Name: str, service_type: ServiceType) -> 'LinuxService':
+    def LinuxService(self, Name: str, service_type: ServiceType, /) -> 'LinuxService':
         """Get the specified Linux service.
 
         Args:
@@ -622,9 +622,9 @@ class OSManager:
         Returns:
             The specified Linux service.
         """
-        return cast('LinuxService', self.get_object_as_list('LinuxService', Name, service_type=service_type))
+        return cast('LinuxService', self.get_object_as_list('LinuxService', Name=Name, service_type=service_type))
 
-    def Win32_ScheduledTask(self, Name: str) -> 'ScheduledTask':
+    def Win32_ScheduledTask(self, Name: str, /) -> 'ScheduledTask':
         """Get the specified Windows Scheduled Task.
 
         Args:
@@ -633,13 +633,13 @@ class OSManager:
         Returns:
             The specified Windows scheduled task.
         """
-        return cast('ScheduledTask', self.get_object_as_list('Win32_ScheduledTask', Name))
+        return cast('ScheduledTask', self.get_object_as_list('Win32_ScheduledTask', Name=Name))
 
 
 class NamedOSObject:  # pylint: disable=too-few-public-methods
     """Class to allow management of all OS objects using a similar interface."""
 
-    def __init__(self, Name: str, computer: str, auth: Tuple[str, str]):
+    def __init__(self, Name: str, computer: str, auth: Tuple[str, str], /):
         """
         Args:
             Name: The name of the object.
@@ -660,7 +660,7 @@ class NamedOSObject:  # pylint: disable=too-few-public-methods
 class LinuxService(NamedOSObject):
     """Class to create a universal abstract interface for a Linux daemon service."""
 
-    def __init__(self, Name: str, computer: str, auth: Tuple[str, str], service_type: ServiceType):
+    def __init__(self, Name: str, computer: str, auth: Tuple[str, str], service_type: ServiceType, /):
         """
         Args:
             Name: The name of the object.
@@ -674,7 +674,7 @@ class LinuxService(NamedOSObject):
         self.type = service_type
         super().__init__(Name, computer, auth)
 
-    def _manage(self, command: str) -> Union[CommandResult, CMDError]:
+    def _manage(self, command: str, /) -> Union[CommandResult, CMDError]:
         """Manage the service.
 
         Args:
@@ -765,7 +765,7 @@ class LinuxService(NamedOSObject):
 class LinuxProcess:
     """Class to create a universal abstract interface for a Linux process."""
 
-    def __init__(self, ProcessId: str):
+    def __init__(self, ProcessId: str, /):
         """
         Args:
             ProcessId: The process ID of the process.
@@ -831,7 +831,7 @@ class Win32_ScheduledTask(NamedOSObject):
             args += ('/U', self.auth[0], '/P', self.auth[1])
         return _run_task_scheduler(*args, **sys_cmd_args)
 
-    def manage(self, signal: TaskSignal, wait: bool = True) -> None:
+    def manage(self, signal: TaskSignal, /, *, wait: bool = True) -> None:
         """Manage the scheduled task.
 
         Args:
@@ -893,7 +893,7 @@ class Win32_ScheduledTask(NamedOSObject):
 class COMObject:
     """Class to create a universal abstract interface for a Windows COM object."""
 
-    def __init__(self, ref: Union[str, 'COMObject'], hostname: str = ''):
+    def __init__(self, ref: Union[str, 'COMObject'], hostname: str = '', /):
         """
         Args:
             ref: The Windows COM object.
@@ -949,7 +949,7 @@ class ManagementObject:
     """
     OBJECT_PREFIX = 'Win32_' if WIN32 else 'Linux'
 
-    def __init__(self, object_ref: 'ManagementObject', manager: OSManager, key: str, value: str, **key_values):
+    def __init__(self, object_ref: 'ManagementObject', manager: OSManager, key: str, value: str, /, **key_values):
         """
         Args:
             object_ref: A reference to the management object.
@@ -1007,7 +1007,7 @@ class Service(ManagementObject):
             return self.ServiceState[super().__getattr__(attr).replace(' ', '')]
         return super().__getattr__(attr)
 
-    def manage(self, signal: ServiceSignal, wait: bool = True, ignore_state: bool = False, timeout: int = False) -> None:  # pylint: disable=too-many-branches,too-many-statements
+    def manage(self, signal: ServiceSignal, /, *, wait: bool = True, ignore_state: bool = False, timeout: int = False) -> None:  # pylint: disable=too-many-branches,too-many-statements
         """Manage the service.
 
         Args:
@@ -1090,8 +1090,8 @@ class Service(ManagementObject):
 
         if control_method:
             if WIN32 and control_method == 'RestartService':
-                self.manage(self.ServiceSignal.stop, wait, ignore_state)
-                self.manage(self.ServiceSignal.start, wait, ignore_state)
+                self.manage(self.ServiceSignal.stop, wait=wait, ignore_state=ignore_state)
+                self.manage(self.ServiceSignal.start, wait=wait, ignore_state=ignore_state)
             else:
                 getattr(self, control_method)()
                 sleep(_STATUS_CHECK_INTERVAL)
@@ -1106,7 +1106,7 @@ class Service(ManagementObject):
 class Process(ManagementObject):
     """Class to create a universal abstract interface for an OS process."""
 
-    def manage(self, signal: ProcessSignal, wait: bool = True, timeout: bool = False) -> None:
+    def manage(self, signal: ProcessSignal, /, *, wait: bool = True, timeout: bool = False) -> None:
         """Manage the process.
 
         Args:
@@ -1154,7 +1154,7 @@ class ScheduledTask(ManagementObject):  # pylint: disable=too-few-public-methods
     TASK_NAMESPACE = 'http://schemas.microsoft.com/windows/2004/02/mit/task'
 
 
-def get_server_object(server: ServerType) -> Server:
+def get_server_object(server: ServerType, /) -> Server:
     """Get a server object for the specific fqdn.
 
     Args:
