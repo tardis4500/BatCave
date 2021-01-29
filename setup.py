@@ -10,7 +10,7 @@ from batcave.fileutil import slurp
 from batcave.sysutil import chmod, S_775
 
 # The files need to be writable
-chmod(Path.cwd(), S_775, True)
+chmod(Path.cwd(), S_775, recursive=True)
 
 setup(
     name=batcave.__title__,

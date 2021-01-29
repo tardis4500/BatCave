@@ -203,7 +203,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
         return syscmd(self.command, *use_args, **use_keys)
 
 
-def chmod(dirname: PathName, /, mode: int, *, recursive: bool = False, files_only: bool = False) -> None:
+def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: bool = False) -> None:
     """Perform chmod recursively if requested.
 
     Args:
@@ -224,7 +224,7 @@ def chmod(dirname: PathName, /, mode: int, *, recursive: bool = False, files_onl
                 Path(root, pathname).chmod(mode)
 
 
-def chown(pathname: PathName, /, user: Optional[str] = None, group: Optional[str] = None, *, recursive: bool = False) -> None:
+def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] = None, *, recursive: bool = False) -> None:
     """Perform chown and chgrp together, recursively if requested.
 
     Args:
