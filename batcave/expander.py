@@ -392,7 +392,7 @@ class Expander:
                     copyfile(source_file, target_file)
                 else:
                     if is_debug('EXPANDER'):
-                        print(f'Expanding {source_file} to {target_file} (root={root})')
+                        print(f'Expanding {source_file} to {target_file} ({root=})')
                     self.expand_file(source_file, target_file)
 
     def expand_file(self, in_file: PathName, out_file: PathName, /) -> None:
