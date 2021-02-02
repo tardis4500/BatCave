@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [39.0.0] - Unreleased
 
 - Added
+  - Added user documentation generation. (GitLab #1)
   - Added close/__enter__/__exit__ to ConfigurationSet and Configuration in configmgr. (GitLab #35)
   - Added Namespace support to k8s module. (GitLab #44)
 
