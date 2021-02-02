@@ -9,6 +9,8 @@ pylint
 psutil
 requests
 setuptools
+sphinx
+sphinx_rtd_theme
 twine
 wheel
 xmlrunner

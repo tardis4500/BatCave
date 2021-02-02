@@ -49,7 +49,7 @@ __version__ = '{var:release}'
 __buildname__ = '{var:build_name}'
 __builddate__ = '{var:build_date}'
 
-__author__ = 'Jeff Smith'
+__author__ = 'Jeffery G. Smith'
 __email__ = 'web@pobox.com'
 
 __license__ = 'MIT'
