@@ -1498,6 +1498,7 @@ class Client:
 @dataclass(frozen=True)
 class FileRevision:
     """This class describes information about a file revision.
+
         Attributes:
             filename: The name of the file.
             revision: The revision number for this revision.
@@ -1519,6 +1520,7 @@ class FileRevision:
 @dataclass(frozen=True)
 class FileChangeRecord:
     """This class describes information about a file change.
+
         Attributes:
             client: The CMS Client object where this file change record is located.
             filename: The name of the file.

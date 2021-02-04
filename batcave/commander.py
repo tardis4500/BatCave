@@ -30,6 +30,7 @@ class Argument:  # pylint: disable=too-few-public-methods
 @dataclass(frozen=True)
 class SubParser:
     """This is a simple container class to encapsulate a subparser definition.
+
         Attributes:
             subcommand: The subcommand name for the subparser.
             command_runner: The function which runs the commands for the subparser.

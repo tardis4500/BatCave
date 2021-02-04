@@ -47,19 +47,20 @@ class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-metho
 class Action:
     """The common base class for all actions.
 
-    This is a virtual class and the inheriting class must at least include a _execute() method
-    The action is invoked by calling the execute() method which will run the following methods:
+    This is a virtual class and the inheriting class must at least include a _execute() method.
+
+    The action is invoked by calling the execute() method which will run the following methods::
+
         pre()
         _execute()
         post()
-    These are run in a try to catch any exceptions after which
-        always_post()
-    is run.
+
+    These are run in a try to catch any exceptions with the always_post() method run in the finally block.
 
     Attributes:
-        MESSAGE_GUARD: This string is printed by logger if the value of guard passed to logger is true.
+        message_guard: This string is printed by logger if the value of guard passed to logger is true.
     """
-    MESSAGE_GUARD = f"{'*'*70}"
+    message_guard = f"{'*'*70}"
 
     def __init__(self, **_unused_kwargs: Any):
         """
@@ -123,7 +124,7 @@ class Action:
 
         Args:
             message: The message to be printed.
-            guard (optional, default=False): If True, MESSAGE_GUARD will be printed on a line before the message.
+            guard (optional, default=False): If True, message_guard will be printed on a line before the message.
             leader (optional, default='INFO'): If it does not evaluate to False, it will be prepended to every printed
                 line, including the guard.
 
@@ -131,7 +132,7 @@ class Action:
             Nothing.
         """
         the_leader: str = f'{leader} ' if leader else ''
-        if the_guard := (self.MESSAGE_GUARD if (guard is True) else ''):
+        if the_guard := (self.message_guard if (guard is True) else ''):
             print(f'{the_leader}{the_guard}')
         print(f'{the_leader}{message}')
         sys.stdout.flush()

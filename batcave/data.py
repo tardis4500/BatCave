@@ -5,49 +5,64 @@ Data source definitions:
         source - a text file with '>NAME' delimiting tables
         table - a list of rows
         row - a line of the format column1:value1|column2:value2
-        column - : delimited part of the line
+        column - delimited part of the line
+
     INI
         source - an ini file
-        table - an ini section of the form
-                    [TABLENAME]
-                    ROWS: 1,...,N
-        row - an ini section of the form
-                    [TABLENAME ROW N]
-                    col1: val1
-                    col2: val2
+
+        table - an ini section of the form::
+            [TABLENAME]
+            ROWS: 1,...,N
+
+        row - an ini section of the form::
+            [TABLENAME ROW N]
+            col1: val1
+            col2: val2
+
         column - a section option
+
     PICKLE
         source - a Python pickle file containing a single dictionary
         table - a member of the top level dictionary which is a list of rows
         row - a dictionary of column:value pairs
+
     XML_SINGLE
         This format is a kludge to support the old RCFile format
         source - an XML file with the top level element the name of the datasource
         table - there is only one table which has the same name as the top level element
-        row - an XML element of the form
-                <environment name=COL-NAME-VALUE>
-                    COLUMNS
-                </environment>
-        column - an XML element of the form
-                <COL-NAME>COL-VALUE</COL-NAME>
+
+        row - an XML element of the form::
+            <environment name=COL-NAME-VALUE>
+            COLUMNS
+            </environment>
+
+        column - an XML element of the form::
+            <COL-NAME>COL-VALUE</COL-NAME>
+
     XML_FLAT
         source - an XML file with the top level element the name of the datasource
         table - a collection of XML elements
-        row - an XML element of the form
-                <TABLE-NAME COL-NAME="COL-VAL" />
+
+        row - an XML element of the form::
+            <TABLE-NAME COL-NAME="COL-VAL" />
+
         column - an XML element attribute
+
     XML
         source - an XML file with the top level element the name of the datasource
-        table - an XML element of the form
-                <TABLE name="TABLE-NAME">
-                    ROWS
-                </TABLE>
-        row - an XML element of the form
-                <ROW>
-                    COLUMNS
-                </ROW>
-        column - an XML element of the form
-                <COL-NAME>COL-VALUE</COL-NAME>
+
+        table - an XML element of the form::
+            <TABLE name="TABLE-NAME">
+            ROWS
+            </TABLE>
+
+        row - an XML element of the form::
+            <ROW>
+            COLUMNS
+            </ROW>
+
+        column - an XML element of the form::
+            <COL-NAME>COL-VALUE</COL-NAME>
 
 Attributes:
     SourceType (Enum): The source providers supported by the DataSource class.

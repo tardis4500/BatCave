@@ -109,6 +109,7 @@ class BatCaveException(Exception, MsgStr):
 @dataclass(frozen=True)
 class BatCaveError:
     """A class to provide an interface for inspecting exceptions.
+
         Attributes:
             code: A unique error code for this error.
             msg: A user-facing message for this error.

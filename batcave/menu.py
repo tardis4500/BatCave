@@ -8,6 +8,7 @@ from typing import cast, List, Union
 @dataclass(frozen=True)
 class MenuItem:
     """Class to represent a single menu item.
+
         Attributes:
             key: The key input for the menu selection.
             desc: The text description for the menu selection.
@@ -19,6 +20,7 @@ class MenuItem:
 @dataclass
 class Menu:
     """Class to create a universal abstract interface for a command-line menu.
+
         Attributes:
             items: The list of items for the menu.
             title (optional, default=_DEFAULT_TITLE): The title for the menu.
@@ -70,6 +72,7 @@ class Menu:
 @dataclass
 class SimpleMenu(Menu):
     """A simplified version of the Menu class.
+
         Attributes:
             return_text (optional, default=False): If True the text of the menu selection will be returned instead of the key.
     """

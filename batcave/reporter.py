@@ -1,41 +1,50 @@
 """This module provides utilities for creating reports.
 
 Examples:
-    The simplest usage would be:
+    The simplest usage would be::
+
         report = reporter.Report('REPORT HEADER', 'REPORT FOOTER')
 
-    To add a line to the report
+    To add a line to the report::
+
         line = reporter.Line('a line')
         report.add_line(line)
 
-    To add a section
+    To add a section::
+
         section1 = reporter.Section('Section 1 Header', 'Section 1 Footer')
         report.add_section(section1)
 
-    To add a link
+    To add a link::
+
         link = reporter.Link('Link Text', 'URL')
         report.register_link(link)
         report.add_line(reporter.Line(f'Line with a {link} in it'))
 
-    To add a list of links
+    To add a list of links::
+
         links = reporter.LinkList({'link1': 'http://link1', 'link2': 'http://link2'})
         report.register_link(links)
         report.add_line(reporter.Line(f'Line with {links}s in it'))
 
     A table is a list of lists with each outer list a row
-    To add a table:
+
+    To add a table::
+
         rows = [['11', '12'], ['21', '22']]
         table = reporter.Table(rows, 'Table Header', 'Table Footer')
         report.add_table(table)
 
-    To embed a link in a table
+    To embed a link in a table::
+
         link = reporter.Link('Table Text', 'http://table')
         report.register_link(link)
         rows = [['11', '12'], ['21', link]]
         table = reporter.Table(rows, 'Table Header', 'Table Footer')
         report.add_table(table)
 
-    A simple report can be output with
+    A simple report can be output with::
+
         print(report)
 
 Attributes:
