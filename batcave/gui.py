@@ -12,12 +12,12 @@ import sys
 from enum import Enum
 from pathlib import Path
 from string import Template
-from typing import cast, Any, Callable, List, Optional, TextIO, Tuple
+from typing import cast, Any, Callable, List, Optional, TextIO, Tuple, Union
 
 # Import GUI framework and widgets
-from PyQt5.QtCore import QEvent  # type: ignore # pylint: disable=import-error,no-name-in-module
-from PyQt5.QtGui import QIcon, QImage  # type: ignore # pylint: disable=import-error,no-name-in-module
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox, QWidget  # type: ignore # pylint: disable=import-error,no-name-in-module
+from PyQt5.QtCore import QEvent
+from PyQt5.QtGui import QCloseEvent, QIcon, QImage
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox, QWidget
 
 # Import internal modules
 from . import __title__
@@ -145,7 +145,7 @@ class BatCaveBaseGUI:
         if icon:
             self.setWindowIcon(QIcon(str(find_image(icon))))  # type: ignore # pylint: disable=no-member
 
-    def closeEvent(self, event: QEvent, /) -> None:
+    def closeEvent(self, event: QCloseEvent, /) -> None:
         """Overload of standard Qt method called when the object is closed.
 
         Returns:
@@ -172,7 +172,7 @@ class BatCaveBaseGUI:
         """
         for validator in self.validators:
             if validator.callback() == validator.falseval:
-                MessageBox(self, Message(how=validator.how, what=validator.what).MISSING_INFO, MessageBox.MESSAGE_TYPES.error).exec()
+                MessageBox(self, Message(how=validator.how, what=validator.what).MISSING_INFO, MessageType.error).exec()
                 return False
         return True
 
@@ -187,7 +187,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
             title (optional, default=''): The title for the window.
             icon (optional, default=None): The icon for the window.
         """
-        super().__init__(parent, title=(title if title else get_version_info(VersionStyle.brief)), icon=icon)
+        super().__init__(parent, title=(title if title else get_version_info(VersionStyle.brief)), icon=icon)  # type: ignore
         self.actionAbout.triggered.connect(self.OnAbout)
 
     def OnAbout(self) -> None:
@@ -196,12 +196,12 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
         Returns:
             Nothing.
         """
-        MessageBox(self, get_version_info(VersionStyle.aboutbox), MessageBox.MESSAGE_TYPES.about).exec()
+        MessageBox(self, get_version_info(VersionStyle.aboutbox), MessageType.about).exec()
 
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
     """This class provides functionality for a dialog box window."""
-    def accept(self) -> bool:
+    def accept(self) -> bool:  # type: ignore
         """Overload of standard Qt method called when the dialog is accepted.
 
         Returns:
@@ -229,7 +229,7 @@ class BatCaveDialog(QDialog, BatCaveBaseGUI):
             Nothing.
         """
         edit_control = getattr(self, self.sender().objectName().replace('btn', 'edt'))
-        if filepath := Path(QFileDialog.getOpenFileName(self, filter=file_filter)[0]):
+        if filepath := Path(QFileDialog.getOpenFileName(self, filter=str(file_filter))[0]):
             edit_control.setText(filepath)
 
 
@@ -246,7 +246,7 @@ class MessageBox(QMessageBox):
                       MessageType.error: QMessageBox.Critical,
                       MessageType.results: QMessageBox.Information}
 
-    def __init__(self, parent: QWidget, message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[QImage] = None):
+    def __init__(self, parent: Union[QWidget, BatCaveBaseGUI], message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[str] = None):
         """
         Args:
             parent: The parent for the message box.
@@ -255,7 +255,7 @@ class MessageBox(QMessageBox):
             detail (optional, default=''): The detail information to put in the message box.
             image (optional, default=None): The image to display in the message box.
         """
-        super().__init__(parent)
+        super().__init__(cast(QWidget, parent))
         if image:
             self.setWindowIcon(QIcon(find_image(image)))
         self.setWindowTitle(getattr(Title(), msg_type.name))
@@ -277,4 +277,4 @@ def find_image(name: str, /) -> QImage:
         The image object.
     """
     image_dir = BATCAVE_HOME if FROZEN else (BATCAVE_HOME / 'img')
-    return [f for f in image_dir.glob(name + '.*')][0]  # pylint: disable=unnecessary-comprehension
+    return cast(QImage, [f for f in image_dir.glob(name + '.*')][0])  # pylint: disable=unnecessary-comprehension

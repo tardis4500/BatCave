@@ -245,11 +245,11 @@ def str_to_pythonval(the_string: str, /, *, parse_python: bool = False) -> Any:
         parse_python (optional, default=False): If the string contains a '~' character, try to convert it to a more complex python object.
 
     Returns:
-        1. If the string represents an integer, return the value as an int.
-        2. If the string represents an non-integer number, return the value as a float.
-        3. If the string evaluates to 'None' (case-insensitive), return None.
-        4. If the string evaluates to 'True' or 'False' (case-insensitive), return True/False.
-        3. If parse_python is True and the_string contains '~':
+        #. If the string represents an integer, return the value as an int.
+        #. If the string represents an non-integer number, return the value as a float.
+        #. If the string evaluates to 'None' (case-insensitive), return None.
+        #. If the string evaluates to 'True' or 'False' (case-insensitive), return True/False.
+        #. If parse_python is True and the_string contains '~':
             Split the_string on the first '~' and return the second part as the value of a type specified by the first part.
 
     Raises:

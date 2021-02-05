@@ -14,5 +14,7 @@ sphinx_rtd_theme
 twine
 wheel
 xmlrunner
+PyQt5; platform_machine != 'aarch64'
+PyQt5-stubs; platform_machine != 'aarch64'
 pywin32; sys_platform == 'win32'
 WMI; sys_platform == 'win32'

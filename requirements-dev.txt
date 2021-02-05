@@ -1,3 +1,2 @@
 # Runtime testing
 google-cloud
-PyQt5; platform_machine != 'aarch64'

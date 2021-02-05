@@ -5,13 +5,14 @@ from os import walk
 from pathlib import Path, PurePosixPath, PureWindowsPath, WindowsPath
 from string import Template
 from shutil import copy
-from typing import cast, Iterator, List, Optional, Tuple, Union
+from typing import cast, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
 
 # Import internal modules
 from .platarch import OsType
-from .servermgr import Server
 from .sysutil import rmpath, syscmd, CMDError
 from .lang import is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
+if TYPE_CHECKING:
+    from .servermgr import Server
 
 
 class ServerPathError(BatCaveException):
@@ -36,7 +37,7 @@ class ServerPath:
                                 OsType.linux: ['-r', '-batch']}
     DEFAULT_REMOTE_COPY_COMMAND = {OsType.windows: 'robocopy', OsType.linux: 'pscp' if WIN32 else 'scp'}
 
-    def __init__(self, server: Server, the_path: PathName, /):
+    def __init__(self, server: 'Server', the_path: PathName, /):
         """
         Args:
             server: The server for which the file path is a reference.
