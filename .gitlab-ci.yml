@@ -29,7 +29,7 @@ cache:
   except:
     - tags
   before_script:
-    - apt-get install build-base git libffi-dev openssl-dev
+    - apt-get install build-essentials git libffi-dev libssl-dev
     - python -V
     - pip install -U pip
     - pip install -r requirements-frozen.txt
