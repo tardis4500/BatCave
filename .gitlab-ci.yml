@@ -33,6 +33,7 @@ cache:
     - apt-get -y install build-essential git libffi-dev libssl-dev
     - python -V
     - pip install -U pip
+    - pip install -U setuptools wheel
     - pip install -r requirements-frozen.txt
   script:
     - python build.py $CI_JOB_STAGE $BUILD_ARGS
