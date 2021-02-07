@@ -1,4 +1,4 @@
-image: python:3.8-alpine
+image: python:3.8
 
 stages:
   - static_analysis
@@ -58,7 +58,6 @@ ci_build:
 
 install_test:
   stage: install_test
-  image: python:3.8
   except:
     - tags
   before_script:
@@ -68,7 +67,6 @@ install_test:
 
 .publisher:
   extends: .builder
-  image: python:3.8
   only:
     - master
     - /^release\/.*$/
