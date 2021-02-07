@@ -1,4 +1,6 @@
+alabaster==0.7.12
 astroid==2.4.2
+Babel==2.9.0
 bleach==3.2.1
 cachetools==4.2.0
 certifi==2020.12.5
@@ -7,17 +9,20 @@ colorama==0.4.4
 docker==4.4.1
 docutils==0.16
 flake8==3.8.4
-flake8-annotations==2.4.1
+flake8-annotations==2.5.0
 gitdb==4.0.5
-GitPython==3.1.11
+GitPython==3.1.12
 google-auth==1.24.0
 idna==2.10
+imagesize==1.2.0
 isort==5.7.0
+Jinja2==2.11.3
 keyring==21.8.0
 kubernetes==12.0.1
 lazy-object-proxy==1.4.3
+MarkupSafe==1.1.1
 mccabe==0.6.1
-mypy==0.790
+mypy==0.800
 mypy-extensions==0.4.3
 nitrosdk-python==3.1
 oauthlib==3.1.0
@@ -31,7 +36,11 @@ pyflakes==2.2.0
 Pygments==2.7.3
 pylint==2.6.0
 pyparsing==2.4.7
+PyQt5==5.15.2
+PyQt5-sip==12.8.1
+PyQt5-stubs==5.14.2.2
 python-dateutil==2.8.1
+pytz==2021.1
 pywin32==227; sys_platform == 'win32'
 pywin32-ctypes==0.2.0; sys_platform == 'win32'
 PyYAML==5.3.1
@@ -43,6 +52,15 @@ rfc3986==1.4.0
 rsa==4.6
 six==1.15.0
 smmap==3.0.4
+snowballstemmer==2.1.0
+Sphinx==3.4.3
+sphinx-rtd-theme==0.5.1
+sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-htmlhelp==1.0.3
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==1.0.3
+sphinxcontrib-serializinghtml==1.1.4
 toml==0.10.2
 tqdm==4.55.0
 twine==3.3.0

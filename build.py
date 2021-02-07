@@ -241,6 +241,8 @@ def freeze(_unused_args: Namespace) -> None:
             print(line, file=updated_freeze_file)
         if not WIN32:
             print("pywin32==227; sys_platform == 'win32'", file=updated_freeze_file)
+            print("pywin32-ctypes==0.2.0; sys_platform == 'win32'", file=updated_freeze_file)
+            print("WMI==1.5.1; sys_platform == 'win32'", file=updated_freeze_file)
 
 
 def get_build_info(args: Namespace) -> Tuple[str, str]:
@@ -259,4 +261,4 @@ def delete_release(args: Namespace) -> None:
 if __name__ == '__main__':
     main()
 
-# cSpell:ignore bdist, bldverfile, checkin, cibuild, pywin, sdist, syscmd, venv
+# cSpell:ignore bdist bldverfile checkin cibuild ctypes pywin sdist syscmd venv

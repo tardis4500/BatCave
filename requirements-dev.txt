@@ -1,2 +1,0 @@
-# Runtime testing
-google-cloud
