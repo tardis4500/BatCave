@@ -9,6 +9,7 @@ Attributes:
 # pylint: disable=too-many-lines,too-many-branches,too-many-public-methods,too-many-locals,too-many-statements,c-extension-no-member
 
 # Import standard modules
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -30,7 +31,7 @@ from .fileutil import slurp
 from .sysutil import popd, pushd, rmtree_hard
 from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle, WIN32
 
-if WIN32:
+if sys.platform == 'win32':
     import win32api  # type: ignore
     import win32con  # type: ignore
 
@@ -1733,4 +1734,4 @@ def walk_git_tree(tree: git.Tree, /, *, parent: Optional[git.Tree] = None) -> Ge
 
     yield new_parent, tree_names, blobs
 
-# cSpell:ignore checkin pylance unedit
+# cSpell:ignore checkin unedit

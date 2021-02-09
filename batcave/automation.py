@@ -40,7 +40,7 @@ class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-metho
             Returns whatever is returned by SysCmdRunner.
         """
         if self.guard:
-            self.writer(self.guard)  # type: ignore
+            self.writer(self.guard)
         return super().run(message, *args, **kwargs)
 
 

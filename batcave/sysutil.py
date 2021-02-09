@@ -28,14 +28,15 @@ from typing import cast, Any, Callable, IO, Iterable, List, Optional, Tuple, Tex
 # Import internal modules
 from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
-if WIN32:
-    from msvcrt import locking, LK_NBLCK, LK_UNLCK  # type: ignore # pylint: disable=import-error
+if sys.platform == 'win32':
+    from msvcrt import locking, LK_NBLCK, LK_UNLCK
     PROG_FILES = {'32': Path(getenv('ProgramFiles(x86)', '')), '64': Path(getenv('ProgramFiles', ''))}
+    geteuid = getgrnam = getpwnam = None  # Fix Pylance and mypy linting errors
 else:
-    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=import-error
-    from grp import getgrnam  # pylint: disable=import-error
-    from os import geteuid  # type: ignore # pylint: disable=no-name-in-module,ungrouped-imports
-    from pwd import getpwnam  # pylint: disable=import-error
+    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
+    from grp import getgrnam
+    from os import geteuid
+    from pwd import getpwnam
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
 
@@ -110,7 +111,7 @@ class LockFile:
         self._cleanup = cleanup
         self._fh = handle if handle else open(filename, 'w')
         self._fd = self._fh.fileno()
-        if WIN32:
+        if sys.platform == 'win32':
             self._locker = locking
             self._lock = LK_NBLCK
             self._unlock = LK_UNLCK
@@ -199,7 +200,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
         use_keys = copy_object(self.default_kwargs)
         use_keys.update(kwargs)
         if message:
-            self.writer(message)  # type: ignore
+            self.writer(message)
         return syscmd(self.command, *use_args, **use_keys)
 
 
@@ -259,7 +260,7 @@ def create_group(group_name: str, /, *, exists_ok: bool = True) -> None:
     Todo:
         Implement for the Windows platform.
     """
-    if WIN32:
+    if sys.platform == 'win32':
         raise OSUtilError(OSUtilError.INVALID_OPERATION, platform='Windows')
     try:
         getgrnam(group_name)
@@ -286,7 +287,7 @@ def create_user(username: str, /, groups: Tuple = tuple(), *, exists_ok: bool = 
     Todo:
         Implement for the Windows platform.
     """
-    if WIN32:
+    if sys.platform == 'win32':
         raise OSUtilError(OSUtilError.INVALID_OPERATION, platform='Windows')
     create_group(username, exists_ok=exists_ok)
     try:
@@ -307,7 +308,7 @@ def is_user_administrator() -> bool:
     Returns:
         True if the user is an administrator, False otherwise.
     """
-    if WIN32:
+    if sys.platform == 'win32':
         try:
             syscmd('net', 'file')
         except CMDError as err:
@@ -543,4 +544,4 @@ def popd() -> Union[int, PathName]:
     chdir(dirname)
     return dirname
 
-# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec syscmd unlck ungrouped
+# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped

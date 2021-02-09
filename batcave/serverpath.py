@@ -176,7 +176,7 @@ class ServerPath:
         if parents and not self.is_win:
             cmd.append('-p')
         cmd.append(self.local)
-        self.server.run_command(*cmd)  # type: ignore
+        self.server.run_command(*cmd)
 
     def rename(self, new: str, /) -> Union[CommandResult, PathName]:
         """Implementation of pathlib.Path.rename() adding remote server support.
@@ -214,14 +214,14 @@ class ServerPath:
             if self.win_to_win:
                 cast(Path, self.remote).rmdir()
             remote_rm_command.append(self.local)
-            self.server.run_command(*remote_rm_command, use_shell=True)  # type: ignore
+            self.server.run_command(*remote_rm_command, use_shell=True)
 
         if self.server.is_local:
             rmpath(self.local)
         if self.win_to_win:
             rmpath(self.remote)
         remote_rm_command += ['/S' if self.is_win else '-r', self.local]
-        self.server.run_command(*remote_rm_command, use_shell=True)  # type: ignore
+        self.server.run_command(*remote_rm_command, use_shell=True)
 
     def walk(self) -> Iterator[Tuple[str, List[str], List[str]]]:
         """Implementation of os.walk() adding remote server support.

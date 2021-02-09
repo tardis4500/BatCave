@@ -2,7 +2,6 @@
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
 # flake8: noqa
-# type: ignore
 
 from enum import Enum
 from multiprocessing import Process, Queue

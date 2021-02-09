@@ -15,8 +15,8 @@ from string import Template
 from typing import cast, Any, List, Optional, Sequence, Union
 
 # Import third-party modules
-from docker import DockerClient  # type: ignore
-from docker.models.containers import Container as DockerContainer  # type: ignore
+from docker import DockerClient
+from docker.models.containers import Container as DockerContainer
 
 # Import internal modules
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, WIN32
@@ -126,7 +126,7 @@ class Cloud:
         """
         for case in switch(self.type):
             if case(CloudType.local, CloudType.dockerhub):
-                return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]  # type: ignore[attr-defined] # noqa:F821
+                return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
     containers = property(get_containers, doc='A read-only property which calls the get_containers() method with no filters.')

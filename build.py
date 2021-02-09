@@ -18,7 +18,7 @@ from venv import EnvBuilder
 # Import third-party-modules
 from requests import delete as rest_delete, post as rest_post
 from twine.commands.upload import main as upload
-from xmlrunner import XMLTestRunner  # type: ignore
+from xmlrunner import XMLTestRunner
 
 # Import BatCave modules
 from batcave.automation import Action

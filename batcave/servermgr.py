@@ -6,6 +6,7 @@ Attributes:
 # pylint: disable=invalid-name,too-many-lines
 
 # Import standard modules
+import sys
 from csv import DictReader
 from enum import Enum
 from os import environ
@@ -18,7 +19,7 @@ from typing import cast, List, Optional, Tuple, Union
 from xml.etree.ElementTree import Element, SubElement, parse as xmlparse
 
 # Import third-party modules
-from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess  # type: ignore
+from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
 
 # Import internal modules
 from .platarch import OsType
@@ -26,20 +27,22 @@ from .serverpath import ServerPath  # pylint: disable=cyclic-import
 from .sysutil import syscmd, CMDError
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
-if WIN32:
-    from pywintypes import com_error  # type: ignore # pylint: disable=no-name-in-module,import-error
-    from win32com.client import CDispatch, DispatchEx  # type: ignore # pylint: disable=import-error
-    from wmi import WMI, x_wmi  # type: ignore # pylint: disable=import-error
+if sys.platform == 'win32':
+    from pywintypes import com_error
+    from win32com.client import CDispatch, DispatchEx
+    from wmi import WMI, x_wmi
     from .iispy import IISInstance
     _DEFAULT_WMI = True
 else:
-    class x_wmi(Exception):  # type: ignore
-        'Needed to avoid errors on Linux'
     _DEFAULT_WMI = False
 
-    class IISInstance:  # type: ignore # pylint: disable=too-few-public-methods
-        'Fixes pylance linting error'
-    WMI = None  # fixes pylance linting error
+    class x_wmi(Exception):
+        'Needed to avoid errors on Linux'
+
+    class WMI:
+        'Needed to avoid errors on Linux'
+        def __init__(self, **kwargs):
+            pass
 
 _STATUS_CHECK_INTERVAL = 2
 
@@ -148,7 +151,7 @@ class Server:
         self._auth = auth
         self._ip = ip
         self._os_type = os_type
-        self._wmi_manager = None
+        self._wmi_manager: Optional[WMI] = None
         if not self._ip:
             try:
                 self._ip = gethostbyname(self.fqdn)
@@ -192,7 +195,7 @@ class Server:
         except x_wmi as err:
             raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self.hostname, msg=str(err)) from err
 
-    def _get_object_manager(self, item_type: str, wmi: WMI, /) -> ServerManager:
+    def _get_object_manager(self, item_type: str, wmi: WMI, /) -> Optional[ServerManager]:
         """Return the correct object manager for the platform and item type.
 
         Args:
@@ -1055,7 +1058,7 @@ class Service(ManagementObject):
 
         control_method = final_state = ''
         if not ignore_state:
-            waitfor = self.ServiceState.Running  # fix pylance linting error
+            waitfor = self.ServiceState.Running
             for case in switch(self.state):
                 if case(self.ServiceState.StartPending, self.ServiceState.Running, self.ServiceState.ContinuePending):
                     waitfor = self.ServiceState.Running
@@ -1167,7 +1170,7 @@ def get_server_object(server: ServerType, /) -> Server:
         return server
     if not isinstance(server, str):
         raise TypeError(server)
-    return Server(*(server.split('.', 1)))  # type: ignore
+    return Server(*(server.split('.', 1)))
 
 
 def _run_task_scheduler(*cmd_args, **sys_cmd_args) -> CommandResult:
@@ -1182,4 +1185,4 @@ def _run_task_scheduler(*cmd_args, **sys_cmd_args) -> CommandResult:
     """
     return syscmd('schtasks.exe', *cmd_args, **sys_cmd_args)
 
-# cSpell:ignore cmdline sbin wsahost psutil pylance syscmd iispy
+# cSpell:ignore cmdline sbin wsahost psutil syscmd iispy

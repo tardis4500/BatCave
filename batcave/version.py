@@ -11,7 +11,7 @@ from sys import version as sys_version
 
 # Import third-party modules
 try:
-    import PyQt5.QtCore as pyqt  # type: ignore
+    import PyQt5.QtCore as pyqt
 except ImportError:
     PYQT_LOADED = ''
 else:

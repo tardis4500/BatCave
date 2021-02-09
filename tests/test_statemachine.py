@@ -2,7 +2,6 @@
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name,protected-access
 # flake8: noqa
-# type: ignore
 
 from unittest import main, TestCase
 
