@@ -44,6 +44,7 @@ CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
 
 REQUIREMENTS_FILE = PROJECT_ROOT / 'requirements.txt'
 FREEZE_FILE = PROJECT_ROOT / 'requirements-frozen.txt'
+WIN32_PACKAGES = ('pywin32', 'pywin32-ctypes', 'WMI')
 
 PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
@@ -236,7 +237,8 @@ def freeze(_unused_args: Namespace) -> None:
     freeze_file = [line.strip() for line in slurp(FREEZE_FILE)]
     with open(FREEZE_FILE, 'w') as updated_freeze_file:
         for line in freeze_file:
-            if 'win32' in line:
+            package = line.split('==')[0]
+            if package in WIN32_PACKAGES:
                 line += "; sys_platform == 'win32'"
             print(line, file=updated_freeze_file)
         if not WIN32:
