@@ -29,7 +29,7 @@ from typing import cast, Any, Callable, IO, Iterable, List, Optional, Tuple, Tex
 from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if WIN32:
-    import msvcrt  # pylint: disable=import-error
+    from msvcrt import locking, LK_NBLCK, LK_UNLCK  # type: ignore # pylint: disable=import-error
     PROG_FILES = {'32': Path(getenv('ProgramFiles(x86)', '')), '64': Path(getenv('ProgramFiles', ''))}
 else:
     from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=import-error
@@ -111,9 +111,9 @@ class LockFile:
         self._fh = handle if handle else open(filename, 'w')
         self._fd = self._fh.fileno()
         if WIN32:
-            self._locker = msvcrt.locking
-            self._lock = msvcrt.LK_NBLCK
-            self._unlock = msvcrt.LK_UNLCK
+            self._locker = locking
+            self._lock = LK_NBLCK
+            self._unlock = LK_UNLCK
         else:
             self._locker = lockf
             self._lock = LOCK_EX | LOCK_NB
