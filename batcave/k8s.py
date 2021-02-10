@@ -4,14 +4,14 @@ Attributes:
     kubectl (SysCmdRunner.run): A simple interface to the kubectl command line tool.
 """
 
-# # Import standard modules
+# Import standard modules
 from datetime import datetime as dt, timedelta
 from pathlib import Path
 from string import Template
 from time import sleep
 from typing import cast, Any, Callable, List, Optional, Type, TypeVar
 
-# # Import third-party modules
+# Import third-party modules
 from kubernetes import config as k8s_config
 from kubernetes.client import BatchV1Api, CoreV1Api, V1Namespace, V1ObjectMeta
 from kubernetes.stream import stream as k8s_process

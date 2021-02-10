@@ -29,11 +29,11 @@ from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Pattern
 # Import internal modules
 from .fileutil import slurp
 from .sysutil import popd, pushd, rmtree_hard
-from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle, WIN32
+from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle
 
 if sys.platform == 'win32':
-    import win32api  # type: ignore
-    import win32con  # type: ignore
+    import win32api  # type: ignore  # pylint: disable=import-error
+    import win32con  # type: ignore  # pylint: disable=import-error
 
 P4_LOADED: str
 try:  # Load the Perforce API if available
@@ -1007,7 +1007,7 @@ class Client:
             return environ[var]
         for case in switch(self._type):  # pylint: disable=too-many-nested-blocks
             if case(ClientType.perforce):
-                if WIN32:
+                if sys.platform == 'win32':
                     for key in (win32con.HKEY_CURRENT_USER, win32con.HKEY_LOCAL_MACHINE):
                         try:
                             keyhandle: RegKeyHandle = win32api.RegOpenKeyEx(key, r'Software\perforce\environment', 0, win32con.KEY_READ)

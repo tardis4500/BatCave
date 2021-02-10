@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Fix pylance linting errors.
   - Only install WMI module on Windows platform.
   - Improve freeze utility function.
+  - Switch to slim image for builds.
 
 - Removed
   - Removed logger module. (GitLab #37)
@@ -1346,4 +1347,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
       cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
       cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
-      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses -->
+      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance -->

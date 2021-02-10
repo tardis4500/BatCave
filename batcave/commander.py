@@ -44,7 +44,7 @@ class SubParser:
 class Commander:
     """This class provides a simplified interface to the argparse.ArgumentParser class."""
 
-    def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),  # pylint: disable=too-many-locals
+    def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),  # pylint: disable=too-many-locals,too-many-arguments
                  subparser_common_args: Sequence[Argument] = tuple(), default: Optional[Callable] = None, parents: Sequence[ArgumentParser] = tuple(),
                  parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, add_version: bool = True,
                  version_style: VersionStyle = VersionStyle.oneline, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):

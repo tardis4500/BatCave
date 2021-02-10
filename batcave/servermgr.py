@@ -28,9 +28,9 @@ from .sysutil import syscmd, CMDError
 from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if sys.platform == 'win32':
-    from pywintypes import com_error
-    from win32com.client import CDispatch, DispatchEx
-    from wmi import WMI, x_wmi
+    from pywintypes import com_error  # pylint: disable=no-name-in-module,import-error
+    from win32com.client import CDispatch, DispatchEx  # pylint: disable=import-error
+    from wmi import WMI, x_wmi  # pylint: disable=import-error
     from .iispy import IISInstance
     _DEFAULT_WMI = True
 else:
@@ -39,9 +39,9 @@ else:
     class x_wmi(Exception):
         'Needed to avoid errors on Linux'
 
-    class WMI:
+    class WMI:  # pylint: disable=too-few-public-methods
         'Needed to avoid errors on Linux'
-        def __init__(self, **kwargs):
+        def __init__(self, *args, **kwargs):
             pass
 
 _STATUS_CHECK_INTERVAL = 2
@@ -54,6 +54,7 @@ TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
 
 ServerType = Union[str, 'Server']
 ServerManager = Union[WMI, 'OSManager']
+WMIObject = Union[bool, WMI]
 
 
 class ServerObjectManagementError(BatCaveException):
@@ -195,7 +196,7 @@ class Server:
         except x_wmi as err:
             raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self.hostname, msg=str(err)) from err
 
-    def _get_object_manager(self, item_type: str, wmi: WMI, /) -> Optional[ServerManager]:
+    def _get_object_manager(self, item_type: str, wmi: WMIObject, /) -> Optional[ServerManager]:
         """Return the correct object manager for the platform and item type.
 
         Args:
@@ -221,7 +222,7 @@ class Server:
     is_local = property(lambda s: getfqdn().lower() == s.fqdn, doc='A read-only property which returns True if the server is the local host.')
     os_type = property(lambda s: s._os_type, doc='A read-only property which returns the OS type of the server.')
 
-    def create_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, /, *, error_if_exists: bool = True, **key_args) -> 'ManagementObject':
+    def create_management_object(self, item_type: str, unique_id: str, wmi: WMIObject = _DEFAULT_WMI, /, *, error_if_exists: bool = True, **key_args) -> 'ManagementObject':
         """Create a management object of the specified type.
 
         Args:
@@ -328,15 +329,7 @@ class Server:
             service_obj.manage(ServiceSignal.start, timeout=timeout)
         return service_obj
 
-    def get_iis_instance(self) -> IISInstance:
-        """Get the IIS instance for this server.
-
-        Returns:
-            The IIS instance for this server.
-        """
-        return IISInstance(self.fqdn if not self.is_local else None)
-
-    def get_management_objects(self, item_type: str, wmi: bool = _DEFAULT_WMI, /, **filters) -> List['NamedOSObject']:
+    def get_management_objects(self, item_type: str, wmi: WMIObject = _DEFAULT_WMI, /, **filters) -> List['NamedOSObject']:
         """Get a list of management objects.
 
         Args:
@@ -385,14 +378,6 @@ class Server:
             The specified path as a ServerPath object.
         """
         return ServerPath(self, the_path)
-
-    def get_process_connection(self, process: str, /) -> 'COMObject':
-        """Get a COM connection to the specified process.
-
-        Returns:
-            The COM connection to the specified process.
-        """
-        return COMObject(process, self.ip)
 
     def get_process_list(self, **filters) -> List['Process']:
         """Get the process list for this server.
@@ -464,7 +449,7 @@ class Server:
                 service_type = ServiceType.sysv
         return cast(List['Service'], self.get_management_objects('Service', service_type=service_type))
 
-    def get_unique_object(self, item_type: str, wmi: bool = _DEFAULT_WMI, /, **filters) -> Optional['NamedOSObject']:
+    def get_unique_object(self, item_type: str, wmi: WMIObject = _DEFAULT_WMI, /, **filters) -> Optional['NamedOSObject']:
         """Get the requested management object which must be unique.
 
         Args:
@@ -485,7 +470,7 @@ class Server:
                 return results[0]
         raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=item_type, filters=filters)
 
-    def remove_management_object(self, item_type: str, unique_id: str, wmi: bool = _DEFAULT_WMI, /, *, error_if_not_exists: bool = False) -> None:
+    def remove_management_object(self, item_type: str, unique_id: str, wmi: WMIObject = _DEFAULT_WMI, /, *, error_if_not_exists: bool = False) -> None:
         """Remove a management object.
 
         Args:
@@ -545,6 +530,23 @@ class Server:
         if (not self.is_local) and self._auth:
             sys_cmd_args['remote_auth'] = self._auth
         return syscmd(command, *cmd_args, remote=(False if self.is_local else self.ip), remote_is_windows=(not self.is_local) and (self.os_type == OsType.windows), **sys_cmd_args)
+
+    if sys.platform == 'win32':
+        def get_iis_instance(self) -> IISInstance:
+            """Get the IIS instance for this server.
+
+            Returns:
+                The IIS instance for this server.
+            """
+            return IISInstance(self.fqdn if not self.is_local else None)
+
+        def get_process_connection(self, process: str, /) -> 'COMObject':
+            """Get a COM connection to the specified process.
+
+            Returns:
+                The COM connection to the specified process.
+            """
+            return COMObject(process, self.ip)
 
 
 class OSManager:
@@ -698,7 +700,7 @@ class LinuxService(NamedOSObject):
     @property
     def state(self) -> str:
         """A read-only property which returns the state value of the service."""
-        if (result := self._manage('status')) and isinstance(result, list) and ('stop' in result[0]):
+        if (result := self._manage('status')) and isinstance(result, list) and ('stop' in result[0]):  # pylint: disable=used-before-assignment
             return 'Stopped'
         if not hasattr(result, 'vars'):
             return 'Running'
@@ -891,57 +893,6 @@ class Win32_ScheduledTask(NamedOSObject):
             if not err.vars['returncode'] == 1:
                 raise
             raise ServerObjectManagementError(ServerObjectManagementError.OBJECT_NOT_FOUND, type=type(self).__name__) from err
-
-
-class COMObject:
-    """Class to create a universal abstract interface for a Windows COM object."""
-
-    def __init__(self, ref: Union[str, 'COMObject'], hostname: str = '', /):
-        """
-        Args:
-            ref: The Windows COM object.
-            hostname (optional): The server hostname. If not specified, will default to the name of the localhost.
-
-        Attributes:
-            _connection: The value of the ref argument.
-            _hostname: The derived value of the hostname argument.
-
-        Raises:
-            ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was a failure making a connection to the COM object.
-        """
-        self._hostname = hostname
-        try:
-            if isinstance(ref, CDispatch):
-                self._connection = ref
-                str(self._connection)
-            else:
-                self._connection = DispatchEx(ref, self._hostname)
-        except com_error as err:
-            raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self._hostname, msg=str(err)) from err
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc_info):
-        self.disconnect()
-        return False
-
-    def __getattr__(self, attr: str):
-        return getattr(self._connection, attr)
-
-    def __setattr__(self, attr: str, value: str):
-        if attr.startswith('_'):
-            super().__setattr__(attr, value)
-            return
-        setattr(self._connection, attr, value)
-
-    def disconnect(self) -> None:
-        """Disconnect the COM object.
-
-        Returns:
-            Nothing.
-        """
-        del self._connection
 
 
 class ManagementObject:
@@ -1155,6 +1106,58 @@ class ScheduledTask(ManagementObject):  # pylint: disable=too-few-public-methods
     """
     TASK_HOME = Path(environ['SystemRoot'], 'system32/Tasks') if WIN32 else Path('/opt/cronjobs')
     TASK_NAMESPACE = 'http://schemas.microsoft.com/windows/2004/02/mit/task'
+
+
+if sys.platform == 'win32':
+    class COMObject:
+        """Class to create a universal abstract interface for a Windows COM object."""
+
+        def __init__(self, ref: Union[str, 'COMObject'], hostname: str = '', /):
+            """
+            Args:
+                ref: The Windows COM object.
+                hostname (optional): The server hostname. If not specified, will default to the name of the localhost.
+
+            Attributes:
+                _connection: The value of the ref argument.
+                _hostname: The derived value of the hostname argument.
+
+            Raises:
+                ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was a failure making a connection to the COM object.
+            """
+            self._hostname = hostname
+            try:
+                if isinstance(ref, CDispatch):
+                    self._connection = ref
+                    str(self._connection)
+                else:
+                    self._connection = DispatchEx(ref, self._hostname)
+            except com_error as err:
+                raise ServerObjectManagementError(ServerObjectManagementError.REMOTE_CONNECTION_ERROR, server=self._hostname, msg=str(err)) from err
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            self.disconnect()
+            return False
+
+        def __getattr__(self, attr: str):
+            return getattr(self._connection, attr)
+
+        def __setattr__(self, attr: str, value: str):
+            if attr.startswith('_'):
+                super().__setattr__(attr, value)
+                return
+            setattr(self._connection, attr, value)
+
+        def disconnect(self) -> None:
+            """Disconnect the COM object.
+
+            Returns:
+                Nothing.
+            """
+            del self._connection
 
 
 def get_server_object(server: ServerType, /) -> Server:

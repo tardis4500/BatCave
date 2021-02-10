@@ -29,14 +29,14 @@ from typing import cast, Any, Callable, IO, Iterable, List, Optional, Tuple, Tex
 from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if sys.platform == 'win32':
-    from msvcrt import locking, LK_NBLCK, LK_UNLCK
+    from msvcrt import locking, LK_NBLCK, LK_UNLCK  # pylint: disable=import-error
     PROG_FILES = {'32': Path(getenv('ProgramFiles(x86)', '')), '64': Path(getenv('ProgramFiles', ''))}
-    geteuid = getgrnam = getpwnam = None  # Fix Pylance and mypy linting errors
+    geteuid = getgrnam = getpwnam = None  # Fix Pylance and mypy linting errors  # pylint: disable=invalid-name
 else:
-    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
-    from grp import getgrnam
-    from os import geteuid
-    from pwd import getpwnam
+    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN  # pylint: disable=import-error
+    from grp import getgrnam  # pylint: disable=import-error
+    from os import geteuid  # pylint: disable=no-name-in-module,ungrouped-imports
+    from pwd import getpwnam  # pylint: disable=import-error
     PROG_FILES = {'32': Path('/usr/local')}
     PROG_FILES['64'] = PROG_FILES['32']
 

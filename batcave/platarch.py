@@ -1,4 +1,5 @@
 """This module provides a simplified interface to the standard platform module."""
+# pylint: disable-all
 
 # Import standard modules
 from enum import Enum
@@ -12,10 +13,10 @@ from .lang import switch
 OsType = Enum('OsType', ('linux', 'windows'))
 
 
-class Platform:  # pylint: disable=too-few-public-methods
+class Platform:
     """A class to provide a simplified interface to the platform and sys.version_info standard modules."""
 
-    def __getattr__(self, attr: str) -> str:  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    def __getattr__(self, attr: str) -> str:
         """Get the platform type formatted for the requested subtype."""
         sys_info = uname()
         batcave_os = bart_os = sys_info.system.replace('-', '')
@@ -47,7 +48,7 @@ class Platform:  # pylint: disable=too-few-public-methods
                 else:
                     batcave_arch = sys_info.machine
                 try:
-                    build = open([f for f in Path('/etc').glob('*-release')][0]).readline().strip()  # pylint: disable=unnecessary-comprehension
+                    build = open([f for f in Path('/etc').glob('*-release')][0]).readline().strip()
                 except IndexError:
                     build = 'unknown'
 
