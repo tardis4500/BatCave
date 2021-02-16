@@ -13,17 +13,17 @@
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path.cwd().parent))
-from batcave import __author__, __copyright__, __title__, __version__  # noqa: E402
+from batcave import __author__, __copyright__  # noqa: E402
 
 
 # -- Project information -----------------------------------------------------
 
-project = __title__
+project = 'BatCave'
 copyright = __copyright__
 author = __author__
 
 # The full version, including alpha/beta/rc tags
-release = __version__
+release = '11.0.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -26,9 +26,9 @@ setup(
     license=batcave.__license__,
 
     url=batcave.__uri__,
-    # project_urls={
-    #     'Documentation': 'https://gitlab.com/arisilon/batcave/',
-    # },
+    project_urls={
+        'Documentation': 'https://batcave.readthedocs.io',
+    },
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',
