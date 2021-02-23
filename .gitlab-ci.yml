@@ -7,7 +7,6 @@ stages:
   - install_test
   - publish_test
   - publish
-  - release_test
 
 variables:
   PRODUCT: BatCave
@@ -75,8 +74,6 @@ install_test:
     - /^release\/.*$/
   when: manual
   allow_failure: false
-  before_script:
-    - pip install -r requirements-frozen.txt
 
 publish_test:
   stage: publish_test
