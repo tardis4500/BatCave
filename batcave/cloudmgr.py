@@ -34,7 +34,7 @@ if WIN32:
         gcloud_command = str(Path(getenv('ProgramFiles(x86)', '')) / gcloud_command_location)
 else:
     gcloud_command = 'gcloud'
-gcloud = SysCmdRunner(gcloud_command, '-q', use_shell=WIN32).run
+gcloud = SysCmdRunner(gcloud_command, quiet=True, syscmd_args={'use_shell': WIN32}).run
 # pylint: enable=invalid-name
 
 
@@ -98,7 +98,7 @@ class Cloud:
         """
         for case in switch(self.type):
             if case(CloudType.gcloud):
-                return gcloud('', *args, **kwargs)
+                return gcloud(*args, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
     def get_container(self, name: str, /) -> 'Container':
@@ -158,8 +158,8 @@ class Cloud:
                     self._client.login(*self.auth)
                 break
             if case(CloudType.gcloud):
-                gcloud('', 'auth', 'activate-service-account', '--key-file', Path.home() / '.ssh' / f'{self.auth[0]}.json', ignore_stderr=True)
-                gcloud('', 'auth', 'configure-docker', ignore_stderr=True)
+                gcloud('auth', 'activate-service-account', key_file=Path.home() / '.ssh' / f'{self.auth[0]}.json', syscmd_args={'ignore_stderr': True})
+                gcloud('auth', 'configure-docker', syscmd_args={'ignore_stderr': True})
                 self._client = True
                 break
             if case():

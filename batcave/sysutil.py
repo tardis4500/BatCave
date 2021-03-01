@@ -23,7 +23,7 @@ from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
-from typing import cast, Any, Callable, IO, Iterable, List, Optional, Tuple, TextIO, Union
+from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO, Union
 
 # Import internal modules
 from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
@@ -163,45 +163,57 @@ class LockFile:
 class SysCmdRunner:  # pylint: disable=too-few-public-methods
     """This class provides a simplified interface to sysutil.syscmd()."""
 
-    def __init__(self, command: str, /, *default_args, logger: Optional[Logger] = None, **default_kwargs):
+    def __init__(self, command: str, /, *args, show_cmd: bool = True, show_stdout: bool = True, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
         """
         Args:
             command: The command to run.
-            *default_args (optional): A list of default arguments to use each time the command is run.
-            logger (optional, default=None): A logging instance to use when the command is run.
-            **default_kwargs (optional): A list of default keys to use each time the command is run.
+            show_cmd (optional, default=True): The default value of the show_cmd value passed to syscmd.
+            show_stdout (optional, default=True): The default value of the show_stdout value passed to syscmd.
+            syscmd_args (optional, default={}): The dictionary of other arguments passed to syscmd.
+            *args (optional): A list of default arguments to use each time the command is run.
+            **kwargs (optional): A list of default keys to use each time the command is run.
 
         Attributes:
-            command: The value of the command argument.
-            default_args: The value of the default_args argument.
-            default_kwargs: The value of the default_kwargs argument.
-            writer: The value of the logger argument if not None, otherwise the standard 'print' method.
+            _command: The value of the command argument.
+            _default_args: The value of the args argument.
+            _default_kwargs: The value of the kwargs argument.
+            _default_syscmd_kwargs: The value of the syscmd_args argument.
         """
-        self.command = command
-        self.writer = logger.loginfo if logger else print  # type: ignore
-        self.default_args = list(default_args)
-        self.default_kwargs = default_kwargs
+        self._command = command
+        self._default_args = list(args)
+        self._default_kwargs = kwargs
+        self._default_syscmd_args: Dict[Any, Any] = {'show_cmd': show_cmd, 'show_stdout': show_stdout}
+        if syscmd_args:
+            self._default_syscmd_args.update(syscmd_args)
 
-    def run(self, message: str, /, *args, **kwargs) -> CommandResult:
+    def run(self, *args, post_option_args: Optional[Dict] = None, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
         """Run the defined command with the additional specified arguments.
 
         Args:
-            message: The message to log to the defined logger.
+            post_option_args (optional, default=[]): The list of args to pass after the options.
+            syscmd_args (optional, default={}): The list of default args passed to syscmd.
             *args (optional, default=[]): Any extra arguments to pass to the command.
             **kwargs (optional, default={}): Any extra keyword arguments to pass to the command.
 
         Returns:
-            The result of the command.
-
-        Raises:
-            LockError.NO_LOCK: If it was not possible to obtain a system level lock on the lock file.
+            The result of the syscmd call.
         """
-        use_args = self.default_args + list(args)
-        use_keys = copy_object(self.default_kwargs)
-        use_keys.update(kwargs)
-        if message:
-            self.writer(message)
-        return syscmd(self.command, *use_args, **use_keys)
+        command_args = self._default_args + list(args)
+        option_args = copy_object(self._default_kwargs)
+        option_args.update(kwargs)
+        for (arg, value) in option_args.items():
+            arg_name = arg.replace('_', '-')
+            if value is True:
+                command_args.append(f'--{arg_name}')
+            else:
+                command_args.append(f'--{arg_name}={value}')
+        if post_option_args:
+            command_args += post_option_args
+        all_syscmd_args = copy_object(self._default_syscmd_args)
+        if syscmd_args:
+            all_syscmd_args.update(syscmd_args)
+        print(self._command, command_args, all_syscmd_args)
+        return syscmd(self._command, *command_args, **all_syscmd_args)
 
 
 def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: bool = False) -> None:

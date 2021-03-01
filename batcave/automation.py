@@ -3,45 +3,55 @@
 # Import standard modules
 import sys
 from abc import abstractmethod
+from logging import Logger
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 # Import internal modules
+from .lang import CommandResult
 from .sysutil import popd, SysCmdRunner
 
 
 class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-methods
     """Class to wrap SysCmdRunner for simple usage with auto-logging."""
 
-    def __init__(self, command: str, /, guard: str = '', default_args: tuple = tuple(), **kwargs: Any):
+    def __init__(self, command: str, /, *args, logger: Optional[Union[Callable, Logger]] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
         """
         Args:
             command: The command passed to SysCmdRunner.
+            logger (optional, default=print): A logging instance to use when the command is run.
             guard (optional, default=''): A line to be printed before the command is run.
                 If an empty string, nothing is printed.
-            default_args (optional, default=()): The list of default args passed to SysCmdRunner.
+            syscmd_args (optional, default={}): Any arguments passed to syscmd.
+            *args (optional, default=()): The list of default args passed to SysCmdRunner.
             **kwargs (optional, default={}): The list of default named args passed to SysCmdRunner.
 
         Attributes:
+            logger: The value of the logger argument.
             guard: The value of the guard argument.
         """
-        super().__init__(command, *default_args, show_cmd=True, show_stdout=True, **kwargs)
+        super().__init__(command, *args, syscmd_args=syscmd_args, **kwargs)
+        self.logger = logger.info if isinstance(logger, Logger) else logger
         self.guard = guard
 
-    def run(self, message: str, /, *args: Any, **kwargs: Any) -> Union[str, List[str]]:
+    def run(self, message: str, *args, post_option_args: Optional[Dict] = None, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
         """Run the action.
 
         Args:
-            message: The message passed to SysCmdRunner.
+            message: The message to log if a logger has been set.
+            post_option_args (optional, default=[]): The list of post_option_args passed to SysCmdRunner.
+            syscmd_args (optional, default={}): The syscmd_args passed to SysCmdRunner.
             *args (optional, default=[]): The list of args passed to SysCmdRunner.
             **kwargs (optional, default={}): The list of named args passed to SysCmdRunner.
 
         Returns:
             Returns whatever is returned by SysCmdRunner.
         """
-        if self.guard:
-            self.writer(self.guard)
-        return super().run(message, *args, **kwargs)
+        if self.logger and message:
+            if self.guard:
+                self.logger(self.guard)
+            self.logger(message)
+        return super().run(*args, post_option_args=post_option_args, syscmd_args=syscmd_args, **kwargs)
 
 
 class Action:

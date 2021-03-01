@@ -253,21 +253,22 @@ class Cluster:
         """
         return bool([i for i in self.get_items(item_class, namespace=namespace) if i.name == item_name])
 
-    def kubectl(self, *args) -> CommandResult:
+    def kubectl(self, *args, **kwargs) -> CommandResult:
         """Run a kubectl command.
 
         Args:
             *args: The arguments to pass to kubectl.
+            *kwargs: The named arguments to pass to kubectl.
 
         Returns:
             The result of the kubectl command.
         """
-        config_args = list()
+        config_args = dict()
         if self.config:
-            config_args.append(f'--kubeconfig={self.config}')
+            config_args['kubeconfig'] = self.config
         if self._context:
-            config_args.append(f'--context={self._context}')
-        return kubectl('', *config_args, *args)
+            config_args['context'] = self._context
+        return kubectl(*args, **config_args, **kwargs)
 
 
 class ClusterObject:  # pylint: disable=too-few-public-methods
@@ -305,7 +306,7 @@ class Namespace(ClusterObject):  # pylint: disable=too-few-public-methods
 class Pod(ClusterObject):
     """Class to create a universal abstract interface for a Kubernetes pod."""
 
-    logs = property(lambda s: s._cluster_obj.kubectl('logs', f'--namespace={s.namespace}', s.name), doc='A read-only property which returns the pod logs.')
+    logs = property(lambda s: s._cluster_obj.kubectl('logs', s.name, namespace=s.namespace), doc='A read-only property which returns the pod logs.')
 
     def cp_file(self, mode: str, source: PathName, target: PathName, /) -> None:
         """Copy a file into or out of the pod.

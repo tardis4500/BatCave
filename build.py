@@ -49,7 +49,7 @@ WIN32_PACKAGES = ('pywin32', 'pywin32-ctypes', 'WMI')
 PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
 
-pip = SysCmdRunner('pip').run  # pylint: disable=invalid-name
+pip = SysCmdRunner('pip', show_cmd=False, show_stdout=False).run  # pylint: disable=invalid-name
 
 
 class ActionLogger(Action):
@@ -91,9 +91,9 @@ def devbuild(args: Namespace) -> None:
 
 def static_analysis(_unused_args: Namespace) -> None:
     """Run pylint."""
-    SysCmdRunner('pylint', show_stdout=True).run('Running pylint', '--max-line-length=200', '--max-attributes=10', '--disable=duplicate-code,fixme', MODULE_NAME)
-    SysCmdRunner('flake8', show_stdout=True).run('Running flake8', '--max-line-length=200', '--ignore=ANN002,ANN003,ANN101,ANN204', MODULE_NAME)
-    SysCmdRunner('mypy', show_stdout=True).run('Running mypy', MODULE_NAME)
+    SysCmdRunner('pylint').run(MODULE_NAME, max_line_length=200, max_attributes=10, disable='duplicate-code,fixme')
+    SysCmdRunner('flake8').run(MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204')
+    SysCmdRunner('mypy').run(MODULE_NAME)
 
 
 def unit_tests(_unused_args: Namespace) -> None:
@@ -233,8 +233,10 @@ def freeze(_unused_args: Namespace) -> None:
     python = (venv_bin / 'python').with_suffix('.exe' if WIN32 else '')
     os.environ['PATH'] = os.path.pathsep.join((str(venv_bin), os.environ['PATH']))
     syscmd(str(python), '-m', 'pip', 'install', '--upgrade', 'pip')
-    pip('Installing Python requirements', 'install', '-qqq', '-U', '-r', REQUIREMENTS_FILE)
-    spew(FREEZE_FILE, pip('Creating frozen requirements file', 'freeze'))
+    print('Installing Python requirements')
+    pip('install', '-qqq', upgrade=True, requirement=REQUIREMENTS_FILE)
+    print('Creating frozen requirements file')
+    spew(FREEZE_FILE, pip('freeze'))
     freeze_file = [line.strip() for line in slurp(FREEZE_FILE)]
     with open(FREEZE_FILE, 'w') as updated_freeze_file:
         for line in freeze_file:

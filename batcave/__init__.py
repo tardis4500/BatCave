@@ -25,7 +25,6 @@ Modules that provide Pythonic interfaces to external systems:
 
 Modules that provide utilities for accomplishing specific programming tasks:
     * automation - building automation
-    * cmdliner - running command line commands
     * configmgr - managing configurations
     * expander - working with string expansion
     * fileutil - working with files
@@ -55,4 +54,4 @@ __email__ = 'web@pobox.com'
 __license__ = 'MIT'
 __copyright__ = 'Copyright (c) 2021 Jeffery G. Smith'
 
-# cSpell:ignore cmdliner iispy netutil qbpy tcpy
+# cSpell:ignore iispy netutil qbpy tcpy
