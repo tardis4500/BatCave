@@ -29,21 +29,23 @@ from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Pattern
 # Import internal modules
 from .fileutil import slurp
 from .sysutil import popd, pushd, rmtree_hard
-from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName, RegKeyHandle
+from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName
 
 if sys.platform == 'win32':
-    import win32api  # type: ignore  # pylint: disable=import-error
-    import win32con  # type: ignore  # pylint: disable=import-error
+    from win32api import error as Win32Error, RegOpenKeyEx, RegQueryValueEx  # pylint: disable=import-error,no-name-in-module
+    from win32con import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, KEY_READ  # pylint: disable=import-error,no-name-in-module
+    from win32typing import PyHKEY  # pylint: disable=import-error,no-name-in-module
 
 P4_LOADED: str
 try:  # Load the Perforce API if available
-    import P4  # type: ignore # pylint: disable=import-error
+    import P4  # type: ignore[missing-import]  # pylint: disable=import-error
 except Exception:  # pylint: disable=broad-except
     P4_LOADED = ''
 else:
     P4_LOADED = str(P4.P4().api_level)
 
-import git  # type: ignore  # noqa:E402  # pylint: disable=wrong-import-order,wrong-import-position
+import git  # noqa:E402  # pylint: disable=wrong-import-order,wrong-import-position
+from git import RemoteProgress as git_remote_progress, Repo as GitRepo, Tree as GitTree  # type:ignore  # noqa:E402  # pylint: disable=wrong-import-order,wrong-import-position
 GIT_LOADED = git.__version__ if hasattr(git, '__version__') else ''
 
 CleanType = Enum('CleanType', ('none', 'members', 'all'))
@@ -437,7 +439,7 @@ class Client:
                     git_args['branch'] = branch
                 if info:
                     git_args['depth'] = 1
-                self._client = git.Repo.clone_from(self._connectinfo, client_root, branch=(branch if branch else 'master')) if create_client else git.Repo(self._connectinfo)
+                self._client = GitRepo.clone_from(self._connectinfo, client_root, branch=(branch if branch else 'master')) if create_client else GitRepo(self._connectinfo)
                 self._connected = True
                 break
             if case(ClientType.perforce):
@@ -750,7 +752,7 @@ class Client:
                     self._client.index.commit(description)
                     args: Dict[str, Union[bool, str]] = {'set_upstream': True, 'all': True} if all_branches else dict()
                     args.update(extra_args)
-                    progress = git.RemoteProgress()
+                    progress = git_remote_progress()
                     result = getattr(self._client.remotes, remote).push(progress=progress, **args)
                     if progress.error_lines:
                         raise CMSError(CMSError.GIT_FAILURE, msg=''.join(progress.error_lines).replace('error: ', ''))
@@ -1008,12 +1010,12 @@ class Client:
         for case in switch(self._type):  # pylint: disable=too-many-nested-blocks
             if case(ClientType.perforce):
                 if sys.platform == 'win32':
-                    for key in (win32con.HKEY_CURRENT_USER, win32con.HKEY_LOCAL_MACHINE):
+                    for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
                         try:
-                            keyhandle: RegKeyHandle = win32api.RegOpenKeyEx(key, r'Software\perforce\environment', 0, win32con.KEY_READ)
-                            if win32api.RegQueryValueEx(keyhandle, var):
-                                return win32api.RegQueryValueEx(keyhandle, var)[0]
-                        except win32api.error as err:
+                            keyhandle: PyHKEY = RegOpenKeyEx(key, r'Software\perforce\environment', 0, KEY_READ)
+                            if RegQueryValueEx(keyhandle, var):
+                                return RegQueryValueEx(keyhandle, var)[0]
+                        except Win32Error as err:
                             if err.winerror != 2:  # ERROR_FILE_NOT_FOUND
                                 raise
                 for inner_case in switch(var):
@@ -1709,7 +1711,7 @@ def validatetype(ctype: ClientType, /) -> None:
         raise CMSError(CMSError.INVALID_TYPE, ctype=ctype)
 
 
-def walk_git_tree(tree: git.Tree, /, *, parent: Optional[git.Tree] = None) -> Generator[Tuple, Tuple, None]:
+def walk_git_tree(tree: GitTree, /, *, parent: Optional[GitTree] = None) -> Generator[Tuple, Tuple, None]:
     """Walk the git tree similar to os.walk().
 
     Attributes:
@@ -1722,7 +1724,7 @@ def walk_git_tree(tree: git.Tree, /, *, parent: Optional[git.Tree] = None) -> Ge
     """
     (tree_names, trees, blobs) = (list(), list(), list())
     for entry in tree:
-        if isinstance(entry, git.Tree):
+        if isinstance(entry, GitTree):
             tree_names.append(entry.name)
             trees.append(entry)
         else:

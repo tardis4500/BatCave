@@ -34,7 +34,8 @@ class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-metho
         self.logger = logger.info if isinstance(logger, Logger) else logger
         self.guard = guard
 
-    def run(self, message: str, *args, post_option_args: Optional[Dict] = None, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
+    def run(self, message: str, *args, post_option_args: Optional[Dict] = None,  # type: ignore[override]  # pylint: disable=arguments-differ
+            syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
         """Run the action.
 
         Args:

@@ -77,7 +77,7 @@ class BatCaveGzipFile(GzipFile, CompressedFile):  # pylint: disable=too-many-anc
     """Add CompressedFile class methods to the GzipFile class."""
 
 
-class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore # pylint: disable=too-many-ancestors
+class BatCaveBZ2File(BZ2File, CompressedFile):  # type: ignore[misc]  # pylint: disable=too-many-ancestors
     """Add CompressedFile class methods to the BZ2File class."""
 
 

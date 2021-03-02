@@ -151,7 +151,7 @@ class LoadBalancer:
             offload_server_object = Server(f'{server_object.hostname}_offload', ip=server_object.ip)
             offload_server = self.add_virtual_server(offload_server_object, service_type=LbVipType.SSL, services=service_objects, certificates=certificates)
 
-        return (virtual_server, offload_server) if offload_server else virtual_server  # type: ignore
+        return (virtual_server, offload_server) if offload_server else virtual_server  # type: ignore[return-value]
 
     def flush_cache_content(self, group_name: str, /) -> str:
         """Flush the specified load balancer cache content group.
@@ -310,7 +310,7 @@ class LoadBalancerServer(LoadBalancerObject):
         ns_service = NetScalerServerService()
         ns_service.servicetype = service_type
         ns_service.name = service_name
-        ns_service.servername = self._lb_object_ref.name  # type: ignore
+        ns_service.servername = self._lb_object_ref.name  # type: ignore[attr-defined]
         ns_service.port = port
         NetScalerServerService.add(self._load_balancer_ref.ns_session, ns_service)
         return self.get_service(service_name)

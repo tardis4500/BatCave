@@ -16,7 +16,6 @@ import sys
 from copy import copy as copy_object
 from enum import Enum
 from errno import EACCES, EAGAIN, ECHILD
-from logging import Logger
 from os import chdir, getenv, remove, unlink, walk
 from pathlib import Path
 from shutil import rmtree, chown as os_chown
@@ -212,7 +211,6 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
         all_syscmd_args = copy_object(self._default_syscmd_args)
         if syscmd_args:
             all_syscmd_args.update(syscmd_args)
-        print(self._command, command_args, all_syscmd_args)
         return syscmd(self._command, *command_args, **all_syscmd_args)
 
 

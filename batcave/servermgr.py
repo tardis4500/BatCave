@@ -659,7 +659,7 @@ class NamedOSObject:  # pylint: disable=too-few-public-methods
         self.Name = Name
         self.computer = computer
         self.auth = auth
-        self.validate()  # type: ignore # pylint: disable=no-member
+        self.validate()  # type: ignore[attr-defined]  # pylint: disable=no-member
 
 
 class LinuxService(NamedOSObject):

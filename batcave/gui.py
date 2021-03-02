@@ -137,13 +137,13 @@ class BatCaveBaseGUI:
             validators: The list of widget validators.
             _saved_output_streams: The list of saved output streams.
         """
-        self.setupUi(self)  # type: ignore # pylint: disable=no-member
+        self.setupUi(self)  # type: ignore[attr-defined]  # pylint: disable=no-member
         self.validators: List[Any] = list()
         self._saved_output_streams: Tuple = tuple()
         if title:
-            self.setWindowTitle(title)  # type: ignore # pylint: disable=no-member
+            self.setWindowTitle(title)  # type: ignore[attr-defined]  # pylint: disable=no-member
         if icon:
-            self.setWindowIcon(QIcon(str(find_image(icon))))  # type: ignore # pylint: disable=no-member
+            self.setWindowIcon(QIcon(str(find_image(icon))))  # type: ignore[attr-defined,arg-type]  # type: ignore[attr-defined]  # pylint: disable=no-member
 
     def closeEvent(self, event: QCloseEvent, /) -> None:
         """Overload of standard Qt method called when the object is closed.
@@ -187,7 +187,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
             title (optional, default=''): The title for the window.
             icon (optional, default=None): The icon for the window.
         """
-        super().__init__(parent, title=(title if title else get_version_info(VersionStyle.brief)), icon=icon)  # type: ignore
+        super().__init__(parent, title=(title if title else get_version_info(VersionStyle.brief)), icon=icon)  # type: ignore[call-arg]
         self.actionAbout.triggered.connect(self.OnAbout)
 
     def OnAbout(self) -> None:
@@ -201,7 +201,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
     """This class provides functionality for a dialog box window."""
-    def accept(self) -> bool:  # type: ignore
+    def accept(self) -> bool:  # type: ignore[override]
         """Overload of standard Qt method called when the dialog is accepted.
 
         Returns:

@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 # Import third-party modules
 import requests
-from requests import certs, codes, exceptions  # type: ignore
+from requests import certs, codes, exceptions  # type: ignore[attr-defined]
 from requests.auth import HTTPBasicAuth
 
 # Import internal modules

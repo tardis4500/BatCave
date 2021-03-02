@@ -91,9 +91,9 @@ def devbuild(args: Namespace) -> None:
 
 def static_analysis(_unused_args: Namespace) -> None:
     """Run pylint."""
-    SysCmdRunner('pylint').run(MODULE_NAME, max_line_length=200, max_attributes=10, disable='duplicate-code,fixme')
-    SysCmdRunner('flake8').run(MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204')
-    SysCmdRunner('mypy').run(MODULE_NAME)
+    SysCmdRunner('pylint', MODULE_NAME, max_line_length=200, max_attributes=10, disable='duplicate-code,fixme').run()
+    SysCmdRunner('flake8', MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204').run()
+    SysCmdRunner('mypy', MODULE_NAME, show_error_codes=True).run()
 
 
 def unit_tests(_unused_args: Namespace) -> None:
@@ -129,7 +129,7 @@ def builder(args: Namespace) -> None:
         update_version_file(build_vars)
         batcave_module = import_module('batcave')
         reload(batcave_module)
-        run_setup('setup.py', ['sdist', f'--dist-dir={ARTIFACTS_DIR}', 'bdist_wheel', f'--dist-dir={ARTIFACTS_DIR}']).run_commands()  # type: ignore
+        run_setup('setup.py', ['sdist', f'--dist-dir={ARTIFACTS_DIR}', 'bdist_wheel', f'--dist-dir={ARTIFACTS_DIR}']).run_commands()  # type: ignore[attr-defined]
     finally:
         popd()
         update_version_file(reset=True)

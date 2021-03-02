@@ -25,7 +25,6 @@ WIN32 = (platform == 'win32')
 CommandResult = Union[str, List[str]]
 MessageString = Union[str, Template]
 PathName = Union[str, Path, PurePath]
-RegKeyHandle = str
 
 
 class MsgStr:
@@ -200,7 +199,7 @@ def flatten(thing: Iterable[Iterable], /, *, recursive: bool = True) -> Iterable
     if recursive and flattened:
         return flatten(result)
 
-    return type(thing)(result)  # type: ignore
+    return type(thing)(result)  # type: ignore[call-arg]
 
 
 def flatten_string_list(iter_of_string: Iterable[str], /, *, remove_newlines: bool = True) -> str:
