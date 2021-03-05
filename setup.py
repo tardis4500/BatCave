@@ -56,8 +56,8 @@ setup(
                       'PyQt5 ~= 5.15; platform_machine not in "aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l"'],
     extras_require={
         'dev': ['setuptools', 'twine', 'wheel', 'xmlrunner'],
-        'test': [],
-    }
+        'test': []},
+    package_data={'batcave': ['py.typed']}
 )
 
 # cSpell:ignore armv pypiwin

@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [39.0.0] - Unreleased
+### [39.0.1] - 2021-03-04
+
+- Added
+  - Add marker file to indicate typing support. (GitLab #54)
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
+### [39.0.0] - 2021-03-03
 
 - Added
   - Added user documentation generation. (GitLab #1)
@@ -40,9 +48,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed
   - Removed logger module. (GitLab #37)
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [38.1.2] - 2020-05-18
 
