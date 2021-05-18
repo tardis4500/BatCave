@@ -111,7 +111,7 @@ class Cluster:
             self._core_api.create_namespace(namespace)
         return self.get_item(Namespace, name)
 
-    def create_item(self, item_class: Type[K8sObject], item_spec: PathName, /, *, namespace: str = 'default', exists_ok: bool = False) -> K8sObject:
+    def create_item(self, item_class: Type[K8sObject], item_spec: PathName, /, namespace: str = 'default', *, exists_ok: bool = False) -> K8sObject:
         """Create a new item using the specified spec.
 
         Args:
@@ -130,7 +130,7 @@ class Cluster:
                 self.find_method(item_class, 'delete')(item_name, namespace)
             return item_class(self, self.find_method(item_class, 'create')(namespace, item_spec_content))
 
-    def create_job(self, job_spec: PathName, /, *, namespace: str = 'default', exists_ok: bool = False,
+    def create_job(self, job_spec: PathName, /, namespace: str = 'default', *, exists_ok: bool = False,
                    wait_for: bool = False, check_every: int = 2, timeout: bool = False) -> 'Job':
         """Create a job and wait for the specified condition.
 
@@ -171,7 +171,7 @@ class Cluster:
             job = self.get_job(job.name, namespace)
         return job
 
-    def delete_item(self, item_class: Type[K8sObject], name: str, /, *, namespace: str = 'default') -> None:
+    def delete_item(self, item_class: Type[K8sObject], name: str, namespace: str = 'default') -> None:
         """Delete the named item.
 
         Args:
@@ -240,7 +240,7 @@ class Cluster:
             keys['namespace'] = namespace
         return [item_class(self, i) for i in self.find_method(item_class, 'list')(**keys).items]
 
-    def has_item(self, item_class: Type[K8sObject], item_name: str, /, *, namespace: str = 'default') -> bool:
+    def has_item(self, item_class: Type[K8sObject], item_name: str, namespace: str = 'default') -> bool:
         """Determine if the named items of the specified class exists.
 
         Args:

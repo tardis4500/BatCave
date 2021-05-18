@@ -7,14 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [39.0.3] - 2021-05-18
+### [39.0.4] - 2021-05-18
 
 - Changed
-  - Assume container output always has Linux endings. (GitLab #59)
+  - Allow namespace args in k8s module to be either positional or named. (GitLab #58)
 
 
 <!-- This comment will prevent merge conflicts -->
 ## Release History
+
+### [39.0.3] - 2021-05-18
+
+- Changed
+  - Assume container output always has Linux endings. (GitLab #59)
 
 ### [39.0.2] - 2021-05-18
 
