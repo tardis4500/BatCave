@@ -209,7 +209,7 @@ class Cluster:
                 return getattr(api, method_name)
         raise AttributeError(f'No method found: {method_name}')
 
-    def get_item(self, item_class: Type[K8sObject], name: str, /, *, namespace: str = 'default') -> K8sObject:
+    def get_item(self, item_class: Type[K8sObject], name: str, namespace: str = 'default') -> K8sObject:
         """Get the requested item.
 
         Args:
@@ -225,7 +225,7 @@ class Cluster:
             args.append(namespace)
         return item_class(self, self.find_method(item_class, 'read')(*args))
 
-    def get_items(self, item_class: Type[K8sObject], /, *, namespace: str = 'default', **keys) -> List[K8sObject]:
+    def get_items(self, item_class: Type[K8sObject], namespace: str = 'default', **keys) -> List[K8sObject]:
         """Get all the item of the requested type.
 
         Args:

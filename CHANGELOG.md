@@ -7,13 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [39.0.2] - 2021-05-18
+
+- Added
+  - Add requirement for pywin32-stubs. (GitLab #56)
+
+- Changed
+  - Fixed issue with k8s module usage. (GitLab #58)
+
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
 ### [39.0.1] - 2021-03-04
 
 - Added
   - Add marker file to indicate typing support. (GitLab #54)
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [39.0.0] - 2021-03-03
 

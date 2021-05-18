@@ -51,6 +51,7 @@ setup(
                       'requests ~= 2.25',
                       'pypiwin32 == 223; sys_platform == "win32"',
                       'pywin32 >= 227; sys_platform == "win32"',
+                      'pywin32-stubs; sys_platform == "win32"',
                       'WMI ~= 1.5; sys_platform == "win32"',
                       'psutil ~= 5.8; platform_machine not in "arm arm64 armv6l armv7l armv8b armv8l"',
                       'PyQt5 ~= 5.15; platform_machine not in "aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l"'],
