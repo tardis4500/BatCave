@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [39.0.3] - 2021-05-18
+
+- Changed
+  - Assume container output always has Linux endings. (GitLab #59)
+
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
 ### [39.0.2] - 2021-05-18
 
 - Added
@@ -14,10 +23,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed
   - Fixed issue with k8s module usage. (GitLab #58)
-
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [39.0.1] - 2021-03-04
 
