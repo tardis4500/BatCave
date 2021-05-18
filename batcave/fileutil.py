@@ -149,7 +149,7 @@ def pack(arcfile: PathName, items: Iterable, /, itemloc: Optional[PathName] = No
         else:
             tar_name = archive
 
-        pkgfile = tar_open(tar_name, 'w:' + compression)
+        pkgfile = tar_open(tar_name, 'w:' + compression)  # pylint: disable=consider-using-with
         adder = 'add'
 
     added = False
@@ -233,7 +233,7 @@ def unpack(arcfile: PathName, dest: Optional[PathName] = None, /, *, arctype: st
             extractor = 'read'
             break
         if case('tar'):
-            pkgfile = tar_open(archive)
+            pkgfile = tar_open(archive)  # pylint: disable=consider-using-with
             lister = 'getmembers'
             extractor = 'extract'
             break

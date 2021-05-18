@@ -260,9 +260,9 @@ class DataSource:
                 else:
                     if isinstance(self._connectinfo, (str, PurePath)):
                         if str(self._connectinfo).startswith('http:') or str(self._connectinfo).startswith('file:'):
-                            self._closer = urlopen(cast(str, self._connectinfo))
+                            self._closer = urlopen(cast(str, self._connectinfo))  # pylint: disable=consider-using-with
                         else:
-                            self._closer = open(self._connectinfo)
+                            self._closer = open(self._connectinfo)  # pylint: disable=consider-using-with
                     else:
                         self._closer = self._connectinfo
                     try:
@@ -376,7 +376,7 @@ class DataSource:
         """
         for case in switch(self.type):
             if case(SourceType.text):
-                self._connection = open(self._connectinfo, 'w')
+                self._connection = open(self._connectinfo, 'w')  # pylint: disable=consider-using-with
                 for (table_name, rows) in self._source.items():
                     self._connection.write(self._TEXT_TABLE_DELIMITER + table_name + '\n')
                     for row in rows:
@@ -384,12 +384,12 @@ class DataSource:
                 self._connection.close()
                 break
             if case(SourceType.pickle):
-                self._connection = open(self._connectinfo, 'w')
+                self._connection = open(self._connectinfo, 'w')  # pylint: disable=consider-using-with
                 pickle_dump(self._source, cast(IO, self._connection))
                 self._connection.close()
                 break
             if case(SourceType.ini):
-                self._connection = open(self._connectinfo, 'w')
+                self._connection = open(self._connectinfo, 'w')  # pylint: disable=consider-using-with
                 self._source.write(self._connection)
                 self._connection.close()
                 break

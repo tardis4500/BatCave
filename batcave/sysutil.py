@@ -461,41 +461,41 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
         print('Executing system command:', cmd_str)
     cmd_to_pass = cmd_str if use_shell else cmd_spec
 
-    proc = Popen(cmd_to_pass, shell=use_shell, universal_newlines=True, stdout=PIPE, stderr=PIPE,
-                 bufsize=0 if show_stdout else -1,
-                 stdin=PIPE if input_lines else None)
+    with Popen(cmd_to_pass, shell=use_shell, universal_newlines=True, stdout=PIPE, stderr=PIPE,
+               bufsize=0 if show_stdout else -1,
+               stdin=PIPE if input_lines else None) as proc:
+        if input_lines:
+            if is_debug('SYSCMD'):
+                print('Sending input lines:', input_lines)
+            cast(IO, proc.stdin).writelines(input_lines)
+            cast(IO, proc.stdin).close()
 
-    if input_lines:
         if is_debug('SYSCMD'):
-            print('Sending input lines:', input_lines)
-        cast(IO, proc.stdin).writelines(input_lines)
-        cast(IO, proc.stdin).close()
+            print('Getting output lines')
+        outlines = list()
+        for line in iter(cast(IO, proc.stdout).readline, ''):
+            if is_debug('SYSCMD'):
+                print('Received output line:', line)
+            outlines.append(line)
+            if show_stdout:
+                sys.stdout.write(line)
 
-    if is_debug('SYSCMD'):
-        print('Getting output lines')
-    outlines = list()
-    for line in iter(cast(IO, proc.stdout).readline, ''):
         if is_debug('SYSCMD'):
-            print('Received output line:', line)
-        outlines.append(line)
-        if show_stdout:
-            sys.stdout.write(line)
+            print('Getting error lines')
+        errlines = cast(IO, proc.stderr).readlines()
+        if is_debug('SYSCMD'):
+            print('Received error lines:', errlines)
 
-    if is_debug('SYSCMD'):
-        print('Getting error lines')
-    errlines = cast(IO, proc.stderr).readlines()
-    if is_debug('SYSCMD'):
-        print('Received error lines:', errlines)
+        if is_debug('SYSCMD'):
+            print('Getting return code')
+        try:
+            returncode = proc.wait()
+        except OSError as err:
+            if err.errno == ECHILD:
+                returncode = proc.returncode
+            else:
+                raise
 
-    if is_debug('SYSCMD'):
-        print('Getting return code')
-    try:
-        returncode = proc.wait()
-    except OSError as err:
-        if err.errno == ECHILD:
-            returncode = proc.returncode
-        else:
-            raise
     if is_debug('SYSCMD'):
         print('Received return code:', returncode)
 

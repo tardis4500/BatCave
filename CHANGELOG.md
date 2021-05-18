@@ -7,14 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [39.0.4] - 2021-05-18
+### [39.0.5] - 2021-05-18
 
 - Changed
-  - Allow namespace args in k8s module to be either positional or named. (GitLab #58)
+  - Fixed k8s delete_item for non-namespaced objects. (GitLab #60)
+  - Fix consider-using-with linting errors.
 
 
 <!-- This comment will prevent merge conflicts -->
 ## Release History
+
+### [39.0.4] - 2021-05-18
+
+- Changed
+  - Allow namespace args in k8s module to be either positional or named. (GitLab #58)
 
 ### [39.0.3] - 2021-05-18
 

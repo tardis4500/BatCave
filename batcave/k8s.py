@@ -171,7 +171,7 @@ class Cluster:
             job = self.get_job(job.name, namespace)
         return job
 
-    def delete_item(self, item_class: Type[K8sObject], name: str, namespace: str = 'default') -> None:
+    def delete_item(self, item_class: Type[K8sObject], name: str, /, namespace: str = 'default') -> None:
         """Delete the named item.
 
         Args:
@@ -182,7 +182,10 @@ class Cluster:
         Returns:
             Nothing.
         """
-        item_class(self, self.find_method(item_class, 'delete')(name, namespace))
+        args = [name]
+        if item_class.NAMESPACED:
+            args.append(namespace)
+        item_class(self, self.find_method(item_class, 'delete')(*args))
 
     def find_method(self, item_class: Type[K8sObject], method: str, /, suffix: str = '') -> Callable:
         """Search all the APIs for the specified method.
@@ -209,7 +212,7 @@ class Cluster:
                 return getattr(api, method_name)
         raise AttributeError(f'No method found: {method_name}')
 
-    def get_item(self, item_class: Type[K8sObject], name: str, namespace: str = 'default') -> K8sObject:
+    def get_item(self, item_class: Type[K8sObject], name: str, /, namespace: str = 'default') -> K8sObject:
         """Get the requested item.
 
         Args:
@@ -225,7 +228,7 @@ class Cluster:
             args.append(namespace)
         return item_class(self, self.find_method(item_class, 'read')(*args))
 
-    def get_items(self, item_class: Type[K8sObject], namespace: str = 'default', **keys) -> List[K8sObject]:
+    def get_items(self, item_class: Type[K8sObject], /, namespace: str = 'default', **keys) -> List[K8sObject]:
         """Get all the item of the requested type.
 
         Args:
@@ -240,7 +243,7 @@ class Cluster:
             keys['namespace'] = namespace
         return [item_class(self, i) for i in self.find_method(item_class, 'list')(**keys).items]
 
-    def has_item(self, item_class: Type[K8sObject], item_name: str, namespace: str = 'default') -> bool:
+    def has_item(self, item_class: Type[K8sObject], item_name: str, /, namespace: str = 'default') -> bool:
         """Determine if the named items of the specified class exists.
 
         Args:
