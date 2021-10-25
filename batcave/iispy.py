@@ -490,9 +490,7 @@ class IISConfigurationSection:
         Returns:
             Nothing.
         """
-        if changes:
-            properties.update(changes)
-        self.add_property(collection, dict2expat(properties))
+        self.add_property(collection, dict2expat((properties | changes) if changes else properties))
 
     def add_property(self, propname: str, value: str, /) -> None:
         """Add a property with the specified value.

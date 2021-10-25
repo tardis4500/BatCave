@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed
   - Upgrade minimum Python to 3.9. (GitLab #51)
+  - Use new dict union operators. (GitLab #51)
   - Fixed linting issues.
 
 <!-- This comment will prevent merge conflicts -->

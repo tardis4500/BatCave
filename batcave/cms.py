@@ -750,8 +750,7 @@ class Client:
             if case(ClientType.git):
                 if not no_execute:
                     self._client.index.commit(description)
-                    args: Dict[str, Union[bool, str]] = {'set_upstream': True, 'all': True} if all_branches else {}
-                    args.update(extra_args)
+                    args: Dict[str, bool] = ({'set_upstream': True, 'all': True} if all_branches else {}) | extra_args
                     progress = git_remote_progress()
                     result = getattr(self._client.remotes, remote).push(progress=progress, **args)
                     if progress.error_lines:

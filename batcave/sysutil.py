@@ -183,7 +183,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
         self._default_kwargs = kwargs
         self._default_syscmd_args: Dict[Any, Any] = {'show_cmd': show_cmd, 'show_stdout': show_stdout}
         if syscmd_args:
-            self._default_syscmd_args.update(syscmd_args)
+            self._default_syscmd_args |= syscmd_args
 
     def run(self, *args, post_option_args: Optional[Dict] = None, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
         """Run the defined command with the additional specified arguments.
@@ -198,8 +198,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
             The result of the syscmd call.
         """
         command_args = self._default_args + list(args)
-        option_args = copy_object(self._default_kwargs)
-        option_args.update(kwargs)
+        option_args = copy_object(self._default_kwargs) | kwargs
         for (arg, value) in option_args.items():
             arg_name = arg.replace('_', '-')
             if value is True:
@@ -210,7 +209,7 @@ class SysCmdRunner:  # pylint: disable=too-few-public-methods
             command_args += post_option_args
         all_syscmd_args = copy_object(self._default_syscmd_args)
         if syscmd_args:
-            all_syscmd_args.update(syscmd_args)
+            all_syscmd_args |= syscmd_args
         return syscmd(self._command, *command_args, **all_syscmd_args)
 
 

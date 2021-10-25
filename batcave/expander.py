@@ -510,9 +510,9 @@ class Procedure:
         # set the Environment variable and
         # set IsEnvironment to True for that environment
         for env in self.environments:
-            (env_dict := deepcopy(common_environment)).update(self.environments[env])
+            env_dict = common_environment | self.environments[env]
             if variable_overrides:
-                env_dict.update(variable_overrides)
+                env_dict |= variable_overrides
             self.environments[env] = env_dict
             if self._ENVIRONMENT_VARIABLE not in self.environments[env]:
                 self.environments[env][self._ENVIRONMENT_VARIABLE] = env
@@ -644,14 +644,14 @@ class Procedure:
         expander_vars_keeper = None
         if step.vars:
             expander_vars_keeper = deepcopy(self.expander.vardict)
-            self.expander.vardict.update(step.vars)
+            self.expander.vardict |= step.vars
 
         if step.libimport:
             if step.libimport not in self.library:
                 ProcedureError(ProcedureError.BAD_LIBRARY, lib=step.libimport)
             lib_step = deepcopy(self.library[step.libimport])
             lib_step.repeat = step.repeat
-            lib_step.vars.update(step.vars)
+            lib_step.vars |= step.vars
             if step.text:
                 lib_step.text = step.text
             elif not lib_step.text:
