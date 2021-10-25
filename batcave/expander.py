@@ -50,7 +50,7 @@ from xml.etree.ElementTree import fromstringlist as xmlparse, Element
 
 # Import BatCave packages
 from .fileutil import slurp
-from .lang import is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, PathName, WIN32
+from .lang import DEFAULT_ENCODING, is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, PathName, WIN32
 
 OutputFormat = Enum('OutputFormat', ('text', 'html', 'csv'))
 
@@ -112,7 +112,7 @@ class Formatter:
         self.format = output_format
         self.level = 0
         self.count = 1
-        self.keeper: List[Tuple[int, str]] = list()
+        self.keeper: List[Tuple[int, str]] = []
         self.prefix = ''
         self.link_regex = re_compile(f'\\{self._LINK_PRELIM}(.+?)(\\|(.+))?\\}}')
 
@@ -254,7 +254,7 @@ class Expander:
             vardict: The value of the vardict argument.
             varprop: The value of the varprop argument.
         """
-        self.vardict = vardict if vardict else dict()
+        self.vardict = vardict if vardict else {}
         self.varprops = varprops if (isinstance(varprops, (list, tuple))) else [varprops]
         self.prelim = prelim
         self.postlim = postlim
@@ -405,9 +405,9 @@ class Expander:
         Returns:
             Nothing.
         """
-        with open(in_file) as instream:
+        with open(in_file, encoding=DEFAULT_ENCODING) as instream:
             Path(out_file).parent.mkdir(parents=True, exist_ok=True)
-            with open(out_file, 'w') as outstream:
+            with open(out_file, 'w', encoding=DEFAULT_ENCODING) as outstream:
                 for line in instream:
                     line = self.expand(line)
                     outstream.write(line)
@@ -483,20 +483,20 @@ class Procedure:
         if (schema := str_to_pythonval((xmlroot := xmlparse(slurp(procfile))).get(self._SCHEMA_ATTR, '0'))) != self._REQUIRED_PROCEDURE_SCHEMA:
             raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
         self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
-        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xmlroot.find(self._FLAGS_TAG)) else dict()  # pylint: disable=used-before-assignment
-        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xmlroot.find(self._DIRECTORIES_TAG)) else list()  # pylint: disable=used-before-assignment
-        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xmlroot.find(self._STEPS_TAG)) else list()  # pylint: disable=used-before-assignment
-        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xmlroot.find(self._LIBRARY_TAG)) else dict()  # pylint: disable=used-before-assignment
+        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xmlroot.find(self._FLAGS_TAG)) else {}  # pylint: disable=used-before-assignment
+        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xmlroot.find(self._DIRECTORIES_TAG)) else []  # pylint: disable=used-before-assignment
+        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xmlroot.find(self._STEPS_TAG)) else []  # pylint: disable=used-before-assignment
+        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xmlroot.find(self._LIBRARY_TAG)) else {}  # pylint: disable=used-before-assignment
 
         environments_element = xmlroot.find(self._ENVIRONMENTS_TAG)
-        self.environments: Dict = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else dict()
+        self.environments: Dict = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else {}
 
         common_environment: Dict
         if self._COMMON_ENVIRONMENT in self.environments:
             common_environment = self.environments[self._COMMON_ENVIRONMENT]
             del self.environments[self._COMMON_ENVIRONMENT]
         else:
-            common_environment = dict()
+            common_environment = {}
 
         # Convert the flags to True/False variables in the common environment
         for (flag_name, flag_value) in flags.items():
@@ -738,7 +738,7 @@ class Step:  # pylint: disable=too-few-public-methods
         self.repeat = step_def.get(self._REPEAT_ATTR, '')
         self.text = step_def.text.strip() if step_def.text else ''
         self.substeps = [Step(s) for s in list(step_def)]
-        self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if (var := step_def.get(self._VARS_ATTR, '')) else dict()  # pylint: disable=used-before-assignment
+        self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if (var := step_def.get(self._VARS_ATTR, '')) else {}  # pylint: disable=used-before-assignment
 
     def dump(self) -> List:
         """Dump out the step contents.

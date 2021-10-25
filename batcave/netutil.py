@@ -8,7 +8,7 @@ from typing import Dict, Optional, Tuple
 from requests import get as url_get
 
 # Import internal modules
-from .lang import is_debug
+from .lang import DEFAULT_ENCODING, is_debug
 
 
 def download(url: str, /, target: Optional[str] = None, *, auth: Optional[str] = None) -> None:
@@ -29,7 +29,8 @@ def download(url: str, /, target: Optional[str] = None, *, auth: Optional[str] =
     target = target if target is not None else url.split('/')[-1]
     response = url_get(url, auth=auth)
     response.raise_for_status()
-    open(target, 'wb').write(response.content)
+    with open(target, 'wb', encoding=DEFAULT_ENCODING) as downloaded_file:
+        downloaded_file.write(response.content)
 
 
 def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body: str, /,

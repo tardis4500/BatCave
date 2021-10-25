@@ -8,7 +8,7 @@ from typing import Sequence
 
 # Import internal modules
 from .sysutil import LockFile
-from .lang import is_debug, BatCaveError, BatCaveException, PathName
+from .lang import DEFAULT_ENCODING, is_debug, BatCaveError, BatCaveException, PathName
 
 StateStatus = Enum('StateStatus', ('entering', 'exited'))
 
@@ -72,7 +72,7 @@ class StateMachine:
         self._started = False
         if self._statefile.exists():
             debug_msg = 'Found'
-            with open(self._statefile) as filestream:
+            with open(self._statefile, encoding=DEFAULT_ENCODING) as filestream:
                 (status, state) = filestream.read().split()
                 self.status = StateStatus[status]
                 self.state = state
@@ -103,7 +103,7 @@ class StateMachine:
         """
         if is_debug('STATEMACHINE'):
             print(f'Writing state file with {self.status.name} {self.state}')
-        with open(self._statefile, 'w') as filestream:
+        with open(self._statefile, 'w', encoding=DEFAULT_ENCODING) as filestream:
             print(self.status.name, self.state, file=filestream)
 
     def done(self) -> None:

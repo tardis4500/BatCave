@@ -43,13 +43,13 @@ class Menu:
             The choice selected from the menu.
         """
         invalid_choice = True
-        valid_choices = list()
+        valid_choices = []
         menu = self.title + '\n'
         for item in self.items:
             valid_choices.append(item.key.upper() if self.ignorecase else item.key)
             menu += f'\t{item.key}. {item.desc}\n'
 
-        choices = list()
+        choices = []
         while invalid_choice:
             print(menu)
 

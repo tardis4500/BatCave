@@ -230,8 +230,8 @@ class QuickBuildConsole:
         self._user = user
         self._password = password
         self._update = True
-        self.configs: Dict[str, QuickBuildCfg] = dict()
-        self.dashboards: Dict[str, QuickBuildDashboard] = dict()
+        self.configs: Dict[str, QuickBuildCfg] = {}
+        self.dashboards: Dict[str, QuickBuildDashboard] = {}
         self.updater()
 
     def __enter__(self):
@@ -306,6 +306,7 @@ class QuickBuildConsole:
         Returns:
             The result of the API call.
         """
+        caller: Any = None
         api_call = f'http://{self._host}/rest/{cmd}'
         api_args: Dict[str, Any] = {'auth': (self._user, self._password)}
         if delete:

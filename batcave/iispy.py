@@ -582,7 +582,7 @@ class IISAdvancedLogger(IISConfigurationSection):
 
         Args:
             field_id: The field ID to add.
-            field_values (optional, default=dict()): Any field values to add to override the default values.
+            field_values (optional, default={}): Any field values to add to override the default values.
 
         Returns:
             Nothing.
@@ -621,9 +621,9 @@ class IISAdvancedLogger(IISConfigurationSection):
                                    log_values)
         if fields:
             if not isinstance(fields, dict):
-                fields = {f: dict() for f in fields}
+                fields = {f: {} for f in fields}
         else:
-            fields = dict()
+            fields = {}
         for (field, values) in fields.items():
             self.add_logfield(log_name, field, values)
 

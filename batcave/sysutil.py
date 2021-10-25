@@ -25,7 +25,7 @@ from subprocess import Popen, PIPE
 from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO, Union
 
 # Import internal modules
-from .lang import flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
+from .lang import DEFAULT_ENCODING, flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if sys.platform == 'win32':
     from msvcrt import locking, LK_NBLCK, LK_UNLCK  # pylint: disable=import-error
@@ -108,7 +108,7 @@ class LockFile:
         """
         self._filename = Path(filename)
         self._cleanup = cleanup
-        self._fh = handle if handle else open(filename, 'w')
+        self._fh = handle if handle else open(filename, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
         self._fd = self._fh.fileno()
         if sys.platform == 'win32':
             self._locker = locking
@@ -414,7 +414,7 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
         CMDError.CMD_ERROR: If fail_on_error is True, and the return code is non-zero, or there is output on stderr if ignore_stderr is True.
     """
     cmd_spec = [str(command)] + [str(c) for c in cmd_args]
-    remote_driver: List[str] = list()
+    remote_driver: List[str] = []
     if remote:
         remote_is_windows = WIN32 if (remote_is_windows is None) else remote_is_windows
         if WIN32:
@@ -472,7 +472,7 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
 
         if is_debug('SYSCMD'):
             print('Getting output lines')
-        outlines = list()
+        outlines = []
         for line in iter(cast(IO, proc.stdout).readline, ''):
             if is_debug('SYSCMD'):
                 print('Received output line:', line)
@@ -500,7 +500,7 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
         print('Received return code:', returncode)
 
     if remote and WIN32 and (not remote_is_windows) and (not returncode) and (errlines[-1] == 'Disconnected: All channels closed\n'):
-        errlines = list()
+        errlines = []
 
     if is_debug('SYSCMD'):
         print('Checking for' if fail_on_error else 'Ignoring', 'errors')
@@ -515,7 +515,7 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
 
 
 # Implement standard directory stack on chdir
-_DIRECTORY_STACK = list()
+_DIRECTORY_STACK = []
 
 
 def pushd(dirname: PathName, /) -> PathName:
@@ -527,7 +527,7 @@ def pushd(dirname: PathName, /) -> PathName:
     Returns:
         The value of the directory pushed to the stack.
     """
-    global _DIRECTORY_STACK  # pylint: disable=global-statement
+    global _DIRECTORY_STACK  # pylint: disable=global-statement,global-variable-not-assigned
     cwd = Path.cwd()
     chdir(dirname)
     _DIRECTORY_STACK.append(cwd)
@@ -546,7 +546,7 @@ def popd() -> Union[int, PathName]:
     Raises:
         IndexError: If the stack is empty.
     """
-    global _DIRECTORY_STACK  # pylint: disable=global-statement
+    global _DIRECTORY_STACK  # pylint: disable=global-statement,global-variable-not-assigned
     try:
         dirname = _DIRECTORY_STACK.pop()
     except IndexError:

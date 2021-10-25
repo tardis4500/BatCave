@@ -138,7 +138,7 @@ class BatCaveBaseGUI:
             _saved_output_streams: The list of saved output streams.
         """
         self.setupUi(self)  # type: ignore[attr-defined]  # pylint: disable=no-member
-        self.validators: List[Any] = list()
+        self.validators: List[Any] = []
         self._saved_output_streams: Tuple = tuple()
         if title:
             self.setWindowTitle(title)  # type: ignore[attr-defined]  # pylint: disable=no-member

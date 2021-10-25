@@ -21,7 +21,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 # Import internal modules
 from .sysutil import popd, pushd
-from .lang import switch, BatCaveError, BatCaveException, PathName
+from .lang import DEFAULT_ENCODING, switch, BatCaveError, BatCaveException, PathName
 
 
 class ConvertError(BatCaveException):
@@ -184,7 +184,7 @@ def slurp(filename: PathName, /) -> List[str]:
     Returns:
         The list of lines from the file.
     """
-    return [line for line in open(filename)]  # pylint: disable=unnecessary-comprehension
+    return list(open(filename, encoding=DEFAULT_ENCODING))
 
 
 def spew(filename: PathName, outlines: Iterable, /) -> None:
@@ -197,7 +197,8 @@ def spew(filename: PathName, outlines: Iterable, /) -> None:
     Returns:
         Nothing.
     """
-    open(filename, 'w').writelines(outlines)
+    with open(filename, 'w', encoding=DEFAULT_ENCODING) as output_stream:
+        output_stream.writelines(outlines)
 
 
 def unpack(arcfile: PathName, dest: Optional[PathName] = None, /, *, arctype: str = '') -> None:

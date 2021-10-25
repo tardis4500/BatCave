@@ -18,7 +18,7 @@ from kubernetes.stream import stream as k8s_process
 from yaml import safe_load as yaml_load
 
 # Import internal modules
-from .lang import BatCaveError, BatCaveException, CommandResult, PathName
+from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, CommandResult, PathName
 from .sysutil import SysCmdRunner
 
 K8sObject = TypeVar('K8sObject', 'Pod', 'Job', 'Namespace')
@@ -123,7 +123,7 @@ class Cluster:
         Returns:
             The created item.
         """
-        with open(item_spec) as yaml_file:
+        with open(item_spec, encoding=DEFAULT_ENCODING) as yaml_file:
             item_spec_content = yaml_load(yaml_file)
             item_name = item_spec_content['metadata']['name']
             if self.has_item(item_class, item_name, namespace=namespace) and exists_ok:
@@ -266,7 +266,7 @@ class Cluster:
         Returns:
             The result of the kubectl command.
         """
-        config_args = dict()
+        config_args = {}
         if self.config:
             config_args['kubeconfig'] = self.config
         if self._context:

@@ -188,11 +188,9 @@ class ServerPath:
             The result of the rename.
         """
         if self.server.is_local:
-            Path(self.local).rename(new)
-            return Path(new)  # TODO: In 3.8, the rename will return the correct value.
+            return Path(self.local).rename(new)
         if self.win_to_win:
-            cast(Path, self.remote).rename(new)
-            return Path(new)  # TODO: In 3.8, the rename will return the correct value.
+            return cast(Path, self.remote).rename(new)
         return self.server.run_command('ren' if self.is_win else 'mv', self.local, new)
 
     def rmdir(self, remote_rm_command: Optional[List[PathName]] = None, *, recursive: bool = False) -> None:

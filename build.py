@@ -163,7 +163,7 @@ def post_release_update(args: Namespace) -> None:
 
     if args.increment_release:
         gitlab_ci_config = slurp(CI_BUILD_FILE)
-        new_config = list()
+        new_config = []
         new_release = ''
         for line in gitlab_ci_config:
             if 'RELEASE:' in line:
@@ -202,7 +202,7 @@ def remake_dir(dir_path: Path, info_str: str) -> None:
 
 def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool = False) -> None:
     """Updates the version file for the project."""
-    use_vars = build_vars if build_vars else dict()
+    use_vars = build_vars if build_vars else {}
     verb = 'Resetting' if reset else 'Updating'
     MESSAGE_LOGGER(f'{verb} version file: {VERSION_FILE}', True)
     file_orig = Path(str(VERSION_FILE) + '.orig')
@@ -215,7 +215,7 @@ def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool
         copyfile(VERSION_FILE, file_orig)
         file_expander(file_orig, VERSION_FILE, vardict=use_vars)
         replacers = {'title': PRODUCT_NAME, 'version': use_vars['release']}
-        file_update = list()
+        file_update = []
         for line in slurp(VERSION_FILE):
             for (var, val) in replacers.items():
                 if line.startswith(f'__{var}__'):

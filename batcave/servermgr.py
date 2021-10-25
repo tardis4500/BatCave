@@ -186,7 +186,7 @@ class Server:
         Raises:
             ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was an error connecting to the WMI manager.
         """
-        manager_args = dict() if self.is_local else {'computer': self.hostname}
+        manager_args = {} if self.is_local else {'computer': self.hostname}
         if self._auth:
             manager_args['user'] = self._auth[0]
             manager_args['password'] = self._auth[1]
@@ -272,7 +272,7 @@ class Server:
             The created scheduled task.
         """
         if isinstance(exe, str):
-            exe_args: List[str] = list()
+            exe_args: List[str] = []
         else:
             exe_args = exe[1:]
             exe = exe[0]
@@ -342,7 +342,7 @@ class Server:
         """
         manager = self._get_object_manager(item_type, wmi)
         unique_key = 'ProcessId' if (item_type == 'Process') else 'Name'
-        extra_keys = dict()
+        extra_keys = {}
         for (key, item_list) in {'service_type': 'Service'}.items():
             if (item_type in item_list) and (key in filters):
                 if self.os_type != OsType.windows:
@@ -580,7 +580,7 @@ class OSManager:
             return [globals()[object_type](Name, self.computer, self.auth, **key_args)]
         except ServerObjectManagementError as err:
             if err.code == ServerObjectManagementError.OBJECT_NOT_FOUND.code:
-                return list()
+                return []
             raise
 
     def LinuxProcess(self, CommandLine: str = None, ExecutablePath: str = None, Name: str = None, ProcessId: str = None) -> List['LinuxProcess']:  # pylint: disable=no-self-use
@@ -606,7 +606,7 @@ class OSManager:
             try:
                 return [LinuxProcess(ProcessId)]
             except NoSuchProcess:
-                return list()
+                return []
 
         process_list = [p for p in process_iter(attrs=('pid', 'cmdline', 'exe', 'name'))]  # pylint: disable=unnecessary-comprehension
         if CommandLine:
@@ -615,7 +615,7 @@ class OSManager:
             return [LinuxProcess(p.pid) for p in process_list if p.info['exe'] == ExecutablePath]
         if Name:
             return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]
-        return list()
+        return []
 
     def LinuxService(self, Name: str, service_type: ServiceType, /) -> 'LinuxService':
         """Get the specified Linux service.

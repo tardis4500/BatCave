@@ -16,7 +16,7 @@ from enum import Enum
 from glob import glob
 from collections.abc import Callable
 from getpass import getuser
-from os import environ, getenv
+from os import PathLike, environ, getenv
 from pathlib import Path
 from platform import node
 from random import randint
@@ -107,7 +107,7 @@ class Label:
         self._name = name
         self._type = label_type
         self._selector = selector
-        self._label: Dict[str, str] = dict()
+        self._label: Dict[str, str] = {}
         self._refresh()
         changed = False
         if self._selector:
@@ -417,7 +417,7 @@ class Client:
             raise CMSError(CMSError.CLIENT_NAME_REQUIRED)
         self._name: str = client_name
 
-        client_root: Optional[Path] = None
+        client_root: Union[str, PathLike[Any]] = ''
         if create_client:
             client_root = self._tmpdir if (root is None) else root
             if (self._mapping is None) and (self._type == ClientType.perforce) and info:
@@ -434,7 +434,7 @@ class Client:
                 self._connected = True
                 break
             if case(ClientType.git):
-                git_args: Dict[str, Union[int, str]] = dict()
+                git_args: Dict[str, Union[int, str]] = {}
                 if branch:
                     git_args['branch'] = branch
                 if info:
@@ -667,7 +667,7 @@ class Client:
                     return self._client.index.add([str(f) for f in files])
                 break
             if case(ClientType.perforce):
-                args: List[str] = ['-n'] if no_execute else list()
+                args: List[str] = ['-n'] if no_execute else []
                 args += [str(f) for f in files]
                 return self._p4run('add', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -689,14 +689,14 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.git):
-                args: Dict[str, Any] = dict()
+                args: Dict[str, Any] = {}
                 if not no_execute:
                     if exists_ok:
                         args['force'] = True
                     if tag_message:
                         args['message'] = tag_message
                     return [self._client.create_tag(tag_name, **args)]
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def add_remote_ref(self, name: str, url: str, /, *, exists_ok: bool = False, no_execute: bool = False) -> List[str]:
@@ -746,18 +746,18 @@ class Client:
             if case(ClientType.file):
                 if not no_execute:
                     return self.unco_files(*files, no_execute=no_execute)
-                return list()
+                return []
             if case(ClientType.git):
                 if not no_execute:
                     self._client.index.commit(description)
-                    args: Dict[str, Union[bool, str]] = {'set_upstream': True, 'all': True} if all_branches else dict()
+                    args: Dict[str, Union[bool, str]] = {'set_upstream': True, 'all': True} if all_branches else {}
                     args.update(extra_args)
                     progress = git_remote_progress()
                     result = getattr(self._client.remotes, remote).push(progress=progress, **args)
                     if progress.error_lines:
                         raise CMSError(CMSError.GIT_FAILURE, msg=''.join(progress.error_lines).replace('error: ', ''))
                     return result
-                return list()
+                return []
             if case(ClientType.perforce):
                 changelist: Dict[str, Any] = self._p4fetch('change')
                 changelist['Description'] = description
@@ -788,13 +788,13 @@ class Client:
                     file_path: Path = self.root / file_name
                     if not no_execute:
                         file_path.chmod(file_path.stat().st_mode | S_IWUSR)
-                return list()
+                return []
             if case(ClientType.git):
                 if not no_execute:
                     return self._client.index.add([str(f) for f in files])
-                return list()
+                return []
             if case(ClientType.perforce):
-                args: List[str] = ['-n'] if no_execute else list()
+                args: List[str] = ['-n'] if no_execute else []
                 args += files
                 return self._p4run('edit', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -818,7 +818,7 @@ class Client:
                 for cms_file in files:
                     if not no_execute:
                         return self._client.git.update_index(f'--chmod={mode}', cms_file)
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def close(self) -> None:
@@ -865,13 +865,13 @@ class Client:
                     if branch_from:
                         streamspec['Parent'] = f'//{repo}/{branch_from}'
                     if stream_type == 'virtual':
-                        streamspec['Options'] = ' '.join(['%s%s' % ('no' if 'parent' in o else '', o) for o in streamspec['Options'].split()])
+                        streamspec['Options'] = ' '.join(['%s%s' % ('no' if 'parent' in o else '', o) for o in streamspec['Options'].split()])  # pylint: disable=consider-using-f-string
                     if options:
                         for (optname, optval) in options.items():
                             streamspec[optname] = optval
                     if not no_execute:
                         return self._p4save('stream', streamspec)
-                return list()
+                return []
             if case(ClientType.git):
                 args: List[str] = [name]
                 if branch_from:
@@ -879,7 +879,7 @@ class Client:
                 self._client.create_head(*args)
                 getattr(self._client.heads, name).checkout()
                 if no_execute:
-                    return list()
+                    return []
                 return self._client.git.push('origin', name, set_upstream=True)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -903,7 +903,7 @@ class Client:
                 if repo_type:
                     depotspec['Type'] = repo_type
                 if no_execute:
-                    return list()
+                    return []
                 return self._p4save('depot', depotspec)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
@@ -929,7 +929,7 @@ class Client:
                 except P4.P4Exception as err:
                     if 'no such file' not in str(err):
                         raise
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_changelist(self, name: str, /, *files: str, edit: bool = False) -> 'ChangeList':
@@ -1212,7 +1212,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                args: List[str] = ['-n'] if no_execute else list()
+                args: List[str] = ['-n'] if no_execute else []
                 args += files
                 return self._p4run('lock', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -1260,7 +1260,7 @@ class Client:
             if case(ClientType.perforce):
                 if not no_execute:
                     return self._p4run('populate', [source, target])
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def reconcile(self, *files: str, no_execute: bool = False) -> List[str]:
@@ -1301,7 +1301,7 @@ class Client:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         client_root: Path = self.root
-        results: List[str] = list()
+        results: List[str] = []
         for case in switch(self._type):
             if case(ClientType.perforce):
                 if clean in (CleanType.members, CleanType.all):
@@ -1338,7 +1338,7 @@ class Client:
         Raises:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
-        result: List[str] = list()
+        result: List[str] = []
         for case in switch(self._type):
             if case(ClientType.git):
                 if not no_execute:
@@ -1350,7 +1350,7 @@ class Client:
                         (self.root / filename).unlink()
                 return result
             if case(ClientType.perforce):
-                args: List[str] = ['-n'] if no_execute else list()
+                args: List[str] = ['-n'] if no_execute else []
                 args += files
                 return self._p4run('delete', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -1373,7 +1373,7 @@ class Client:
             if case(ClientType.git):
                 if not no_execute:
                     return self._client.remotes[old_name].rename(new_name)
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def switch(self, branch: str, /) -> List[str]:
@@ -1416,13 +1416,13 @@ class Client:
                     file_path: Path = self.root / file_name
                     if not no_execute:
                         file_path.chmod(file_path.stat().st_mode & S_IWUSR)
-                return list()
+                return []
             if case(ClientType.git):
                 if not no_execute:
                     return self._client.index.checkout(paths=files, force=True)
-                return list()
+                return []
             if case(ClientType.perforce):
-                args: List[str] = ['-n'] if no_execute else list()
+                args: List[str] = ['-n'] if no_execute else []
                 if unchanged_only:
                     args.append('-a')
                 args += files if files else ['//...']
@@ -1431,7 +1431,7 @@ class Client:
                 except P4.P4Exception as err:
                     if 'file(s) not opened on this client.' not in str(err):
                         raise
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def unlock_files(self, *files: str, no_execute: bool = False) -> List[str]:
@@ -1449,7 +1449,7 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                args: List[str] = ['-n'] if no_execute else list()
+                args: List[str] = ['-n'] if no_execute else []
                 args += files
                 return self._p4run('unedit', *args)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -1492,9 +1492,9 @@ class Client:
                     return self._p4run(*args)
                 except P4.P4Exception as err:
                     if ('file(s) up-to-date.' in str(err)) or ('File(s) up-to-date.' in str(err)):
-                        return list()
+                        return []
                     raise
-                return list()
+                return []
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
 
@@ -1722,7 +1722,7 @@ def walk_git_tree(tree: GitTree, /, *, parent: Optional[GitTree] = None) -> Gene
         Runs like an iterator which yields tuples of
             (the new parent, the tree names, the git blobs)
     """
-    (tree_names, trees, blobs) = (list(), list(), list())
+    (tree_names, trees, blobs) = ([], [], [])
     for entry in tree:
         if isinstance(entry, GitTree):
             tree_names.append(entry.name)

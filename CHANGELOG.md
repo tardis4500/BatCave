@@ -7,15 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [40.0.0] - Unreleased
+
+- Changed
+  - Upgrade minimum Python to 3.9. (GitLab #51)
+  - Fixed linting issues.
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
 ### [39.0.5] - 2021-05-18
 
 - Changed
   - Fixed k8s delete_item for non-namespaced objects. (GitLab #60)
   - Fix consider-using-with linting errors.
-
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [39.0.4] - 2021-05-18
 

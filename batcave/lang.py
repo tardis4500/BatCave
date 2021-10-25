@@ -17,6 +17,7 @@ from sys import executable, platform, version_info, path as sys_path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 # Useful contants
+DEFAULT_ENCODING = 'UTF-8'
 FROZEN = getattr(sys, 'frozen', False)
 BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
 VALIDATE_PYTHON = True
@@ -44,7 +45,7 @@ class MsgStr:
             MyMsg().Message1
             MyMsg(what='this').Message2
     """
-    _messages: Dict[str, Union[str, Template]] = dict()
+    _messages: Dict[str, Union[str, Template]] = {}
 
     def __init__(self, instr: Union[str, Template] = '', transform: str = '', **variables):
         """
@@ -188,7 +189,7 @@ def flatten(thing: Iterable[Iterable], /, *, recursive: bool = True) -> Iterable
         The final single depth item as the same type as thing.
     """
     flattened = False
-    result = list()
+    result = []
     for item in thing:
         try:
             result += [i for i in iter(item)]  # pylint: disable=unnecessary-comprehension

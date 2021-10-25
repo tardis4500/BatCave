@@ -81,7 +81,7 @@ from xml.etree.ElementTree import ElementTree
 import xml.etree.ElementTree as xml_etree
 
 # Import internal modules
-from .lang import switch, BatCaveError, BatCaveException, PathName
+from .lang import DEFAULT_ENCODING, switch, BatCaveError, BatCaveException, PathName
 
 SourceType = Enum('SourceType', ('text', 'ini', 'pickle', 'xml_single', 'xml_flat', 'xml'))
 
@@ -197,7 +197,7 @@ class DataSource:
             if case(SourceType.text):
                 pass
             if case(SourceType.pickle):
-                self._source = dict()
+                self._source = {}
                 break
             if case(SourceType.ini):
                 self._source = RawConfigParser()
@@ -227,27 +227,29 @@ class DataSource:
         """
         for case in switch(self.type):
             if case(SourceType.text):
-                self._source = dict()
+                self._source = {}
                 table_name: str = ''
-                for raw_line in open(self._connectinfo):
-                    if (line := raw_line.strip()).startswith(self._TEXT_TABLE_DELIMITER):
-                        self._source[(table_name := line.lstrip(self._TEXT_TABLE_DELIMITER))] = list()
-                        continue
-                    row = dict()
-                    for pair in line.split(self._TEXT_TABLE_DELIMITER):
-                        try:
-                            (col, val) = pair.split(self._TEXT_VAL_DELIMITER)
-                        except ValueError as err:
-                            raise DataError(DataError.BAD_COLUMN, col=pair, line=line) from err
-                        row[col] = val
-                    self._source[table_name].append(row)
+                with open(self._connectinfo, encoding=DEFAULT_ENCODING) as data_source:
+                    for raw_line in data_source:
+                        if (line := raw_line.strip()).startswith(self._TEXT_TABLE_DELIMITER):
+                            self._source[(table_name := line.lstrip(self._TEXT_TABLE_DELIMITER))] = []
+                            continue
+                        row = {}
+                        for pair in line.split(self._TEXT_TABLE_DELIMITER):
+                            try:
+                                (col, val) = pair.split(self._TEXT_VAL_DELIMITER)
+                            except ValueError as err:
+                                raise DataError(DataError.BAD_COLUMN, col=pair, line=line) from err
+                            row[col] = val
+                        self._source[table_name].append(row)
                 break
             if case(SourceType.pickle):
-                self._source = pickle_load(cast(IO[bytes], open(self._connectinfo)))
+                with open(self._connectinfo, encoding=DEFAULT_ENCODING) as data_source:
+                    self._source = pickle_load(cast(IO[bytes], data_source))
                 break
             if case(SourceType.ini):
                 self._source = RawConfigParser()
-                with open(self._connectinfo) as ini_tmp:
+                with open(self._connectinfo, encoding=DEFAULT_ENCODING) as ini_tmp:
                     self._source.read_file(ini_tmp)
                 break
             if case(SourceType.xml_single):
@@ -262,7 +264,7 @@ class DataSource:
                         if str(self._connectinfo).startswith('http:') or str(self._connectinfo).startswith('file:'):
                             self._closer = urlopen(cast(str, self._connectinfo))  # pylint: disable=consider-using-with
                         else:
-                            self._closer = open(self._connectinfo)  # pylint: disable=consider-using-with
+                            self._closer = open(self._connectinfo, encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                     else:
                         self._closer = self._connectinfo
                     try:
@@ -307,7 +309,7 @@ class DataSource:
     @property
     def dict_repr(self) -> dict:
         """A read-only property which returns a the data source as a dictionary."""
-        dictrepr = dict()
+        dictrepr = {}
         for table in self.gettables():
             with table.getrows()[0] as row:
                 dictrepr[table.name] = {c: row.getvalue(c) for c in row.getcolumns()}
@@ -341,7 +343,7 @@ class DataSource:
             if case(SourceType.text):
                 pass
             if case(SourceType.pickle):
-                self._source[name] = list()
+                self._source[name] = []
                 break
             if case(SourceType.ini):
                 self._source.add_section(name)
@@ -376,7 +378,7 @@ class DataSource:
         """
         for case in switch(self.type):
             if case(SourceType.text):
-                self._connection = open(self._connectinfo, 'w')  # pylint: disable=consider-using-with
+                self._connection = open(self._connectinfo, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                 for (table_name, rows) in self._source.items():
                     self._connection.write(self._TEXT_TABLE_DELIMITER + table_name + '\n')
                     for row in rows:
@@ -384,12 +386,12 @@ class DataSource:
                 self._connection.close()
                 break
             if case(SourceType.pickle):
-                self._connection = open(self._connectinfo, 'w')  # pylint: disable=consider-using-with
+                self._connection = open(self._connectinfo, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                 pickle_dump(self._source, cast(IO, self._connection))
                 self._connection.close()
                 break
             if case(SourceType.ini):
-                self._connection = open(self._connectinfo, 'w')  # pylint: disable=consider-using-with
+                self._connection = open(self._connectinfo, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                 self._source.write(self._connection)
                 self._connection.close()
                 break
@@ -424,7 +426,7 @@ class DataSource:
             if case(SourceType.ini):
                 if self._source.has_section(name):
                     rowlist = self._source.get(name, self.INI_ROWLIST_OPT)
-                    table = [int(r) for r in rowlist.split(',')] if rowlist else list()
+                    table = [int(r) for r in rowlist.split(',')] if rowlist else []
                 break
             if case(SourceType.xml_single):
                 if name == self.name:
@@ -449,7 +451,7 @@ class DataSource:
         Returns:
             The list of table in the data source.
         """
-        table_names: List[str] = list()
+        table_names: List[str] = []
         for case in switch(self.type):
             if case(SourceType.text):
                 pass
@@ -602,7 +604,7 @@ class DataRow:
                 return list(self._row.attrib.keys())
             if case(SourceType.xml):
                 return [e.tag for e in list(self._row) if e.tag != self._XML_ROW_TAG]
-        return list()
+        return []
 
     def getvalue(self, col: str, /) -> str:
         """Get the value of the specified column.

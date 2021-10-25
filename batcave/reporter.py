@@ -272,7 +272,7 @@ class ReportObject:
             container: The value of the container argument.
             _attributes: A dictionary of attributes for this object as initialized by the attr argument.
         """
-        self._attributes: Dict[str, Attribute] = dict()
+        self._attributes: Dict[str, Attribute] = {}
         for (attr, val) in attributes.items():
             self._set_attribute(attr, val)
         self.container: Optional[Type[ReportObject]] = container
@@ -392,7 +392,7 @@ class Section(ReportObject):
         super().__init__(cont, **attr)
         self.header = header
         self.footer = footer
-        self._members: List[Type[ReportObject]] = list()
+        self._members: List[Type[ReportObject]] = []
 
     def __str__(self):
         the_str = self.sec_ldr
@@ -518,7 +518,7 @@ class Table(ReportObject):
         self._data = data
 
     def __str__(self):
-        col_widths = list()
+        col_widths = []
         if self.output == 'text':
             for row in self._data:
                 i = 0
@@ -612,7 +612,7 @@ class LinkList(Section):
             _list: The value of the urls argument converted into links.
         """
         super().__init__(cont=cont, **attr)
-        self._list = list()
+        self._list = []
         for key in sorted(urls.keys()):
             self.register_link(link := Link(key, urls[key]))
             self._list.append(link)
