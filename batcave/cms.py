@@ -1390,7 +1390,7 @@ class Client:
         for case in switch(self._type):
             if case(ClientType.git):
                 self._client.git.fetch('--all')
-                if branch not in {b.name.replace('origin/', '') for b in self.branches}:
+                if branch not in {b.name.removeprefix('origin/') for b in self.branches}:
                     self.create_branch(branch)
                 return self._client.git.checkout(branch)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)

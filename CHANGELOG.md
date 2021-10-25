@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Upgrade minimum Python to 3.9. (GitLab #51)
   - Use new dict union operators. (GitLab #51)
+  - Use removeprefix. (GitLab #51)
   - Fixed linting issues.
 
 <!-- This comment will prevent merge conflicts -->
@@ -1384,4 +1385,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
       cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
       cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
-      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance -->
+      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance removeprefix -->
