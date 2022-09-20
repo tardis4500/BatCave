@@ -9,7 +9,6 @@ psutil ~= 5.9; platform_machine not in 'arm arm64 armv6l armv7l armv8b armv8l'
 requests ~= 2.28
 setuptools
 sphinx
-# sphinx_rtd_theme
 twine
 types-PyYAML
 types-requests
