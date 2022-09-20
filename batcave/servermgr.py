@@ -583,7 +583,7 @@ class OSManager:
                 return []
             raise
 
-    def LinuxProcess(self, CommandLine: str = None, ExecutablePath: str = None, Name: str = None, ProcessId: str = None) -> List['LinuxProcess']:  # pylint: disable=no-self-use
+    def LinuxProcess(self, CommandLine: str = None, ExecutablePath: str = None, Name: str = None, ProcessId: str = None) -> List['LinuxProcess']:
         """Get the specified Linux process.
 
         Args:

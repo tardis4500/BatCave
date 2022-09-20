@@ -7,16 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [40.0.0] - Unreleased
+### [41.0.0] - Unreleased
+
+- Changed
+  - Update dependencies.
+  - Fixed linting issues.
+
+- Removed
+  - Removed LoadBalancer module. (GitLab #63)
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
+### [40.0.0] - 2021-10-26
 
 - Changed
   - Upgrade minimum Python to 3.9. (GitLab #51)
   - Use new dict union operators. (GitLab #51)
   - Use removeprefix. (GitLab #51)
   - Fixed linting issues.
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [39.0.5] - 2021-05-18
 

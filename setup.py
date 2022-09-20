@@ -44,16 +44,14 @@ setup(
 
     python_requires='~=3.9',
     packages=find_packages(),
-    install_requires=['docker ~= 5.0',
+    install_requires=['docker ~= 6.0',
                       'GitPython ~= 3.1',
                       'google-cloud',
-                      'kubernetes ~= 18.20',
-                      'requests ~= 2.26',
-                      'pypiwin32 == 223; sys_platform == "win32"',
-                      'pywin32 >= 227; sys_platform == "win32"',
+                      'kubernetes ~= 24.2',
+                      'requests ~= 2.28',
                       'pywin32-stubs; sys_platform == "win32"',
                       'WMI ~= 1.5; sys_platform == "win32"',
-                      'psutil ~= 5.8; platform_machine not in "arm arm64 armv6l armv7l armv8b armv8l"',
+                      'psutil ~= 5.9; platform_machine not in "arm arm64 armv6l armv7l armv8b armv8l"',
                       'PyQt5 ~= 5.15; platform_machine not in "aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l"'],
     extras_require={
         'dev': ['setuptools', 'twine', 'wheel', 'xmlrunner'],
@@ -61,4 +59,4 @@ setup(
     package_data={'batcave': ['py.typed']}
 )
 
-# cSpell:ignore armv pypiwin
+# cSpell:ignore armv batcave fileutil xmlrunner

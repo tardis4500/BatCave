@@ -117,7 +117,7 @@ class BatCaveGUIOutput:
         Returns:
             Nothing.
         """
-        self.widget.append(output)
+        self.widget.append(output)  # type: ignore[attr-defined]
 
 
 class BatCaveBaseGUI:
@@ -188,7 +188,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
             icon (optional, default=None): The icon for the window.
         """
         super().__init__(parent, title=(title if title else get_version_info(VersionStyle.brief)), icon=icon)  # type: ignore[call-arg]
-        self.actionAbout.triggered.connect(self.OnAbout)
+        self.actionAbout.triggered.connect(self.OnAbout)  # type: ignore[attr-defined]
 
     def OnAbout(self) -> None:
         """Show the about box.

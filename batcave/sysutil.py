@@ -234,7 +234,7 @@ def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: 
                 Path(root, pathname).chmod(mode)
 
 
-def chown(pathname: PathName, user: Optional[str] = None, group: Optional[str] = None, *, recursive: bool = False) -> None:
+def chown(pathname: PathName, user: Union[str, int], group: Union[str, int] = None, *, recursive: bool = False) -> None:
     """Perform chown and chgrp together, recursively if requested.
 
     Args:

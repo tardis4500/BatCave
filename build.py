@@ -11,6 +11,7 @@ from pathlib import Path
 from random import randint
 from shutil import copyfile
 from stat import S_IWUSR
+from tempfile import mkdtemp
 from typing import Dict, Optional, Tuple
 from unittest import defaultTestLoader
 from venv import EnvBuilder
@@ -49,7 +50,7 @@ WIN32_PACKAGES = ('pywin32', 'pywin32-ctypes', 'WMI')
 PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
 
-pip = SysCmdRunner('pip', show_cmd=False, show_stdout=False).run  # pylint: disable=invalid-name
+pip = SysCmdRunner('pip', show_cmd=False, show_stdout=False, syscmd_args={'ignore_stderr': True}).run
 
 
 class ActionLogger(Action):
@@ -67,7 +68,7 @@ def main() -> None:
     gitlab_args = [Argument('gitlab_user'), Argument('gitlab_password')]
     release_args = [Argument('release')] + gitlab_args
     publish_args = release_args + pypi_args
-    Commander('BatCave builder', subparsers=[SubParser('devbuild', devbuild),
+    Commander('BatCave builder', subparsers=[SubParser('dev_build', dev_build),
                                              SubParser('static_analysis', static_analysis),
                                              SubParser('unit_tests', unit_tests),
                                              SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
@@ -79,10 +80,10 @@ def main() -> None:
                                                         Argument('-t', '--tag-source', action='store_true'),
                                                         Argument('-r', '--create-release', action='store_true'),
                                                         Argument('-c', '--checkin', action='store_true')] + release_args),
-                                             SubParser('delete_release', delete_release, release_args)], default=devbuild).execute()
+                                             SubParser('delete_release', delete_release, release_args)], default=dev_build).execute()
 
 
-def devbuild(args: Namespace) -> None:
+def dev_build(args: Namespace) -> None:
     """Run a developer build."""
     static_analysis(args)
     unit_tests(args)
@@ -92,7 +93,7 @@ def devbuild(args: Namespace) -> None:
 def static_analysis(_unused_args: Namespace) -> None:
     """Run pylint."""
     SysCmdRunner('pylint', MODULE_NAME, max_line_length=200, max_attributes=10, disable='duplicate-code,fixme').run()
-    SysCmdRunner('flake8', MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204').run()
+    SysCmdRunner('flake8', MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204,ANN401').run()
     SysCmdRunner('mypy', MODULE_NAME, show_error_codes=True).run()
 
 
@@ -185,7 +186,7 @@ def post_release_update(args: Namespace) -> None:
 
     if args.create_release:
         MESSAGE_LOGGER(f'Creating the GitLab release v{args.release}')
-        response = rest_post(GITLAB_RELEASES_URL,
+        response = rest_post(GITLAB_RELEASES_URL, timeout=60,
                              headers={'Content-Type': 'application/json', 'Private-Token': args.gitlab_password},
                              json={'name': f'Release {args.release}', 'tag_name': f'v{args.release}', 'description': f'Release {args.release}', 'milestones': [f'Release {args.release}']})
         response.raise_for_status()
@@ -226,28 +227,21 @@ def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool
 
 def freeze(_unused_args: Namespace) -> None:
     """Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers."""
-    venv_dir = BUILD_DIR / 'venv'
+    venv_dir = Path(mkdtemp())
     print('Creating virtual environment in:', venv_dir)
     EnvBuilder(with_pip=True).create(venv_dir)
     venv_bin = venv_dir / ('Scripts' if WIN32 else 'bin')
     python = (venv_bin / 'python').with_suffix('.exe' if WIN32 else '')
     os.environ['PATH'] = os.path.pathsep.join((str(venv_bin), os.environ['PATH']))
-    syscmd(str(python), '-m', 'pip', 'install', '--upgrade', 'pip')
-    print('Installing Python requirements')
+    print('Upgrading pip')
+    syscmd(python, '-m', 'pip', 'install', '-qqq', '--upgrade', 'pip')
+    print('Updating pip install tools')
+    pip('install', '-qqq', 'setuptools', 'wheel', upgrade=True)
+    print('Installing modules from', REQUIREMENTS_FILE)
     pip('install', '-qqq', upgrade=True, requirement=REQUIREMENTS_FILE)
-    print('Creating frozen requirements file')
-    spew(FREEZE_FILE, pip('freeze'))
-    freeze_file = [line.strip() for line in slurp(FREEZE_FILE)]
-    with open(FREEZE_FILE, 'w') as updated_freeze_file:
-        for line in freeze_file:
-            package = line.split('==')[0]
-            if package in WIN32_PACKAGES:
-                line += "; sys_platform == 'win32'"
-            print(line, file=updated_freeze_file)
-        if not WIN32:
-            print("pywin32==227; sys_platform == 'win32'", file=updated_freeze_file)
-            print("pywin32-ctypes==0.2.0; sys_platform == 'win32'", file=updated_freeze_file)
-            print("WMI==1.5.1; sys_platform == 'win32'", file=updated_freeze_file)
+    print('Creating frozen requirements file:', FREEZE_FILE)
+    spew(FREEZE_FILE, pip('freeze', requirement=REQUIREMENTS_FILE))
+    rmpath(venv_dir)
 
 
 def get_build_info(args: Namespace) -> Tuple[str, str]:
@@ -259,11 +253,11 @@ def get_build_info(args: Namespace) -> Tuple[str, str]:
 def delete_release(args: Namespace) -> None:
     """Delete a release from GitLab."""
     MESSAGE_LOGGER(f'Deleting the GitLab release v{args.release}', True)
-    response = rest_delete(f'{GITLAB_RELEASES_URL}/v{args.release}', headers={'Private-Token': args.gitlab_password})
+    response = rest_delete(f'{GITLAB_RELEASES_URL}/v{args.release}', headers={'Private-Token': args.gitlab_password}, timeout=60)
     response.raise_for_status()
 
 
 if __name__ == '__main__':
     main()
 
-# cSpell:ignore bdist bldverfile checkin cibuild ctypes pywin sdist syscmd venv
+# cSpell:ignore bdist bldverfile checkin cibuild ctypes pywin sdist syscmd venv xmlrunner batcave fileutil platarch vardict

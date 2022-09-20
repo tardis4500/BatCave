@@ -64,7 +64,7 @@ class MsgStr:
         self._vars = variables
 
     def __getattr__(self, attr: str) -> str:
-        if attr in list(self._messages.keys()):
+        if attr in self._messages:
             return self._self_to_str(self._messages[attr])
         raise AttributeError(f"'{type(self)}' object has no attribute '{attr}'")
 

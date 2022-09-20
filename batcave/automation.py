@@ -109,7 +109,7 @@ class Action:
             Nothing.
         """
 
-    def always_post(self) -> None:  # pylint: disable=no-self-use
+    def always_post(self) -> None:
         """Always executed after _execute() as in finally in try/catch/finally.
 
         Returns:
@@ -147,3 +147,5 @@ class Action:
             print(f'{the_leader}{the_guard}')
         print(f'{the_leader}{message}')
         sys.stdout.flush()
+
+# cSpell:ignore syscmd

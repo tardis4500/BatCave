@@ -2,16 +2,17 @@
 
 # Import standard modules
 from smtplib import SMTP
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union, Callable
 
 # Import third-party modules
-from requests import get as url_get
+from requests import get as url_get, PreparedRequest
+from requests.auth import AuthBase
 
 # Import internal modules
 from .lang import DEFAULT_ENCODING, is_debug
 
 
-def download(url: str, /, target: Optional[str] = None, *, auth: Optional[str] = None) -> None:
+def download(url: str, /, target: Optional[str] = None, *, auth: Optional[Union[Tuple[str, str], AuthBase, Callable[[PreparedRequest], PreparedRequest]]] = None) -> None:
     """Download a file from a URL target.
 
     Args:
@@ -27,7 +28,7 @@ def download(url: str, /, target: Optional[str] = None, *, auth: Optional[str] =
         Uses the requests module raise_for_status() function to raise on download errors.
     """
     target = target if target is not None else url.split('/')[-1]
-    response = url_get(url, auth=auth)
+    response = url_get(url, auth=auth, timeout=60)
     response.raise_for_status()
     with open(target, 'wb', encoding=DEFAULT_ENCODING) as downloaded_file:
         downloaded_file.write(response.content)
@@ -48,13 +49,13 @@ def send_email(smtp_server: str, receiver: str, sender: str, subject: str, body:
     Returns:
         The result of the sendmail call.
     """
-    fullmsg = f'From: {sender}\nTo: {receiver}\nSubject: {subject}\nContent-Type: {content_type}\n\n' + '\n'.join(body)
+    full_message = f'From: {sender}\nTo: {receiver}\nSubject: {subject}\nContent-Type: {content_type}\n\n' + '\n'.join(body)
     server = SMTP(smtp_server)
     if is_debug('SMTP'):
         server.set_debuglevel(True)
     receiver_list = receiver.split(',') if isinstance(receiver, str) else [receiver]
     try:
-        result = server.sendmail(sender, receiver_list, fullmsg)
+        result = server.sendmail(sender, receiver_list, full_message)
     finally:
         server.quit()
     return result

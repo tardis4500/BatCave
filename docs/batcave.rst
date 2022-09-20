@@ -112,15 +112,6 @@ batcave.lang module
    :show-inheritance:
    :noindex:
 
-batcave.loadbalancer module
----------------------------
-
-.. automodule:: batcave.loadbalancer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :noindex:
-
 batcave.menu module
 -------------------
 

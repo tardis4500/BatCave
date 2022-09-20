@@ -827,7 +827,7 @@ class Client:
             Nothing.
         """
         if self._connected and self._type == ClientType.git:
-            self._client.__del__()
+            del self._client
             self._connected = False
         if self._cleanup:
             self.remove(CleanType.all)
@@ -1735,4 +1735,4 @@ def walk_git_tree(tree: GitTree, /, *, parent: Optional[GitTree] = None) -> Gene
 
     yield new_parent, tree_names, blobs
 
-# cSpell:ignore checkin unedit
+# cSpell:ignore checkin unedit fileutil

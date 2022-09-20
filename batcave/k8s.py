@@ -21,7 +21,7 @@ from yaml import safe_load as yaml_load
 from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, CommandResult, PathName
 from .sysutil import SysCmdRunner
 
-K8sObject = TypeVar('K8sObject', 'Pod', 'Job', 'Namespace')
+K8sObject = TypeVar('K8sObject', 'Pod', 'Job', 'Namespace')  # pylint: disable=invalid-name
 
 kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
 
@@ -42,14 +42,14 @@ class PodError(BatCaveException):
 
     Attributes:
         BAD_COPY_FILENAME: The file specified for the copy was invalid.
-        COPY_ERROR: There was an error transfering a file to or from a pod.
+        COPY_ERROR: There was an error transferring a file to or from a pod.
         EXEC_ERROR: There was an error executing a pod command.
         FILE_NOT_FOUND: The file specified for the copy was not found in the pod.
         INVALID_COPY_MODE: The copy mode was invalid.
     """
     BAD_COPY_FILENAME = BatCaveError(1, Template('File not copied $mode, check filenames'))
-    COPY_ERROR = BatCaveError(2, Template('Error copying pod file: $errlines'))
-    EXEC_ERROR = BatCaveError(3, Template('Error executing pod command: $errlines'))
+    COPY_ERROR = BatCaveError(2, Template('Error copying pod file: $error'))
+    EXEC_ERROR = BatCaveError(3, Template('Error executing pod command: $error'))
     FILE_NOT_FOUND = BatCaveError(4, Template('File not found in pod: $filename'))
     INVALID_COPY_MODE = BatCaveError(5, Template('Invalid pod file copy mode ($mode). Must be one of: (in, out)'))
 
@@ -341,7 +341,7 @@ class Pod(ClusterObject):
         output = self._cluster_obj.kubectl('cp', str(source_path), str(target_path))
         if not (self.has_file(str(target)) if (mode == 'in') else cast(Path, target_path).exists()):  # pylint: disable=superfluous-parens
             if output:
-                raise PodError(PodError.COPY_ERROR, errlines=output)
+                raise PodError(PodError.COPY_ERROR, error=output)
             raise PodError(PodError.BAD_COPY_FILENAME, mode=mode)
 
     def exec(self, *command, **k8s_api_kwargs) -> str:
@@ -360,7 +360,7 @@ class Pod(ClusterObject):
         output = k8s_process(self._cluster_obj.pod_exec, self.name, self.namespace,
                              command=list(command), stderr=True, stdin=False, stdout=True, tty=False, _preload_content=True, **k8s_api_kwargs)
         if 'error' in output:
-            raise PodError(PodError.EXEC_ERROR, errlines=output)
+            raise PodError(PodError.EXEC_ERROR, error=output)
         return output.split('\n')[0:-1]  # TODO: This will not work when run on Linux against a Windows container
 
     def get_file(self, source: str, target: Optional[PathName] = None, /) -> None:
