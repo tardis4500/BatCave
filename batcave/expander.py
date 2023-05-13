@@ -524,7 +524,7 @@ class Procedure:
     def __exit__(self, *exc_info):
         return False
 
-    def dump(self) -> Dict[str, Union[str, Sequence, Dict]]:
+    def dump(self) -> Dict[str, str | Sequence | Dict]:
         """Dump out the procedure contents.
 
         Returns:

@@ -234,7 +234,7 @@ def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: 
                 Path(root, pathname).chmod(mode)
 
 
-def chown(pathname: PathName, user: Union[str, int], group: Union[str, int] = None, *, recursive: bool = False) -> None:
+def chown(pathname: PathName, user: str | int, group: str | int = None, *, recursive: bool = False) -> None:
     """Perform chown and chgrp together, recursively if requested.
 
     Args:
@@ -379,7 +379,7 @@ def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
 
 def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
            ignore_stderr: bool = False, append_stderr: bool = False, fail_on_error: bool = True, show_cmd: bool = False,
-           use_shell: bool = False, flatten_output: bool = False, remote: Optional[Union[bool, str]] = False,
+           use_shell: bool = False, flatten_output: bool = False, remote: Optional[bool | str] = False,
            remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[Tuple[str, str]] = None,
            remote_powershell: bool = False) -> CommandResult:
     """Wrapper to provide a better interface to subprocess.Popen().
@@ -533,7 +533,7 @@ def pushd(dirname: PathName, /) -> PathName:
     return cwd
 
 
-def popd() -> Union[int, PathName]:
+def popd() -> int | PathName:
     """Implements the pop function for a directory stack.
 
     Args:

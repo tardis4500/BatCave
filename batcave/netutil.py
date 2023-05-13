@@ -12,7 +12,7 @@ from requests.auth import AuthBase
 from .lang import DEFAULT_ENCODING, is_debug
 
 
-def download(url: str, /, target: Optional[str] = None, *, auth: Optional[Union[Tuple[str, str], AuthBase, Callable[[PreparedRequest], PreparedRequest]]] = None) -> None:
+def download(url: str, /, target: Optional[str] = None, *, auth: Optional[Tuple[str, str] | AuthBase | Callable[[PreparedRequest], PreparedRequest]] = None) -> None:
     """Download a file from a URL target.
 
     Args:

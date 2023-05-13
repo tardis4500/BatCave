@@ -54,7 +54,7 @@ class CloudError(BatCaveException):
 class Cloud:
     """Class to create a universal abstract interface for a cloud instance."""
 
-    def __init__(self, ctype: CloudType, /, *, auth: Union[str, Sequence[str]] = tuple(), login: bool = True):
+    def __init__(self, ctype: CloudType, /, *, auth: str | Sequence[str] = tuple(), login: bool = True):
         """
         Args:
             ctype: The cloud provider for this instance. Must be a member of CloudType.
@@ -70,7 +70,7 @@ class Cloud:
         self._client: Any = False
         self._type = ctype
         self.auth = auth
-        validatetype(self.type)
+        validate_type(self.type)
         if login:
             self.login()
 
@@ -105,7 +105,7 @@ class Cloud:
         """Get a container from the cloud.
 
         Args:
-            name: The container name to retrive.
+            name: The container name to retrieve.
 
         Returns:
             The container object.
@@ -116,7 +116,7 @@ class Cloud:
         """Get a possibly filtered list of containers.
 
         Args:
-            filter (optional, default=None): the container name to retrive.
+            filter (optional, default=None): the container name to retrieve.
 
         Returns:
             The container object.
@@ -135,7 +135,7 @@ class Cloud:
         """Get an image from the cloud container registry.
 
         Args:
-            tag: The container image tag to retrive.
+            tag: The container image tag to retrieve.
 
         Returns:
             The image object.
@@ -359,7 +359,7 @@ class Container:
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
 
-def validatetype(ctype: CloudType) -> None:
+def validate_type(ctype: CloudType) -> None:
     """Determine if the specified Cloud type is valid.
 
     Args:
@@ -373,3 +373,5 @@ def validatetype(ctype: CloudType) -> None:
     """
     if ctype not in CloudType:
         raise CloudError(CloudError.INVALID_TYPE, ctype=ctype)
+
+# cSpell:ignore dockerhub syscmd

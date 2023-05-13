@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [41.0.0] - Unreleased
+### [42.0.0] - Unreleased
+
+- Changed
+  - Upgrade minimum Python to 3.10. (GitLab #62)
+
+<!-- This comment will prevent merge conflicts -->
+## Release History
+
+### [41.0.0] - 2022-09-20
 
 - Changed
   - Update dependencies.
@@ -15,9 +23,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed
   - Removed LoadBalancer module. (GitLab #63)
-
-<!-- This comment will prevent merge conflicts -->
-## Release History
 
 ### [40.0.0] - 2021-10-26
 

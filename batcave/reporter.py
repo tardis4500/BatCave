@@ -219,7 +219,7 @@ class MetaAttribute:
         return self._valuemap[attr]
 
 
-Attribute = Union[SimpleAttribute, MetaAttribute]
+Attribute = SimpleAttribute | MetaAttribute
 
 _ATTRIBUTES = {OUTPUT_ATTR: SimpleAttribute('html', 'text'),
                RPT_LDR_ATTR: MetaAttribute(OUTPUT_ATTR, text='\n', html='<html><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><body><center>'),

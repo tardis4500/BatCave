@@ -65,7 +65,7 @@ class CMSError(BatCaveException):
         CLIENT_NAME_REQUIRED: A client name is required if create=False.
         CLIENT_NOT_FOUND: The specified client was not found.
         CONNECT_FAILED: Error connecting to the CMS system.
-        CONNECTINFO_REQUIRED: Connection info is required for the specified CMS type.
+        CONNECT_INFO_REQUIRED: Connection info is required for the specified CMS type.
         GIT_FAILURE: Gir returned an error.
         INVALID_OPERATION: The specified CMS type does not support the requested operation.
         INVALID_TYPE: An invalid CMS type was specified.
@@ -75,7 +75,7 @@ class CMSError(BatCaveException):
     CLIENT_NAME_REQUIRED = BatCaveError(3, 'Name required if client is not being created')
     CLIENT_NOT_FOUND = BatCaveError(4, Template('Client $name not found'))
     CONNECT_FAILED = BatCaveError(5, Template('Unable to connect to CMS server on $connectinfo'))
-    CONNECTINFO_REQUIRED = BatCaveError(6, Template('Connectinfo required for CMS type ($ctype)'))
+    CONNECT_INFO_REQUIRED = BatCaveError(6, Template('Connection info required for CMS type ($ctype)'))
     GIT_FAILURE = BatCaveError(7, Template('Git Error:\n$msg'))
     INVALID_OPERATION = BatCaveError(8, Template('Invalid CMS type ($ctype) for this operation'))
     INVALID_TYPE = BatCaveError(9, Template('Invalid CMS type ($ctype). Must be one of: ' + str([t.name for t in ClientType])))
@@ -348,7 +348,7 @@ class Client:
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         self._type = ctype
-        self._validatetype()
+        self._validate_type()
         self._mapping = mapping
         self._connected = False
         self._client: Any = None
@@ -356,7 +356,7 @@ class Client:
         if not connectinfo:
             for case in switch(self._type):
                 if case(ClientType.file):
-                    raise CMSError(CMSError.CONNECTINFO_REQUIRED, ctype=self._type.name)
+                    raise CMSError(CMSError.CONNECT_INFO_REQUIRED, ctype=self._type.name)
                 if case(ClientType.git):
                     connectinfo = getenv('GIT_WORK_TREE', '')
                     break
@@ -417,7 +417,7 @@ class Client:
             raise CMSError(CMSError.CLIENT_NAME_REQUIRED)
         self._name: str = client_name
 
-        client_root: Union[str, PathLike[Any]] = ''
+        client_root: str | PathLike[Any] = ''
         if create_client:
             client_root = self._tmpdir if (root is None) else root
             if (self._mapping is None) and (self._type == ClientType.perforce) and info:
@@ -434,7 +434,7 @@ class Client:
                 self._connected = True
                 break
             if case(ClientType.git):
-                git_args: Dict[str, Union[int, str]] = {}
+                git_args: Dict[str, int | str] = {}
                 if branch:
                     git_args['branch'] = branch
                 if info:
@@ -553,13 +553,13 @@ class Client:
         """
         return self._p4run(f'save_{what}', *args)
 
-    def _validatetype(self) -> None:
+    def _validate_type(self) -> None:
         """Determine if the specified CMS type is valid.
 
         Returns:
             Nothing.
         """
-        validatetype(self._type)
+        validate_type(self._type)
 
     name = property(lambda s: s._name, doc='A read-only property which returns the name of the client.')
     server_name = property(lambda s: s.get_server_connection()[0])
@@ -1629,7 +1629,7 @@ class ChangeList:
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @time.setter
-    def time(self, newtime: Union[str, datetime], /) -> None:
+    def time(self, newtime: str | datetime, /) -> None:
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
@@ -1694,7 +1694,7 @@ def create_client_name(*, prefix: Optional[str] = None, suffix: Optional[str] = 
     return sep.join(parts)
 
 
-def validatetype(ctype: ClientType, /) -> None:
+def validate_type(ctype: ClientType, /) -> None:
     """Determine if the specified CMS type is valid.
 
     Args:

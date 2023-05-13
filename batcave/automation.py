@@ -15,7 +15,7 @@ from .sysutil import popd, SysCmdRunner
 class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-methods
     """Class to wrap SysCmdRunner for simple usage with auto-logging."""
 
-    def __init__(self, command: str, /, *args, logger: Optional[Union[Callable, Logger]] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
+    def __init__(self, command: str, /, *args, logger: Optional[Callable | Logger] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
         """
         Args:
             command: The command passed to SysCmdRunner.

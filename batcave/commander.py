@@ -143,7 +143,7 @@ class Commander:
         return args
 
 
-def _add_arguments_to_parser(parser: Union[ArgumentParser, _MutuallyExclusiveGroup], arglist: Iterable[Union[dict, Argument]], /) -> None:
+def _add_arguments_to_parser(parser: ArgumentParser | _MutuallyExclusiveGroup, arglist: Iterable[dict | Argument], /) -> None:
     """Add arguments to the specified parser.
 
     Args:

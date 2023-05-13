@@ -23,9 +23,9 @@ BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
 VALIDATE_PYTHON = True
 WIN32 = (platform == 'win32')
 
-CommandResult = Union[str, List[str]]
-MessageString = Union[str, Template]
-PathName = Union[str, Path, PurePath]
+CommandResult = str | List[str]
+MessageString = str | Template
+PathName = str | Path | PurePath
 
 
 class MsgStr:
@@ -45,9 +45,9 @@ class MsgStr:
             MyMsg().Message1
             MyMsg(what='this').Message2
     """
-    _messages: Dict[str, Union[str, Template]] = {}
+    _messages: Dict[str, str | Template] = {}
 
-    def __init__(self, instr: Union[str, Template] = '', transform: str = '', **variables):
+    def __init__(self, instr: str | Template = '', transform: str = '', **variables):
         """
         Args:
             instr (optional, default=''): The input message string.
@@ -166,7 +166,7 @@ class switch:  # pylint: disable=invalid-name
         return False
 
 
-def bool_to_str(expr: Union[bool, str], /) -> str:
+def bool_to_str(expr: bool | str, /) -> str:
     """Converts an expression to a lowercase boolean string value.
 
     Args:

@@ -168,7 +168,7 @@ class DataSource:
         self._source: Any = None
         self._type = data_type
         self._connectinfo = connectinfo
-        self._connection: Optional[Union[IO, ElementTree]] = None
+        self._connection: Optional[IO | ElementTree] = None
         self._closer: Optional[IO] = None
         self._validate_type()
         try:

@@ -52,9 +52,9 @@ ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running
 ServiceType = Enum('ServiceType', ('systemd', 'sysv', 'upstart', 'windows'))
 TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
 
-ServerType = Union[str, 'Server']
-ServerManager = Union[WMI, 'OSManager']
-WMIObject = Union[bool, WMI]
+ServerType = str | 'Server'
+ServerManager = WMI | 'OSManager'
+WMIObject = bool | WMI
 
 
 class ServerObjectManagementError(BatCaveException):
@@ -679,7 +679,7 @@ class LinuxService(NamedOSObject):
         self.type = service_type
         super().__init__(Name, computer, auth)
 
-    def _manage(self, command: str, /) -> Union[CommandResult, CMDError]:
+    def _manage(self, command: str, /) -> CommandResult | CMDError:
         """Manage the service.
 
         Args:
@@ -1112,7 +1112,7 @@ if sys.platform == 'win32':
     class COMObject:
         """Class to create a universal abstract interface for a Windows COM object."""
 
-        def __init__(self, ref: Union[str, 'COMObject'], hostname: str = '', /):
+        def __init__(self, ref: str | 'COMObject', hostname: str = '', /):
             """
             Args:
                 ref: The Windows COM object.

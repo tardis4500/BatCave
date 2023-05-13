@@ -145,7 +145,7 @@ class ServerPath:
                 return False
             raise
 
-    def iterdir(self) -> Union[CommandResult, List[Path]]:
+    def iterdir(self) -> CommandResult | List[Path]:
         """Implementation of pathlib.Path.iterdir() adding remote server support.
 
         Returns:
@@ -178,7 +178,7 @@ class ServerPath:
         cmd.append(self.local)
         self.server.run_command(*cmd)
 
-    def rename(self, new: str, /) -> Union[CommandResult, PathName]:
+    def rename(self, new: str, /) -> CommandResult | PathName:
         """Implementation of pathlib.Path.rename() adding remote server support.
 
         Args:

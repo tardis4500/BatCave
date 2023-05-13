@@ -36,7 +36,7 @@ class Menu:
     multiselect: bool = False
     ignorecase: bool = True
 
-    def show(self) -> Union[str, List[str]]:
+    def show(self) -> str | List[str]:
         """Show the menu.
 
         Returns:

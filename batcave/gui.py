@@ -246,7 +246,7 @@ class MessageBox(QMessageBox):
                       MessageType.error: QMessageBox.Critical,
                       MessageType.results: QMessageBox.Information}
 
-    def __init__(self, parent: Union[QWidget, BatCaveBaseGUI], message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[str] = None):
+    def __init__(self, parent: QWidget | BatCaveBaseGUI, message: str, /, msg_type: MessageType = MessageType.info, *, detail: str = '', image: Optional[str] = None):
         """
         Args:
             parent: The parent for the message box.

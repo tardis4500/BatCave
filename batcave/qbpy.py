@@ -15,7 +15,7 @@ from .lang import bool_to_str
 class QuickBuildObject:
     """Class to create a universal abstract interface for a QuickBuild object."""
 
-    def __init__(self, console: 'QuickBuildConsole', object_id: Union[int, str], /):
+    def __init__(self, console: 'QuickBuildConsole', object_id: int | str, /):
         """
         Args:
             console: The QuickBuild console containing this object.
@@ -75,7 +75,7 @@ class QuickBuildDashboard(QuickBuildObject):  # pylint: disable=too-few-public-m
 class QuickBuildCfg(QuickBuildObject):
     """Class to create a universal abstract interface for a QuickBuild configuration."""
 
-    def _get_id(self, thing: Union[int, 'QuickBuildCfg'], /) -> int:
+    def _get_id(self, thing: int | 'QuickBuildCfg', /) -> int:
         """Get the ID of the specified configuration.
 
         Args:
@@ -255,7 +255,7 @@ class QuickBuildConsole:
         self._update = val
         self.updater()
 
-    def create_dashboard(self, name: str, dashboard: Union[str, QuickBuildDashboard], /) -> QuickBuildDashboard:
+    def create_dashboard(self, name: str, dashboard: str | QuickBuildDashboard, /) -> QuickBuildDashboard:
         """Create a dashboard from an existing one.
 
         Args:
@@ -265,7 +265,7 @@ class QuickBuildConsole:
         Returns:
             The new dashboard.
         """
-        xml_data: Union[str, Element] = str(dashboard) if isinstance(dashboard, QuickBuildDashboard) else dashboard
+        xml_data: str | Element = str(dashboard) if isinstance(dashboard, QuickBuildDashboard) else dashboard
         if isinstance(xml_data, str):
             xml_data = fromstring(xml_data)
         if (id_tag := xml_data.find('id')) is not None:
