@@ -18,10 +18,10 @@ else:
     PYQT_LOADED = pyqt.__dict__['PYQT_VERSION_STR']
 
 # Import internal modules
-from . import __copyright__, __title__, __version__, __builddate__, __buildname__
+from . import __copyright__, __title__, __version__, __build_date__, __build_name__
 from .platarch import Platform
 
-VersionStyle = Enum('VersionStyle', ('full', 'brief', 'oneline', 'aboutbox'))
+VersionStyle = Enum('VersionStyle', ('full', 'brief', 'one_line', 'about_box'))
 
 
 def get_version_info(style: VersionStyle = VersionStyle.full, /, plattype: str = 'batcave_run', extra_info: str = '') -> str:
@@ -38,12 +38,12 @@ def get_version_info(style: VersionStyle = VersionStyle.full, /, plattype: str =
     plat = getattr(Platform(), plattype)
     if style == VersionStyle.brief:
         return f'{__title__} {__version__}{extra_info} on {plat}'
-    if style == VersionStyle.oneline:
-        return f'{__title__} {__version__}{extra_info} (Build: {__buildname__}) [{__builddate__}] on {plat}'
+    if style == VersionStyle.one_line:
+        return f'{__title__} {__version__}{extra_info} (Build: {__build_name__}) [{__build_date__}] on {plat}'
 
-    info = ['' if (style == VersionStyle.aboutbox) else f'{__title__} {__version__}',
-            'Build: ' + __buildname__,
-            'Date: ' + __builddate__,
+    info = ['' if (style == VersionStyle.about_box) else f'{__title__} {__version__}',
+            'Build: ' + __build_name__,
+            'Date: ' + __build_date__,
             'Platform: ' + plat,
             'Python Version: ' + sys_version]
     if PYQT_LOADED:
@@ -60,4 +60,4 @@ def get_version_info(style: VersionStyle = VersionStyle.full, /, plattype: str =
     info.append(__copyright__)
     return '\n'.join(info)
 
-# cSpell:ignore pyqt
+# cSpell:ignore pyqt batcave platarch plattype

@@ -85,7 +85,7 @@ class ConfigCollection:
             self.parent = ConfigCollection(getattr(self.params, self._PARENT_CONFIGURATION))
         self._mask_missing = hasattr(self.params, self._MASK_MISSING)
 
-        self._configs = [getattr(self, t.name) for t in self._data_source.gettables() if t.name not in (DataSource.INFO_TABLE, self._PARAMS_CONFIGURATION)]
+        self._configs = [getattr(self, t.name) for t in self._data_source.get_tables() if t.name not in (DataSource.INFO_TABLE, self._PARAMS_CONFIGURATION)]
         config_names = [c.name for c in self._configs]
         if self.parent and not self._mask_missing:
             self._configs += [c for c in self.parent if c.name not in config_names]
@@ -99,7 +99,7 @@ class ConfigCollection:
         return False
 
     def __getattr__(self, attr: str):
-        if self._data_source.hastable(attr):
+        if self._data_source.has_table(attr):
             parent_config = getattr(self.parent, attr) if (self.parent and hasattr(self.parent, attr)) else None
             config = Configuration(self._data_source, attr, parent=parent_config)
             if hasattr(config, self.INCLUDE_CONFIG_TAG):
@@ -129,7 +129,7 @@ class ConfigCollection:
         Returns:
             The value of the added item.
         """
-        self._data_source.addtable(name).addrow()
+        self._data_source.add_table(name).add_row()
         self._data_source.commit()
         return getattr(self, name)
 
@@ -158,7 +158,7 @@ class Configuration:
         """
         self._name = name
         self._data_source = config_source
-        self._data_table = self._data_source.gettable(self._name)
+        self._data_table = self._data_source.get_table(self._name)
         self._parent = parent
         self._include = include
 
@@ -170,8 +170,8 @@ class Configuration:
 
     def __getattr__(self, attr: str) -> str:
         # First check this configuration to see if it has the requested attribute
-        if values := self._data_table.getrows(attr):
-            return values[0].getvalue(attr)
+        if values := self._data_table.get_rows(attr):
+            return values[0].get_value(attr)
 
         # Next check the include configuration without considering its parents
         if self._include:
@@ -199,7 +199,7 @@ class Configuration:
         if attr.startswith('_'):
             super().__setattr__(attr, value)
             return
-        self._data_table.getrows()[0].setvalue(attr, value)
+        self._data_table.get_rows()[0].setvalue(attr, value)
         self._data_source.commit()
 
     name = property(lambda s: s._name, doc='A read-only property which returns the name of the configuration.')

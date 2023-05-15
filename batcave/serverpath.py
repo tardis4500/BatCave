@@ -5,7 +5,7 @@ from os import walk
 from pathlib import Path, PurePosixPath, PureWindowsPath, WindowsPath
 from string import Template
 from shutil import copy
-from typing import cast, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import cast, Iterator, List, Optional, Tuple, TYPE_CHECKING
 
 # Import internal modules
 from .platarch import OsType
@@ -141,7 +141,7 @@ class ServerPath:
             self.server.run_command('dir' if self.is_win else 'ls', self.local)
             return True
         except CMDError as err:
-            if err.vars['errlines'][0].startswith('ls: cannot access'):
+            if err.vars['err_lines'][0].startswith('ls: cannot access'):
                 return False
             raise
 
@@ -236,4 +236,4 @@ class ServerPath:
             return walk(self.remote)
         raise ServerPathError(ServerPathError.INVALID_OPERATION)
 
-# cSpell:ignore syscmd
+# cSpell:ignore syscmd platarch servermgr serverpath

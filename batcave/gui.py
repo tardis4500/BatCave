@@ -12,7 +12,7 @@ import sys
 from enum import Enum
 from pathlib import Path
 from string import Template
-from typing import cast, Any, Callable, List, Optional, TextIO, Tuple, Union
+from typing import cast, Any, Callable, List, Optional, TextIO, Tuple
 
 # Import GUI framework and widgets
 from PyQt5.QtCore import QEvent  # pylint: disable=no-name-in-module
@@ -54,7 +54,7 @@ class Brief(MsgStr):
     Attributes:
         _messages: The different message types.
     """
-    _messages = {'about': get_version_info(VersionStyle.oneline),
+    _messages = {'about': get_version_info(VersionStyle.one_line),
                  'info': __title__ + ' Information',
                  'question': __title__ + ' Question',
                  'warning': __title__ + ' Warning',
@@ -75,22 +75,22 @@ class Message(MsgStr):
 class BatCaveValidator:
     """Class to support control validation."""
 
-    def __init__(self, callback: Callable, falseval: Any, how: str, what: str):
+    def __init__(self, callback: Callable, false_val: Any, how: str, what: str):
         """
         Args:
             callback: The callback to use for validation.
-            falseval: The value to indicate a false validation.
+            false_val: The value to indicate a false validation.
             how: The verb to use in the error message.
             what: The noun to use in the error message.
 
         Attributes:
             callback: The value of the callback argument.
-            falseval: The value of the falseval argument.
+            false_val: The value of the false_val argument.
             how: The value of the how argument.
             what: The value of the what argument.
         """
         self.callback = callback
-        self.falseval = falseval
+        self.false_val = false_val
         self.how = how
         self.what = what
 
@@ -171,7 +171,7 @@ class BatCaveBaseGUI:
             True if all the validators are True, False otherwise.
         """
         for validator in self.validators:
-            if validator.callback() == validator.falseval:
+            if validator.callback() == validator.false_val:
                 MessageBox(self, Message(how=validator.how, what=validator.what).MISSING_INFO, MessageType.error).exec()
                 return False
         return True
@@ -196,7 +196,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
         Returns:
             Nothing.
         """
-        MessageBox(self, get_version_info(VersionStyle.aboutbox), MessageType.about).exec()
+        MessageBox(self, get_version_info(VersionStyle.about_box), MessageType.about).exec()
 
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):
@@ -278,3 +278,5 @@ def find_image(name: str, /) -> QImage:
     """
     image_dir = BATCAVE_HOME if FROZEN else (BATCAVE_HOME / 'img')
     return cast(QImage, [f for f in image_dir.glob(name + '.*')][0])  # pylint: disable=unnecessary-comprehension
+
+# cSpell:ignore batcave

@@ -45,8 +45,8 @@ from pathlib import Path
 from re import compile as re_compile
 from shutil import copyfile
 from string import Template
-from typing import cast, Any, Dict, List, Match, Optional, Sequence, Tuple, Union
-from xml.etree.ElementTree import fromstringlist as xmlparse, Element
+from typing import cast, Any, Dict, List, Match, Optional, Sequence, Tuple
+from xml.etree.ElementTree import fromstringlist as xml_parse, Element
 
 # Import BatCave packages
 from .fileutil import slurp
@@ -107,7 +107,7 @@ class Formatter:
             prefix: The line prefix for the current line.
 
         Raises:
-            ProcedureError.BAD_FORMAT: If the requested output format is invlid.
+            ProcedureError.BAD_FORMAT: If the requested output format is invalid.
         """
         self.format = output_format
         self.level = 0
@@ -239,11 +239,11 @@ class Expander:
     _PRELIM_DEFAULT = '{var:'
     _POSTLIM_DEFAULT = '}'
 
-    def __init__(self, *, vardict: Optional[Dict[str, str]] = None, varprops: Any = None, prelim: str = _PRELIM_DEFAULT, postlim: str = _POSTLIM_DEFAULT):
+    def __init__(self, *, var_dict: Optional[Dict[str, str]] = None, var_props: Any = None, prelim: str = _PRELIM_DEFAULT, postlim: str = _POSTLIM_DEFAULT):
         """
         Args:
-            vardict: A dictionary of expansion variables.
-            varprop: An object with properties that resolve variables.
+            var_dict: A dictionary of expansion variables.
+            var_prop: An object with properties that resolve variables.
             prelim: The leading string to identify an expansion.
             postlim: The training string to identify an expansion.
 
@@ -251,11 +251,11 @@ class Expander:
             postlim: The value of the postlim argument.
             prelim: The value of the prelim argument.
             re_var: The regular expression to identify a variable to expand.
-            vardict: The value of the vardict argument.
-            varprop: The value of the varprop argument.
+            var_dict: The value of the var_dict argument.
+            var_prop: The value of the var_prop argument.
         """
-        self.vardict = vardict if vardict else {}
-        self.varprops = varprops if (isinstance(varprops, (list, tuple))) else [varprops]
+        self.var_dict = var_dict if var_dict else {}
+        self.var_props = var_props if (isinstance(var_props, (list, tuple))) else [var_props]
         self.prelim = prelim
         self.postlim = postlim
         prelim_re = self.prelim
@@ -289,13 +289,13 @@ class Expander:
         synonyms = {' not ': ('!', '-not'),
                     ' and ': ('&&', ',', '-and'),
                     ' or ': ('||', '-or')}
-        for (operator, synlist) in synonyms.items():
-            for synonym in synlist:
+        for (operator, syn_list) in synonyms.items():
+            for synonym in syn_list:
                 expression = expression.replace(synonym, operator)
         try:
             if is_debug('EXPANDER'):
                 print(f'Expanding (corrected expression) "{expression}"')
-            result = eval(expression, self.vardict)  # pylint: disable=eval-used
+            result = eval(expression, self.var_dict)  # pylint: disable=eval-used
             if is_debug('EXPANDER'):
                 print(f'Expanding (evaluated expression) "{result}"')
             if isinstance(result, str):
@@ -341,13 +341,13 @@ class Expander:
                 raise ExpanderError(ExpanderError.NO_POST_DELIMITER, substr=substr) from err
 
             fail = True
-            if var in self.vardict:
-                replacer = self.vardict[var]
+            if var in self.var_dict:
+                replacer = self.var_dict[var]
                 fail = False
             else:
-                for varprops in self.varprops:
-                    if hasattr(varprops, var):
-                        replacer = getattr(varprops, var)
+                for var_props in self.var_props:
+                    if hasattr(var_props, var):
+                        replacer = getattr(var_props, var)
                         fail = False
                         break
 
@@ -377,7 +377,7 @@ class Expander:
         if is_debug('EXPANDER'):
             print('Using source directory:', source_dir)
             print('Using target directory:', target_dir)
-        target_dir.mkdir(parents=True, exist_ok=(not err_if_exists))
+        target_dir.mkdir(parents=True, exist_ok=not err_if_exists)
         for (root, _unused_dirs, files) in walk(source_dir):
             for file_name in files:
                 if is_debug('EXPANDER'):
@@ -405,27 +405,27 @@ class Expander:
         Returns:
             Nothing.
         """
-        with open(in_file, encoding=DEFAULT_ENCODING) as instream:
+        with open(in_file, encoding=DEFAULT_ENCODING) as in_stream:
             Path(out_file).parent.mkdir(parents=True, exist_ok=True)
-            with open(out_file, 'w', encoding=DEFAULT_ENCODING) as outstream:
-                for line in instream:
+            with open(out_file, 'w', encoding=DEFAULT_ENCODING) as out_stream:
+                for line in in_stream:
                     line = self.expand(line)
-                    outstream.write(line)
+                    out_stream.write(line)
 
 
-def file_expander(in_file: PathName, out_file: PathName, /, *, vardict: Optional[Dict[str, str]] = None, varprops: Any = None) -> None:
+def file_expander(in_file: PathName, out_file: PathName, /, *, var_dict: Optional[Dict[str, str]] = None, var_props: Any = None) -> None:
     """Quick function for one-time file expansion.
 
     Args:
         in_file: The input file.
         out_file: The output file.
-        vardict (optional, default=None): If not None, provides a dictionary of expansion values.
-        varprops (optional, default=None): If not None, provides an object with properties to be used as expansion values.
+        var_dict (optional, default=None): If not None, provides a dictionary of expansion values.
+        var_props (optional, default=None): If not None, provides an object with properties to be used as expansion values.
 
     Returns:
         Nothing.
     """
-    Expander(vardict=vardict, varprops=varprops).expand_file(in_file, out_file)
+    Expander(var_dict=var_dict, var_props=var_props).expand_file(in_file, out_file)
 
 
 class Procedure:
@@ -456,10 +456,10 @@ class Procedure:
     _SCHEMA_ATTR = 'schema'
     _STEPS_TAG = 'steps'
 
-    def __init__(self, procfile: PathName, /, *, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):  # pylint: disable=too-many-locals
+    def __init__(self, proc_file: PathName, /, *, output_format: OutputFormat = OutputFormat.html, variable_overrides: Optional[Dict[str, str]] = None):  # pylint: disable=too-many-locals
         """
         Args:
-            procfile: The procedure file.
+            proc_file: The procedure file.
             output_format: The output format.
             variable_overrides: A dictionary of values used to override values defined in the procedure file.
 
@@ -480,15 +480,15 @@ class Procedure:
         self.formatter: Formatter
         self.expander: Expander
 
-        if (schema := str_to_pythonval((xmlroot := xmlparse(slurp(procfile))).get(self._SCHEMA_ATTR, '0'))) != self._REQUIRED_PROCEDURE_SCHEMA:
+        if (schema := str_to_pythonval((xml_root := xml_parse(slurp(proc_file))).get(self._SCHEMA_ATTR, '0'))) != self._REQUIRED_PROCEDURE_SCHEMA:
             raise ProcedureError(ProcedureError.BAD_SCHEMA, schema=schema, expected=self._REQUIRED_PROCEDURE_SCHEMA)
-        self.header = str(xmlroot.findtext(self._HEADER_TAG)) if xmlroot.findtext(self._HEADER_TAG) else ''
-        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xmlroot.find(self._FLAGS_TAG)) else {}  # pylint: disable=used-before-assignment
-        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xmlroot.find(self._DIRECTORIES_TAG)) else []  # pylint: disable=used-before-assignment
-        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xmlroot.find(self._STEPS_TAG)) else []  # pylint: disable=used-before-assignment
-        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xmlroot.find(self._LIBRARY_TAG)) else {}  # pylint: disable=used-before-assignment
+        self.header = str(xml_root.findtext(self._HEADER_TAG)) if xml_root.findtext(self._HEADER_TAG) else ''
+        flags = {f.tag: parse_flag(str(f.text)) for f in list(flags_element)} if (flags_element := xml_root.find(self._FLAGS_TAG)) else {}  # pylint: disable=used-before-assignment
+        self.directories = [str(d.text) for d in list(directories_element)] if (directories_element := xml_root.find(self._DIRECTORIES_TAG)) else []  # pylint: disable=used-before-assignment
+        self.steps = [Step(s) for s in list(steps_element)] if (steps_element := xml_root.find(self._STEPS_TAG)) else []  # pylint: disable=used-before-assignment
+        self.library = {r.attrib[Step.NAME_ATTR]: Step(r) for r in list(library_element)} if (library_element := xml_root.find(self._LIBRARY_TAG)) else {}  # pylint: disable=used-before-assignment
 
-        environments_element = xmlroot.find(self._ENVIRONMENTS_TAG)
+        environments_element = xml_root.find(self._ENVIRONMENTS_TAG)
         self.environments: Dict = {e.tag: {v.tag: (v.text if v.text else '') for v in list(e)} for e in list(environments_element)} if environments_element else {}
 
         common_environment: Dict
@@ -643,13 +643,13 @@ class Procedure:
 
         expander_vars_keeper = None
         if step.vars:
-            expander_vars_keeper = deepcopy(self.expander.vardict)
-            self.expander.vardict |= step.vars
+            expander_vars_keeper = deepcopy(self.expander.var_dict)
+            self.expander.var_dict |= step.vars
 
-        if step.libimport:
-            if step.libimport not in self.library:
-                ProcedureError(ProcedureError.BAD_LIBRARY, lib=step.libimport)
-            lib_step = deepcopy(self.library[step.libimport])
+        if step.lib_import:
+            if step.lib_import not in self.library:
+                raise ProcedureError(ProcedureError.BAD_LIBRARY, lib=step.lib_import)
+            lib_step = deepcopy(self.library[step.lib_import])
             lib_step.repeat = step.repeat
             lib_step.vars |= step.vars
             if step.text:
@@ -667,11 +667,11 @@ class Procedure:
             for value in values:
                 step_copy.vars[variable] = value
                 output += self.realize_step(step_copy)
-        elif step.substeps:
+        elif step.sub_steps:
             start_of_step = self.formatter.bol + self.format(step.text) + self.formatter.eol + self.formatter.bos
             self.formatter.indent()
-            for substep in step.substeps:
-                output += self.realize_step(substep)
+            for sub_step in step.sub_steps:
+                output += self.realize_step(sub_step)
             if output:
                 output = start_of_step + output + self.formatter.eos
             self.formatter.outdent()
@@ -681,7 +681,7 @@ class Procedure:
                 self.formatter.increment()
 
         if expander_vars_keeper:
-            self.expander.vardict = expander_vars_keeper
+            self.expander.var_dict = expander_vars_keeper
         return output
 
     def setup_expander(self, environment: str, /) -> None:
@@ -697,8 +697,8 @@ class Procedure:
             ProcedureError.BAD_ENVIRONMENT: If the requested environment is not defined.
         """
         if environment not in self.environments:
-            ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
-        self.expander = Expander(vardict=self.environments[environment])
+            raise ProcedureError(ProcedureError.BAD_ENVIRONMENT, env=environment)
+        self.expander = Expander(var_dict=self.environments[environment])
 
 
 class Step:  # pylint: disable=too-few-public-methods
@@ -725,19 +725,19 @@ class Step:  # pylint: disable=too-few-public-methods
 
         Attributes:
             condition: The condition the determines if the step is emitted.
-            libimport: The library that is imported for the step.
+            lib_import: The library that is imported for the step.
             name: The step name.
             repeat: The repeat parameters for the step.
-            substeps: The list of substeps for the step.
+            sub_steps: The list of sub_steps for the step.
             text: The text emitted for the step.
             vars: The dictionary of variables defined for the step.
         """
         self.condition = step_def.get(self._CONDITION_ATTR, '')
-        self.libimport = step_def.get(self._IMPORT_ATTR, '')
+        self.lib_import = step_def.get(self._IMPORT_ATTR, '')
         self.name = step_def.get(self.NAME_ATTR, '')
         self.repeat = step_def.get(self._REPEAT_ATTR, '')
         self.text = step_def.text.strip() if step_def.text else ''
-        self.substeps = [Step(s) for s in list(step_def)]
+        self.sub_steps = [Step(s) for s in list(step_def)]
         self.vars = {v.split('=')[0].strip(): v.split('=')[1].strip() for v in var.split(',')} if (var := step_def.get(self._VARS_ATTR, '')) else {}  # pylint: disable=used-before-assignment
 
     def dump(self) -> List:
@@ -746,7 +746,7 @@ class Step:  # pylint: disable=too-few-public-methods
         Returns:
             The contents of the step as an list.
         """
-        return [f'{self.text}: import={self.libimport}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [str(s.dump()) for s in self.substeps]
+        return [f'{self.text}: import={self.lib_import}: condition={self.condition}: repeat={self.repeat}: vars={self.vars}'] + [str(s.dump()) for s in self.sub_steps]
 
 
 def parse_flag(flag: str, /) -> Any:
@@ -765,4 +765,4 @@ def parse_flag(flag: str, /) -> Any:
         raise ProcedureError(ProcedureError.BAD_FLAG, value=flag)
     return value
 
-# cSpell:ignore odict
+# cSpell:ignore odict fileutil pythonval postlim

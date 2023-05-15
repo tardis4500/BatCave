@@ -22,7 +22,7 @@ from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
-from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO, Union
+from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO
 
 # Import internal modules
 from .lang import DEFAULT_ENCODING, flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
@@ -59,9 +59,9 @@ class CMDError(BatCaveException):
     INVALID_OPERATION = BatCaveError(3, Template('$func is not supported for $context'))
 
     def __str__(self):
-        if self._errobj.code == CMDError.CMD_ERROR.code:
-            errlines = self.vars['errlines'] if self.vars['errlines'] else self.vars['outlines']
-            return f"Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n" + ''.join(errlines)
+        if self._err_obj.code == CMDError.CMD_ERROR.code:
+            err_lines = self.vars['err_lines'] if self.vars['err_lines'] else self.vars['outlines']
+            return f"Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n" + ''.join(err_lines)
         return BatCaveException.__str__(self)
 
 
@@ -234,7 +234,7 @@ def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: 
                 Path(root, pathname).chmod(mode)
 
 
-def chown(pathname: PathName, user: str | int, group: str | int = None, *, recursive: bool = False) -> None:
+def chown(pathname: PathName, user: str | int, group: Optional[str | int] = None, *, recursive: bool = False) -> None:
     """Perform chown and chgrp together, recursively if requested.
 
     Args:
@@ -356,12 +356,12 @@ def rmtree_hard(tree: PathName, /) -> None:
     rmtree(tree, onerror=_rmtree_onerror)
 
 
-def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
+def _rmtree_onerror(caller: Callable, path_str: PathName, excinfo: Any) -> None:
     """The exception handler used by rmtree_hard to try to remove read-only attributes.
 
     Args:
         caller: The calling function.
-        pathstr: The path to change.
+        path_str: The path to change.
         excinfo: The run stack to use if the caller is not remove or unlink.
 
     Returns:
@@ -370,11 +370,11 @@ def _rmtree_onerror(caller: Callable, pathstr: PathName, excinfo: Any) -> None:
     Raises:
         The exception in excinfo if the caller is not remove or unlink.
     """
-    pathstr = Path(pathstr)
+    path_str = Path(path_str)
     if caller not in (remove, unlink):
         raise excinfo[0](excinfo[1])
-    pathstr.chmod(S_IRWXU)
-    pathstr.unlink()
+    path_str.chmod(S_IRWXU)
+    path_str.unlink()
 
 
 def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
@@ -398,7 +398,7 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
         remote=False
         remote_is_windows=None
         copy_for_remote=False
-        remote_auth=Noneremote_powershell=False
+        remote_auth=False
 
     Returns:
         The string (or string-list) output of the command.
@@ -481,9 +481,9 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
 
         if is_debug('SYSCMD'):
             print('Getting error lines')
-        errlines = cast(IO, proc.stderr).readlines()
+        err_lines = cast(IO, proc.stderr).readlines()
         if is_debug('SYSCMD'):
-            print('Received error lines:', errlines)
+            print('Received error lines:', err_lines)
 
         if is_debug('SYSCMD'):
             print('Getting return code')
@@ -498,18 +498,18 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
     if is_debug('SYSCMD'):
         print('Received return code:', returncode)
 
-    if remote and WIN32 and (not remote_is_windows) and (not returncode) and (errlines[-1] == 'Disconnected: All channels closed\n'):
-        errlines = []
+    if remote and WIN32 and (not remote_is_windows) and (not returncode) and (err_lines[-1] == 'Disconnected: All channels closed\n'):
+        err_lines = []
 
     if is_debug('SYSCMD'):
         print('Checking for' if fail_on_error else 'Ignoring', 'errors')
-    if fail_on_error and (returncode or (not ignore_stderr and errlines)):
+    if fail_on_error and (returncode or (not ignore_stderr and err_lines)):
         bad_cmd_str = 'not recognized as an internal or external command' if WIN32 else 'command not found'
-        err_type = CMDError.CMD_NOT_FOUND if (bad_cmd_str in ''.join(errlines)) else CMDError.CMD_ERROR
-        raise CMDError(err_type, cmd=cmd_str, returncode=returncode, errlines=errlines, outlines=outlines)
+        err_type = CMDError.CMD_NOT_FOUND if (bad_cmd_str in ''.join(err_lines)) else CMDError.CMD_ERROR
+        raise CMDError(err_type, cmd=cmd_str, returncode=returncode, err_lines=err_lines, outlines=outlines)
 
-    if errlines and append_stderr:
-        outlines += errlines
+    if err_lines and append_stderr:
+        outlines += err_lines
     return flatten_string_list(outlines) if flatten_output else outlines
 
 
@@ -553,4 +553,4 @@ def popd() -> int | PathName:
     chdir(dirname)
     return dirname
 
-# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped
+# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped accepteula

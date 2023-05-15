@@ -95,7 +95,7 @@ Attributes:
 # Import standard modules
 from copy import deepcopy
 from enum import Enum
-from typing import cast, Dict, List, Optional, Type, Union
+from typing import cast, Dict, List, Optional, Type
 
 LIN_LDR_ATTR = 'lin_ldr'
 LIN_TRM_ATTR = 'lin_trm'
@@ -180,29 +180,29 @@ class SimpleAttribute:
 class MetaAttribute:
     """Class to create a universal abstract interface for a report attribute which returns a value based on the value of a SimpleAttribute."""
 
-    def __init__(self, attr: str, /, **valmap):
+    def __init__(self, attr: str, /, **val_map):
         """
         Args:
             attr: The attribute.
-            valmap (optional): a dictionary of other allowed values.
+            val_map (optional): a dictionary of other allowed values.
 
         Attributes:
             _attr: The value of the attr argument.
-            _valuemap: The value of the valmap argument.
+            _value_map: The value of the val_map argument.
         """
         self._attr = attr
-        self._valuemap = valmap
+        self._value_map = val_map
 
-    def _set_values(self, valmap: Dict[str, str], /) -> None:
+    def _set_values(self, val_map: Dict[str, str], /) -> None:
         """Set the value of a collection of attributes.
 
         Args:
-            valmap: The collection of attributes to set.
+            val_map: The collection of attributes to set.
 
         Returns:
             Nothing.
         """
-        self._valuemap = valmap
+        self._value_map = val_map
 
     simple_attr_name = property(lambda s: s._attr, doc='A read-only property which returns the simple attribute name.')
     values = property(fset=_set_values, doc='A read-only property which returns the values of the attribute as a dictionary.')
@@ -216,7 +216,7 @@ class MetaAttribute:
         Returns:
             The value of the attribute.
         """
-        return self._valuemap[attr]
+        return self._value_map[attr]
 
 
 Attribute = SimpleAttribute | MetaAttribute
@@ -430,7 +430,7 @@ class Section(ReportObject):
         """Add a sub-section to the section.
 
         Args:
-            setion: The sub-section to add to the section.
+            section: The sub-section to add to the section.
 
         Returns:
             Nothing.
@@ -490,10 +490,10 @@ class Cell(ReportObject):
         self._data = data
 
     def __str__(self):
-        datastr = self._data
+        data_str = self._data
         if isinstance(self._data, (int, list, tuple, Enum, LinkList, Link)) or not self._data:
-            datastr = str(self._data)
-        return self.tbl_cel_ldr + datastr + self.tbl_cel_trm
+            data_str = str(self._data)
+        return self.tbl_cel_ldr + data_str + self.tbl_cel_trm
 
 
 class Table(ReportObject):
@@ -537,8 +537,8 @@ class Table(ReportObject):
             i = 0
             for col in row:
                 if self.output == 'text':
-                    colpad = ' ' * int((col_widths[i] - len(col)) / 2)
-                    col_str = colpad + col + colpad
+                    col_pad = ' ' * int((col_widths[i] - len(col)) / 2)
+                    col_str = col_pad + col + col_pad
                     col_str += ' ' * (col_widths[i] - len(col_str))
                 else:
                     col_str = col
@@ -590,7 +590,7 @@ class Link(Line):
 
     def __str__(self):
         try:
-            url = (self.lnk_ldr % self._url)
+            url = self.lnk_ldr % self._url
         except TypeError as err:
             if 'not all arguments converted during string formatting' not in str(err):
                 raise

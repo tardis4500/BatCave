@@ -36,7 +36,7 @@ Modules that provide utilities for accomplishing specific programming tasks:
 """
 
 __all__ = ('__title__', '__summary__', '__uri__',
-           '__version__', '__buildname__', '__builddate__',
+           '__version__', '__build_name__', '__build_date__',
            '__author__', '__email__',
            '__license__', '__copyright__')
 
@@ -45,8 +45,8 @@ __summary__ = 'Python Programming Toolkit'
 __uri__ = 'https://gitlab.com/arisilon/batcave/'
 
 __version__ = '{var:release}'
-__buildname__ = '{var:build_name}'
-__builddate__ = '{var:build_date}'
+__build_name__ = '{var:build_name}'
+__build_date__ = '{var:build_date}'
 
 __author__ = 'Jeffery G. Smith'
 __email__ = 'web@pobox.com'
@@ -54,4 +54,4 @@ __email__ = 'web@pobox.com'
 __license__ = 'MIT'
 __copyright__ = 'Copyright (c) 2021 Jeffery G. Smith'
 
-# cSpell:ignore iispy netutil qbpy tcpy
+# cSpell:ignore iispy netutil qbpy tcpy platarch cloudmgr servermgr configmgr fileutil statemachine

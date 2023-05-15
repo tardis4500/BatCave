@@ -12,7 +12,7 @@ from json import loads as json_read
 from os import getenv
 from pathlib import Path
 from string import Template
-from typing import cast, Any, List, Optional, Sequence, Union
+from typing import cast, Any, List, Optional, Sequence
 
 # Import third-party modules
 from docker import DockerClient
@@ -112,7 +112,7 @@ class Cloud:
         """
         return Container(self, name)
 
-    def get_containers(self, filters: str = None, /) -> List['Container']:
+    def get_containers(self, filters: Optional[str] = None, /) -> List['Container']:
         """Get a possibly filtered list of containers.
 
         Args:
@@ -210,7 +210,7 @@ class Image:
     containers = property(lambda s: s.cloud.get_containers({'ancestor': s.name}),
                           doc='A read-only property which returns all the containers for this image.')
 
-    def get_tags(self, image_filter: str = None, /) -> List[str]:
+    def get_tags(self, image_filter: Optional[str] = None, /) -> List[str]:
         """Get a list of tags applied to the image.
 
         Args:

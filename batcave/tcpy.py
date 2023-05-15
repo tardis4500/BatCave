@@ -56,7 +56,7 @@ class TCBuildConfig:
 class TeamCityServer:
     """Class to create a universal abstract interface for a TeamCity server."""
 
-    _CA_CERT = (BATCAVE_HOME / 'cacert.pem') if FROZEN else Path(certs.where())
+    _CA_CERT = (BATCAVE_HOME / 'cacert.pem') if FROZEN else Path(certs.where())  # type: ignore[attr-defined]
 
     def __init__(self, host: str, /, user: str, passwd: str, port: str = '80'):
         """
@@ -83,12 +83,12 @@ class TeamCityServer:
     users = property(lambda s: s.api_call('get', 'users')['user'], doc='A read-only property which returns a list of the TeamCity users.')
     groups = property(lambda s: s.api_call('get', 'userGroups')['group'], doc='A read-only property which returns a list of the TeamCity groups.')
 
-    def api_call(self, calltype: str, apicall: str, /, **params) -> Dict[str, Any]:
+    def api_call(self, call_type: str, api_call: str, /, **params) -> Dict[str, Any]:
         """Provide an interface to the TeamCity RESTful API.
 
         Args:
-            calltype: The API call type.
-            apicall: The API call.
+            call_type: The API call type.
+            api_call: The API call.
             **params (optional, default={}): Any parameters to pass to the API call.
 
         Returns:
@@ -97,8 +97,8 @@ class TeamCityServer:
         Raises:
             An error unless the result of the API call is OK.
         """
-        caller = getattr(requests, calltype)
-        result = caller(self.url + apicall, auth=self.auth, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, json=params, verify=self._CA_CERT)
+        caller = getattr(requests, call_type)
+        result = caller(self.url + api_call, auth=self.auth, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, json=params, verify=self._CA_CERT)
         if result.status_code != codes.ok:  # pylint: disable=no-member
             raise result.raise_for_status()
         return result.json()
@@ -140,4 +140,4 @@ class TeamCityServer:
         """
         return TCBuildConfig(self, config)
 
-# cSpell:ignore cacert
+# cSpell:ignore cacert batcave

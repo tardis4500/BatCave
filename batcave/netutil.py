@@ -2,7 +2,7 @@
 
 # Import standard modules
 from smtplib import SMTP
-from typing import Dict, Optional, Tuple, Union, Callable
+from typing import Dict, Optional, Tuple, Callable
 
 # Import third-party modules
 from requests import get as url_get, PreparedRequest

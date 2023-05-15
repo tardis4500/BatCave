@@ -1,7 +1,7 @@
 """This module provides a Pythonic interface to the QuickBuild RESTful API."""
 
 # Import standard modules
-from typing import cast, Any, Dict, List, Optional, Union
+from typing import cast, Any, Dict, List, Optional
 from xml.etree.ElementTree import fromstring, tostring, Element
 
 # Import third-party modules
@@ -56,7 +56,7 @@ class QuickBuildObject:
         object_xml = fromstring(self._console.qb_runner(self._object_path).text)
         attr_element = cast(Element, object_xml.find(attr))
         attr_element.text = value
-        self._console.qb_runner(f'{self._object_type}s', xmldata=object_xml)
+        self._console.qb_runner(f'{self._object_type}s', xml_data=object_xml)
 
     def __str__(self):
         return self._console.qb_runner(self._object_path).text
@@ -106,12 +106,12 @@ class QuickBuildCfg(QuickBuildObject):
         Returns:
             The configuration.
         """
-        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
-        for varxml in cast(Element, cfgxml.find('variables')).findall('com.pmease.quickbuild.variable.Variable'):
-            if cast(Element, varxml.find('name')).text == var:
-                valref = cast(Element, cast(Element, varxml.find('valueProvider')).find('value'))
-                valref.text = val
-        self._console.qb_runner('configurations', xmldata=cfgxml)
+        cfg_xml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
+        for var_xml in cast(Element, cfg_xml.find('variables')).findall('com.pmease.quickbuild.variable.Variable'):
+            if cast(Element, var_xml.find('name')).text == var:
+                val_ref = cast(Element, cast(Element, var_xml.find('valueProvider')).find('value'))
+                val_ref.text = val
+        self._console.qb_runner('configurations', xml_data=cfg_xml)
         return self
 
     def copy(self, parent: 'QuickBuildCfg', name: str, /, *, recurse: bool = False) -> 'QuickBuildCfg':
@@ -182,30 +182,30 @@ class QuickBuildCfg(QuickBuildObject):
         Returns:
             The renamed configuration.
         """
-        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
-        name = cast(Element, cfgxml.find('name'))
+        cfg_xml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
+        name = cast(Element, cfg_xml.find('name'))
         name.text = newname
-        self._console.qb_runner('configurations', xmldata=cfgxml)
+        self._console.qb_runner('configurations', xml_data=cfg_xml)
         self._console.updater()
         return self
 
-    def reparent(self, newparent: 'QuickBuildCfg', /, *, rename: bool = False) -> 'QuickBuildCfg':
+    def reparent(self, new_parent: 'QuickBuildCfg', /, *, rename: bool = False) -> 'QuickBuildCfg':
         """Reparent this configuration.
 
         Args:
-            newparent: The new parent for the configuration.
+            new_parent: The new parent for the configuration.
             rename (optional, default=False): If not False, rename the configuration when moved.
 
         Returns:
             The moved configuration.
         """
-        cfgxml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
-        parent = cast(Element, cfgxml.find('parent'))
-        parent.text = str(newparent.id)
+        cfg_xml = fromstring(self._console.qb_runner(f'configurations/{self._object_id}').text)
+        parent = cast(Element, cfg_xml.find('parent'))
+        parent.text = str(new_parent.id)
         if rename:
-            name = cast(Element, cfgxml.find('name'))
+            name = cast(Element, cfg_xml.find('name'))
             name.text = bool_to_str(rename)
-        self._console.qb_runner('configurations', xmldata=cfgxml)
+        self._console.qb_runner('configurations', xml_data=cfg_xml)
         self._console.updater()
         return self
 
@@ -271,7 +271,7 @@ class QuickBuildConsole:
         if (id_tag := xml_data.find('id')) is not None:
             xml_data.remove(id_tag)
         cast(Element, xml_data.find('name')).text = name
-        return QuickBuildDashboard(self, str(self.qb_runner('dashboards', xmldata=xml_data).text))
+        return QuickBuildDashboard(self, str(self.qb_runner('dashboards', xml_data=xml_data).text))
 
     def get_dashboard(self, dashboard: str, /) -> QuickBuildDashboard:
         """Get the named dashboard.
@@ -295,12 +295,12 @@ class QuickBuildConsole:
         """
         return dashboard in self.dashboards
 
-    def qb_runner(self, cmd: str, /, *, xmldata: Optional[Any] = None, delete: bool = False) -> Response:
+    def qb_runner(self, cmd: str, /, *, xml_data: Optional[Any] = None, delete: bool = False) -> Response:
         """Provide an interface to the RESTful API.
 
         Args:
             cmd: The API command to run.
-            xmldata (optional, default=None): Any data to pass to the command.
+            xml_data (optional, default=None): Any data to pass to the command.
             delete (optional, default=False): If True, use delete, otherwise use get.
 
         Returns:
@@ -311,11 +311,11 @@ class QuickBuildConsole:
         api_args: Dict[str, Any] = {'auth': (self._user, self._password)}
         if delete:
             caller = req_del
-        elif xmldata is None:
+        elif xml_data is None:
             caller = req_get
         else:
             caller = req_post
-            api_args['data'] = xmldata if isinstance(xmldata, str) else tostring(xmldata)
+            api_args['data'] = xml_data if isinstance(xml_data, str) else tostring(xml_data)
         if (result := caller(api_call, **api_args)).status_code != codes.ok:  # pylint: disable=no-member
             result.raise_for_status()
         return result
@@ -334,4 +334,4 @@ class QuickBuildConsole:
             for dashboard in fromstring(self.qb_runner('dashboards').text).iter('com.pmease.quickbuild.model.Dashboard'):
                 self.dashboards[str(cast(Element, dashboard.find('name')).text)] = QuickBuildDashboard(self, str(cast(Element, dashboard.find('id')).text))
 
-# cSpell:ignore tful
+# cSpell:ignore tful quickbuild

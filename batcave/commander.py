@@ -3,7 +3,7 @@
 # Import standard modules
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, HelpFormatter, Namespace, REMAINDER, _MutuallyExclusiveGroup
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Type, Union
+from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Type
 
 # Import internal modules
 from .version import get_version_info, VersionStyle
@@ -13,7 +13,7 @@ from .lang import str_to_pythonval
 class Argument:  # pylint: disable=too-few-public-methods
     """This is a simple container class to encapsulate an argument definition passed to ArgumentParser.add_argument()."""
 
-    def __init__(self, *names, **options):
+    def __init__(self, *names, **options) -> None:
         """
         Args:
             *names: A list of the argument names.
@@ -47,7 +47,7 @@ class Commander:
     def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),  # pylint: disable=too-many-locals,too-many-arguments
                  subparser_common_args: Sequence[Argument] = tuple(), default: Optional[Callable] = None, parents: Sequence[ArgumentParser] = tuple(),
                  parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, add_version: bool = True,
-                 version_style: VersionStyle = VersionStyle.oneline, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):
+                 version_style: VersionStyle = VersionStyle.one_line, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):
         """
         Args:
             description: The subcommand name for the subparser.
@@ -61,7 +61,7 @@ class Commander:
             extra_var_sep (optional, default=:): The character used to separate the extra vars from the values.
             convert_extra (optional, default=True): If True then used str_to_pythonval on the values in the parse_extra arguments.
             add_version (optional, default=True): If True then add a version argument to the parser and use version.get_version_info.
-            version_style (optional, default=oneline): The version.VERSION_STYLE to use for the version argument output.
+            version_style (optional, default=one_line): The version.VERSION_STYLE to use for the version argument output.
             formatter_class (optional, default=ArgumentDefaultsHelpFormatter): The formatter class to pass to the parser.
 
         Attributes:
@@ -159,3 +159,5 @@ def _add_arguments_to_parser(parser: ArgumentParser | _MutuallyExclusiveGroup, a
             _add_arguments_to_parser(group_parser, arg['args'])
         else:
             parser.add_argument(*arg.names, **arg.options)
+
+# cSpell:ignore pythonval

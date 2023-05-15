@@ -24,7 +24,7 @@ from re import compile as re_compile
 from stat import S_IWUSR
 from string import Template
 from tempfile import mkdtemp
-from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Pattern, Sequence, Tuple, Union
+from typing import cast, Any, Dict, Generator, Iterable, List, Optional, Pattern, Sequence, Tuple
 
 # Import internal modules
 from .fileutil import slurp
@@ -74,7 +74,7 @@ class CMSError(BatCaveException):
     CLIENT_DATA_INVALID = BatCaveError(2, Template('$data not valid if client exists'))
     CLIENT_NAME_REQUIRED = BatCaveError(3, 'Name required if client is not being created')
     CLIENT_NOT_FOUND = BatCaveError(4, Template('Client $name not found'))
-    CONNECT_FAILED = BatCaveError(5, Template('Unable to connect to CMS server on $connectinfo'))
+    CONNECT_FAILED = BatCaveError(5, Template('Unable to connect to CMS server on $connect_info'))
     CONNECT_INFO_REQUIRED = BatCaveError(6, Template('Connection info required for CMS type ($ctype)'))
     GIT_FAILURE = BatCaveError(7, Template('Git Error:\n$msg'))
     INVALID_OPERATION = BatCaveError(8, Template('Invalid CMS type ($ctype) for this operation'))
@@ -284,9 +284,9 @@ class Client:
     _DEFAULT_P4PORT = 'perforce:1666'
     _INFO_DUMMY_CLIENT = 'BatCave_info_dummy_client'
 
-    def __init__(self, ctype: ClientType, /, name: str = '', connectinfo: str = '', *, user: str = '',
-                 root: Optional[Path] = None, altroots: Optional[Sequence[str]] = None, mapping: Optional[List[str]] = None, hostless: bool = False,
-                 changelist_options: Optional[str] = None, linestyle: Optional[LineStyle] = None, cleanup: Optional[bool] = None,
+    def __init__(self, ctype: ClientType, /, name: str = '', connect_info: str = '', *, user: str = '',
+                 root: Optional[Path] = None, alt_roots: Optional[Sequence[str]] = None, mapping: Optional[List[str]] = None, hostless: bool = False,
+                 changelist_options: Optional[str] = None, line_style: Optional[LineStyle] = None, cleanup: Optional[bool] = None,
                  create: Optional[bool] = None, info: bool = False, password: Optional[str] = None, branch: Optional[str] = None):
         """
         Args:
@@ -296,7 +296,7 @@ class Client:
                     file: not applicable
                     git: the repo name
                     perforce: the client name
-            connectinfo: Required for client type of 'file.'
+            connect_info: Required for client type of 'file.'
                 If not required and not provided, it is derived based on the client type:
                     file: required
                     git: The value of the GIT_WORK_TREE environment variable
@@ -308,15 +308,15 @@ class Client:
                     perforce: The value of the P4USER environment variable
             root (optional): If create is False, this value is not allowed.
                 If create is True and it is not provided, a temporary root directory will be created.
-            altroots (optional): If create is False, this value is ignored.
-                Provides the altroot field for the Perforce client spec.
+            alt_roots (optional): If create is False, this value is ignored.
+                Provides the AltRoot field for the Perforce client spec.
             mapping (optional): If create is False, this value is not allowed.
                 Provides the mapping field for the Perforce client spec.
             hostless (optional): If create is False, this value is ignored.
                 Provides the host field for the Perforce client spec.
             changelist_options (optional): If create is False, this value is ignored.
                 Provides the SubmitOptions field for the Perforce client spec.
-            linestyle (optional): If create is False, this value is ignored.
+            line_style (optional): If create is False, this value is ignored.
                 Provides the LineEnd field for the Perforce client spec.
             cleanup (optional): If True, the client directory will be removed when the Client instance is disposed of.
                 The default value depends on the CMS type and will be determined for an argument value of None.
@@ -332,19 +332,19 @@ class Client:
             branch (optional, default=None): This initial branch against which to create the client.
 
         Attributes:
-            _connectinfo: The dervied value of the connectinfo argument.
-            _cleanup: The dervied value of the cleanup argument.
+            _connect_info: The derived value of the connect_info argument.
+            _cleanup: The derived value of the cleanup argument.
             _client: A reference to the underlying API client.
-            _mapping: The dervied value of the mapping argument.
-            _name: The dervied value of the name argument.
+            _mapping: The derived value of the mapping argument.
+            _name: The derived value of the name argument.
             _type: The value of the ctype argument.
-            _user: The dervied value of the user argument.
+            _user: The derived value of the user argument.
 
         Raises:
             CMSError.CLIENT_DATA_INVALID: If client creation info was provided by the create argument was False.
             CMSError.CLIENT_NAME_REQUIRED: If  a client name was not supplied when required.
             CMSError.CONNECT_FAILED: There was an error connecting to the CMS server.
-            CMSError.CONNECTINFO_REQUIRED: If connection info was not supplied when required.
+            CMSError.CONNECT_INFO_REQUIRED: If connection info was not supplied when required.
             CMSError.INVALID_OPERATION: If the client CMS type is not supported.
         """
         self._type = ctype
@@ -353,19 +353,19 @@ class Client:
         self._connected = False
         self._client: Any = None
 
-        if not connectinfo:
+        if not connect_info:
             for case in switch(self._type):
                 if case(ClientType.file):
                     raise CMSError(CMSError.CONNECT_INFO_REQUIRED, ctype=self._type.name)
                 if case(ClientType.git):
-                    connectinfo = getenv('GIT_WORK_TREE', '')
+                    connect_info = getenv('GIT_WORK_TREE', '')
                     break
                 if case(ClientType.perforce):
-                    connectinfo = self.get_cms_sys_value('P4PORT')
+                    connect_info = self.get_cms_sys_value('P4PORT')
                     break
                 if case():
                     raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
-        self._connectinfo: str = connectinfo
+        self._connect_info: str = connect_info
 
         if not user:
             for case in switch(self._type):
@@ -422,8 +422,8 @@ class Client:
             client_root = self._tmpdir if (root is None) else root
             if (self._mapping is None) and (self._type == ClientType.perforce) and info:
                 self._mapping = [f'-//spec/... //{self.name}/...']
-            if (linestyle is None) and (self._type == ClientType.perforce):
-                linestyle = LineStyle.local
+            if (line_style is None) and (self._type == ClientType.perforce):
+                line_style = LineStyle.local
         elif root:
             raise CMSError(CMSError.CLIENT_DATA_INVALID, data='root')
         elif self._mapping:
@@ -439,12 +439,12 @@ class Client:
                     git_args['branch'] = branch
                 if info:
                     git_args['depth'] = 1
-                self._client = GitRepo.clone_from(self._connectinfo, client_root, branch=(branch if branch else 'master')) if create_client else GitRepo(self._connectinfo)
+                self._client = GitRepo.clone_from(self._connect_info, client_root, branch=(branch if branch else 'master')) if create_client else GitRepo(self._connect_info)
                 self._connected = True
                 break
             if case(ClientType.perforce):
                 self._client = self._p4run(P4.P4)
-                self._client.port = self._connectinfo
+                self._client.port = self._connect_info
                 self._client.user = self._user
                 self._client.client = str(self._name)
                 if password:
@@ -454,23 +454,23 @@ class Client:
                     self._p4run('connect')
                 except P4.P4Exception as err:
                     if 'Connect to server failed' in err.value:
-                        raise CMSError(CMSError.CONNECT_FAILED, connectinfo=self._connectinfo) from err
+                        raise CMSError(CMSError.CONNECT_FAILED, connect_info=self._connect_info) from err
                     raise
                 self._connected = True
                 if create_client:
-                    clientspec: Dict[str, Any] = self._p4fetch('client')
-                    clientspec['Root'] = str(client_root)
-                    clientspec['LineEnd'] = cast(LineStyle, linestyle).name
-                    clientspec['SubmitOptions'] = changelist_options if changelist_options else 'revertunchanged'
+                    client_spec: Dict[str, Any] = self._p4fetch('client')
+                    client_spec['Root'] = str(client_root)
+                    client_spec['LineEnd'] = cast(LineStyle, line_style).name
+                    client_spec['SubmitOptions'] = changelist_options if changelist_options else 'revertunchanged'
                     if self._mapping:
-                        clientspec['View'] = self._mapping
+                        client_spec['View'] = self._mapping
                     if branch:
-                        clientspec['Stream'] = branch
+                        client_spec['Stream'] = branch
                     if hostless:
-                        clientspec['Host'] = ''
-                    if altroots:
-                        clientspec['AltRoots'] = altroots
-                    self._p4save('client', clientspec)
+                        client_spec['Host'] = ''
+                    if alt_roots:
+                        client_spec['AltRoots'] = alt_roots
+                    self._p4save('client', client_spec)
                 break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
@@ -482,15 +482,15 @@ class Client:
         self.close()
         return False
 
-    def __str__(self):
-        infostr: str = ''
+    def __str__(self) -> str:
+        info_str: str = ''
         for case in switch(self._type):
             if case(ClientType.perforce):
-                infostr = '\n'.join([f'{i}: {v}' for (i, v) in self._p4fetch('client').items()])
+                info_str = '\n'.join([f'{i}: {v}' for (i, v) in self._p4fetch('client').items()])
                 break
             if case():
-                infostr = self.name
-        return f'{self.type} {infostr}'
+                info_str = self.name
+        return f'{self.type} {info_str}'
 
     def _p4fetch(self, what: str, /, *args) -> Dict[str, Any]:
         """Run the Perforce fetch command.
@@ -594,12 +594,12 @@ class Client:
         return cast(List[str], self._mapping)
 
     @mapping.setter
-    def mapping(self, newmap: List[str], /) -> None:
+    def mapping(self, new_map: List[str], /) -> None:
         for case in switch(self._type):
             if case(ClientType.perforce):
-                self._mapping = newmap
+                self._mapping = new_map
                 client_spec = self._p4fetch('client')
-                client_spec['View'] = newmap
+                client_spec['View'] = new_map
                 self._p4save('client', client_spec)
                 break
             if case():
@@ -610,7 +610,7 @@ class Client:
         """A read-only property which returns the root of the client."""
         for case in switch(self._type):
             if case(ClientType.file):
-                return Path(self._connectinfo)
+                return Path(self._connect_info)
             if case(ClientType.git):
                 return Path(self._client.working_tree_dir)
             if case(ClientType.perforce):
@@ -859,17 +859,17 @@ class Client:
             if case(ClientType.perforce):
                 if branch_type.startswith('stream'):
                     (branch_type, stream_type) = branch_type.split(':')
-                    streamspec: Dict[str, Any] = self._p4fetch(branch_type, f'//{repo}/{name}')
-                    streamspec['Type'] = stream_type
+                    stream_spec: Dict[str, Any] = self._p4fetch(branch_type, f'//{repo}/{name}')
+                    stream_spec['Type'] = stream_type
                     if branch_from:
-                        streamspec['Parent'] = f'//{repo}/{branch_from}'
+                        stream_spec['Parent'] = f'//{repo}/{branch_from}'
                     if stream_type == 'virtual':
-                        streamspec['Options'] = ' '.join(['%s%s' % ('no' if 'parent' in o else '', o) for o in streamspec['Options'].split()])  # pylint: disable=consider-using-f-string
+                        stream_spec['Options'] = ' '.join(['%s%s' % ('no' if 'parent' in o else '', o) for o in stream_spec['Options'].split()])  # pylint: disable=consider-using-f-string
                     if options:
-                        for (optname, optval) in options.items():
-                            streamspec[optname] = optval
+                        for (opt_name, opt_val) in options.items():
+                            stream_spec[opt_name] = opt_val
                     if not no_execute:
-                        return self._p4save('stream', streamspec)
+                        return self._p4save('stream', stream_spec)
                 return []
             if case(ClientType.git):
                 args: List[str] = [name]
@@ -898,12 +898,12 @@ class Client:
         """
         for case in switch(self._type):
             if case(ClientType.perforce):
-                depotspec: Dict[str, Any] = self._p4fetch('depot', repository)
+                depot_spec: Dict[str, Any] = self._p4fetch('depot', repository)
                 if repo_type:
-                    depotspec['Type'] = repo_type
+                    depot_spec['Type'] = repo_type
                 if no_execute:
                     return []
-                return self._p4save('depot', depotspec)
+                return self._p4save('depot', depot_spec)
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def find(self, file_regex: str = '', /) -> List[str]:
@@ -944,14 +944,14 @@ class Client:
         """
         if edit:
             return ChangeList(self, name, editable=True)
-        return self.get_changelists(name, forfiles=files)[0]
+        return self.get_changelists(name, for_files=files)[0]
 
-    def get_changelists(self, *names: Optional[Iterable[str]], forfiles: Optional[Iterable[str]] = tuple(), count: Optional[int] = None) -> List['ChangeList']:
+    def get_changelists(self, *names: Optional[Iterable[str]], for_files: Optional[Iterable[str]] = tuple(), count: Optional[int] = None) -> List['ChangeList']:
         """Get a list of changelist objects for the specified changelist names.
 
         Args:
             *names: The list of changelist names.
-            forfiles (optional, default=None): If not none, restrict the list based on the list of files.
+            for_files (optional, default=None): If not none, restrict the list based on the list of files.
             count (optional, default=None): If not None, the number of objects to return, otherwise return all.
 
         Returns:
@@ -967,8 +967,8 @@ class Client:
                 if not names:
                     if count is not None:
                         arglist += ['-m', str(count)]
-                    if forfiles:
-                        arglist += forfiles
+                    if for_files:
+                        arglist += for_files
                     changelist_names = self._p4run('changes', *arglist)
                 else:
                     changelist_names = [str(n) for n in names]
@@ -1011,9 +1011,9 @@ class Client:
                 if sys.platform == 'win32':
                     for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
                         try:
-                            keyhandle: PyHKEY = RegOpenKeyEx(key, r'Software\perforce\environment', 0, KEY_READ)
-                            if RegQueryValueEx(keyhandle, var):
-                                return RegQueryValueEx(keyhandle, var)[0]
+                            key_handle: PyHKEY = RegOpenKeyEx(key, r'Software\perforce\environment', 0, KEY_READ)
+                            if RegQueryValueEx(key_handle, var):
+                                return RegQueryValueEx(key_handle, var)[0]
                         except Win32Error as err:
                             if err.winerror != 2:  # ERROR_FILE_NOT_FOUND
                                 raise
@@ -1140,7 +1140,7 @@ class Client:
             if case(ClientType.file):
                 return 'CMS type: file'
             if case(ClientType.perforce):
-                return self._connectinfo
+                return self._connect_info
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._type.name)
 
     def get_user_record(self, username: str, /) -> Dict[str, str]:
@@ -1553,12 +1553,12 @@ class ChangeList:
         Args:
             client: The CMS Client object where this file change record is located.
             chg_list_id (optional, default=None): The unique ID for this changelist.
-            editable (optional, default=not bool(chg_list_id)): If true, this changelist can be editted.
+            editable (optional, default=not bool(chg_list_id)): If true, this changelist can be edited.
 
         Attributes:
             _changelist: A reference to the underlying API changelist.
             _client: The value of the client argument.
-            _editable: The dervied value of the editable argument.
+            _editable: The derived value of the editable argument.
             _files: The list of files in the changelist.
             _id: The value of the chg_list_id argument.
 
@@ -1599,12 +1599,12 @@ class ChangeList:
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @desc.setter
-    def desc(self, newdesc: str, /) -> None:
+    def desc(self, new_desc: str, /) -> None:
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
             if case(ClientType.perforce):
-                self._changelist['Description'] = newdesc
+                self._changelist['Description'] = new_desc
                 break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
@@ -1629,12 +1629,12 @@ class ChangeList:
         raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
 
     @time.setter
-    def time(self, newtime: str | datetime, /) -> None:
+    def time(self, new_time: str | datetime, /) -> None:
         if not self._editable:
             raise CMSError(CMSError.CHANGELIST_NOT_EDITABLE, changelist=self._id)
         for case in switch(self._client.type):
             if case(ClientType.perforce):
-                self._changelist['Date'] = newtime.strftime('%Y/%m/%d %H:%M:%S') if isinstance(newtime, datetime) else newtime
+                self._changelist['Date'] = new_time.strftime('%Y/%m/%d %H:%M:%S') if isinstance(new_time, datetime) else new_time
                 break
             if case():
                 raise CMSError(CMSError.INVALID_OPERATION, ctype=self._client.type.name)
@@ -1671,14 +1671,14 @@ class ChangeList:
             self._client._p4save('change', self._changelist, '-f')  # pylint: disable=protected-access
 
 
-def create_client_name(*, prefix: Optional[str] = None, suffix: Optional[str] = None, sep: str = '_', licenseplate: bool = False) -> str:
+def create_client_name(*, prefix: Optional[str] = None, suffix: Optional[str] = None, sep: str = '_', license_plate: bool = False) -> str:
     """Automatically create a client name from the user and hostname.
 
     Attributes:
         prefix (optional, default=None): If not None, the prefix for the client.
         suffix (optional, default=None): If not None, the suffix for the client.
         sep (optional, default='_'): The separator for the different pieces of the name.
-        licenseplate (optional, default=False): If not False, adds a random number to the end of the name.
+        license_plate (optional, default=False): If not False, adds a random number to the end of the name.
             Will be appended after the suffix.
 
     Returns:
@@ -1689,7 +1689,7 @@ def create_client_name(*, prefix: Optional[str] = None, suffix: Optional[str] = 
         parts.insert(0, prefix)
     if suffix:
         parts.append(suffix)
-    if licenseplate:
+    if license_plate:
         parts.append(str(randint(0, 1000)))
     return sep.join(parts)
 
@@ -1735,4 +1735,4 @@ def walk_git_tree(tree: GitTree, /, *, parent: Optional[GitTree] = None) -> Gene
 
     yield new_parent, tree_names, blobs
 
-# cSpell:ignore checkin unedit fileutil
+# cSpell:ignore checkin unedit fileutil labelsync hostless revertunchanged changelists winerror

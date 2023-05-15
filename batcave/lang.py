@@ -14,14 +14,14 @@ from pathlib import Path, PurePath
 from string import Template
 import sys
 from sys import executable, platform, version_info, path as sys_path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-# Useful contants
+# Useful constants
 DEFAULT_ENCODING = 'UTF-8'
 FROZEN = getattr(sys, 'frozen', False)
 BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
 VALIDATE_PYTHON = True
-WIN32 = (platform == 'win32')
+WIN32 = platform == 'win32'
 
 CommandResult = str | List[str]
 MessageString = str | Template
@@ -85,25 +85,25 @@ class MsgStr:
 
 class BatCaveException(Exception, MsgStr):
     """A base class to provide easier Exception management."""
-    def __init__(self, errobj: 'BatCaveError', /, **variables):
+    def __init__(self, err_obj: 'BatCaveError', /, **variables):
         """
         Args:
-            errobj: The input message string.
+            err_obj: The input message string.
             variables (optional): A dictionary of variables to pass to the string.Template.substitute method.
 
         Attributes:
             vars: The value of the variables argument.
-            _errobj: The value of the errobj argument.
+            _err_obj: The value of the err_obj argument.
         """
-        Exception.__init__(self, errobj, variables)
-        MsgStr.__init__(self, errobj.msg, **variables)
-        self._errobj = errobj
+        Exception.__init__(self, err_obj, variables)
+        MsgStr.__init__(self, err_obj.msg, **variables)
+        self._err_obj = err_obj
         self.vars = variables
 
     def __str__(self):
         return MsgStr.__str__(self)
 
-    code = property(lambda s: s._errobj.code, doc='A read-only property which returns the error code from the error object.')
+    code = property(lambda s: s._err_obj.code, doc='A read-only property which returns the error code from the error object.')
 
 
 @dataclass(frozen=True)
@@ -307,3 +307,5 @@ def xor(value1: Any, value2: Any, /) -> bool:
         The logical exclusive-or of the values.
     """
     return bool(value1) ^ bool(value2)
+
+# cSpell:ignore batcave pythonval

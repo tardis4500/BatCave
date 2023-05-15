@@ -5,7 +5,7 @@ import sys
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional
 
 # Import internal modules
 from .lang import CommandResult

@@ -214,7 +214,7 @@ def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool
     else:
         VERSION_FILE.chmod(VERSION_FILE.stat().st_mode | S_IWUSR)
         copyfile(VERSION_FILE, file_orig)
-        file_expander(file_orig, VERSION_FILE, vardict=use_vars)
+        file_expander(file_orig, VERSION_FILE, var_dict=use_vars)
         replacers = {'title': PRODUCT_NAME, 'version': use_vars['release']}
         file_update = []
         for line in slurp(VERSION_FILE):

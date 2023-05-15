@@ -2,7 +2,7 @@
 
 # Import standard modules
 from dataclasses import dataclass
-from typing import cast, List, Union
+from typing import cast, List
 
 
 @dataclass(frozen=True)
@@ -25,14 +25,14 @@ class Menu:
             items: The list of items for the menu.
             title (optional, default=_DEFAULT_TITLE): The title for the menu.
             prompt (optional, default=_DEFAULT_PROMPT): The prompt for the menu.
-            invalidmsg (optional, default=_DEFAULT_INVALID_MESSAGE): The invalid choice message.
+            invalid_msg (optional, default=_DEFAULT_INVALID_MESSAGE): The invalid choice message.
             multiselect (optional, default=False): If True, multiple options can be selected.
             ignorecase (optional, default=True): If True, menu input will be case insensitive.
     """
     items: List[MenuItem]
     title: str = '\nSelect one of the following\n'
     prompt: str = '-> '
-    invalidmsg: str = '\nInvalid choice\n'
+    invalid_msg: str = '\nInvalid choice\n'
     multiselect: bool = False
     ignorecase: bool = True
 
@@ -64,7 +64,7 @@ class Menu:
             if not choices:
                 invalid_choice = True
             if invalid_choice:
-                print(self.invalidmsg)
+                print(self.invalid_msg)
         print()
         return choices if self.multiselect else choices[0]
 
@@ -79,8 +79,8 @@ class SimpleMenu(Menu):
     return_text: bool = False
 
     def __post_init__(self):
-        itemlist = list(self.itemlist) + ['Exit']  # pylint: disable=access-member-before-definition
-        self.itemlist = [MenuItem(str(i), itemlist[i - 1]) for i in range(1, len(itemlist) + 1)] + [MenuItem('0', 'Exit')]
+        item_list = list(self.item_list) + ['Exit']  # pylint: disable=access-member-before-definition
+        self.item_list = [MenuItem(str(i), item_list[i - 1]) for i in range(1, len(item_list) + 1)] + [MenuItem('0', 'Exit')]
 
     def show(self) -> str:
         """Show the menu.
@@ -89,4 +89,4 @@ class SimpleMenu(Menu):
             The choice selected from the menu.
         """
         choice = cast(str, super().show())
-        return self.itemlist[int(choice) - 1] if self.return_text else choice
+        return self.item_list[int(choice) - 1] if self.return_text else choice

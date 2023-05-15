@@ -16,7 +16,7 @@ from socket import getfqdn, gethostbyname, gaierror
 from string import Template
 from time import sleep
 from typing import cast, List, Optional, Tuple, Union
-from xml.etree.ElementTree import Element, SubElement, parse as xmlparse
+from xml.etree.ElementTree import Element, SubElement, parse as xml_parse
 
 # Import third-party modules
 from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
@@ -52,9 +52,9 @@ ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running
 ServiceType = Enum('ServiceType', ('systemd', 'sysv', 'upstart', 'windows'))
 TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
 
-ServerType = str | 'Server'
-ServerManager = WMI | 'OSManager'
-WMIObject = bool | WMI
+ServerType = Union[str, 'Server']
+ServerManager = Union[WMI, 'OSManager']
+WMIObject = Union[bool, WMI]
 
 
 class ServerObjectManagementError(BatCaveException):
@@ -121,7 +121,7 @@ class Server:
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
 
-    def __init__(self, hostname: str = None, domain: str = None, *, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
+    def __init__(self, hostname: Optional[str] = None, domain: Optional[str] = None, *, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
                  os_type: OsType = OsType.windows if WIN32 else OsType.linux):
         """
         Args:
@@ -298,7 +298,7 @@ class Server:
         if start_in is None:
             start_in = Path(exe).parent
         if start_in:
-            task_xml = xmlparse(task_file := ScheduledTask.TASK_HOME / task)
+            task_xml = xml_parse(task_file := ScheduledTask.TASK_HOME / task)
             exec_el = cast(Element, task_xml.find('ns:Actions/ns:Exec', {'ns': ScheduledTask.TASK_NAMESPACE}))
             SubElement(exec_el, f'{{{ScheduledTask.TASK_NAMESPACE}}}WorkingDirectory').text = str(start_in)
             task_xml.write(task_file)
@@ -583,7 +583,8 @@ class OSManager:
                 return []
             raise
 
-    def LinuxProcess(self, CommandLine: str = None, ExecutablePath: str = None, Name: str = None, ProcessId: str = None) -> List['LinuxProcess']:
+    def LinuxProcess(self, CommandLine: Optional[str] = None, ExecutablePath: Optional[str] = None,
+                     Name: Optional[str] = None, ProcessId: Optional[str] = None) -> List['LinuxProcess']:
         """Get the specified Linux process.
 
         Args:
@@ -1009,15 +1010,15 @@ class Service(ManagementObject):
 
         control_method = final_state = ''
         if not ignore_state:
-            waitfor = self.ServiceState.Running
+            wait_for = self.ServiceState.Running
             for case in switch(self.state):
                 if case(self.ServiceState.StartPending, self.ServiceState.Running, self.ServiceState.ContinuePending):
-                    waitfor = self.ServiceState.Running
+                    wait_for = self.ServiceState.Running
                     if signal in (self.ServiceSignal.enable, self.ServiceSignal.start, self.ServiceSignal.resume):
                         control_method = ''
                     break
                 if case(self.ServiceState.StopPending, self.ServiceState.Stopped):
-                    waitfor = self.ServiceState.Stopped
+                    wait_for = self.ServiceState.Stopped
                     for signal_case in switch(signal):
                         if signal_case(self.ServiceSignal.disable, self.ServiceSignal.stop):
                             control_method = ''
@@ -1029,18 +1030,18 @@ class Service(ManagementObject):
                             raise ServerObjectManagementError(ServerObjectManagementError.BAD_TRANSITION, from_state='stopped', to_state='paused')
                     break
                 if case(self.ServiceState.PausePending, self.ServiceState.Paused):
-                    waitfor = self.ServiceState.Paused
+                    wait_for = self.ServiceState.Paused
                     if signal == self.ServiceSignal.start:
                         control_method = 'ResumeService'
                     break
                 if case():
                     raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_STATE, state=self.state)
             wait_length = 0
-            while self.state != waitfor:
+            while self.state != wait_for:
                 sleep(_STATUS_CHECK_INTERVAL)
                 wait_length += _STATUS_CHECK_INTERVAL
                 if timeout and (wait_length > timeout):
-                    raise ServerObjectManagementError(ServerObjectManagementError.STATUS_CHECK_TIMEOUT, type='service', state=waitfor.name)
+                    raise ServerObjectManagementError(ServerObjectManagementError.STATUS_CHECK_TIMEOUT, type='service', state=wait_for.name)
 
         if control_method:
             if WIN32 and control_method == 'RestartService':
@@ -1188,4 +1189,4 @@ def _run_task_scheduler(*cmd_args, **sys_cmd_args) -> CommandResult:
     """
     return syscmd('schtasks.exe', *cmd_args, **sys_cmd_args)
 
-# cSpell:ignore cmdline sbin wsahost psutil syscmd iispy
+# cSpell:ignore cmdline sbin wsahost psutil syscmd iispy platarch serverpath schtasks
