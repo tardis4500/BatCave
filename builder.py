@@ -4,7 +4,6 @@
 # Import standard modules
 from argparse import Namespace
 from datetime import datetime
-from distutils.core import run_setup
 from importlib import import_module, reload
 import os
 from pathlib import Path
@@ -51,6 +50,7 @@ PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
 
 pip = SysCmdRunner('pip', show_cmd=False, show_stdout=False, syscmd_args={'ignore_stderr': True}).run
+setup = SysCmdRunner('python', 'setup.py', dist_dir=ARTIFACTS_DIR, show_cmd=False, show_stdout=False).run
 
 
 class ActionLogger(Action):
@@ -130,7 +130,8 @@ def builder(args: Namespace) -> None:
         update_version_file(build_vars)
         batcave_module = import_module('batcave')
         reload(batcave_module)
-        run_setup('setup.py', ['sdist', f'--dist-dir={ARTIFACTS_DIR}', 'bdist_wheel', f'--dist-dir={ARTIFACTS_DIR}']).run_commands()  # type: ignore[attr-defined]
+        setup('sdist')
+        setup('bdist_wheel')
     finally:
         popd()
         update_version_file(reset=True)
