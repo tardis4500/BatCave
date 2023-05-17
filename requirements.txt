@@ -2,6 +2,7 @@ build
 docker ~= 6.1
 flake8
 flake8-annotations
+flake8-pyproject
 GitPython ~= 3.1
 kubernetes ~= 26.1
 mypy

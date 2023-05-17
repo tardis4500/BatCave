@@ -50,3 +50,16 @@ homepage = "https://gitlab.com/arisilon/batcave/"  # batcave.__uri__,
 documentation = "https://batcave.readthedocs.io"
 repository = "https://gitlab.com/arisilon/batcave/"
 changelog = "https://gitlab.com/arisilon/batcave/-/blob/master/CHANGELOG.md"
+
+[tool.pylint.format]
+max-line-length = 200
+
+[tool.pylint.design]
+max-attributes = 10
+
+[tool.pylint.messages_control]
+disable = ["duplicate-code" , "fixme"]
+
+[tool.flake8]
+max-line-length = 200
+ignore = ["ANN002", "ANN003", "ANN101", "ANN204", "ANN401"]
