@@ -35,7 +35,7 @@ cache:
     - pip install -U setuptools wheel
     - pip install -r requirements-frozen.txt
   script:
-    - python build.py $CI_JOB_STAGE $BUILD_ARGS
+    - python builder.py $CI_JOB_STAGE $BUILD_ARGS
 
 static_analysis:
   stage: static_analysis
