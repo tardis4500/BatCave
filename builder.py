@@ -35,10 +35,10 @@ PRODUCT_NAME = 'BatCave'
 
 MODULE_NAME = 'batcave'
 SOURCE_DIR = PROJECT_ROOT / MODULE_NAME
-VERSION_FILE = SOURCE_DIR / '__init__.py'
+VERSION_FILES = [PROJECT_ROOT / 'pyproject.toml', SOURCE_DIR / '__init__.py']
 
 BUILD_DIR = PROJECT_ROOT / 'build'
-ARTIFACTS_DIR = BUILD_DIR / 'artifacts'
+ARTIFACTS_DIR = PROJECT_ROOT / 'dist'
 UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
 CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
 
@@ -50,7 +50,6 @@ PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
 
 pip = SysCmdRunner('pip', show_cmd=False, show_stdout=False, syscmd_args={'ignore_stderr': True}).run
-setup = SysCmdRunner('python', 'setup.py', dist_dir=ARTIFACTS_DIR, show_cmd=False, show_stdout=False).run
 
 
 class ActionLogger(Action):
@@ -125,13 +124,11 @@ def builder(args: Namespace) -> None:
 
     MESSAGE_LOGGER('Running setuptools build', True)
     pushd(PROJECT_ROOT)
+    remake_dir(BUILD_DIR, 'build')
     remake_dir(ARTIFACTS_DIR, 'artifacts')
     try:
         update_version_file(build_vars)
-        batcave_module = import_module('batcave')
-        reload(batcave_module)
-        setup('sdist')
-        setup('bdist_wheel')
+        syscmd('python', '-m', 'build')
     finally:
         popd()
         update_version_file(reset=True)
@@ -206,24 +203,25 @@ def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool
     """Updates the version file for the project."""
     use_vars = build_vars if build_vars else {}
     verb = 'Resetting' if reset else 'Updating'
-    MESSAGE_LOGGER(f'{verb} version file: {VERSION_FILE}', True)
-    file_orig = Path(str(VERSION_FILE) + '.orig')
-    if reset:
-        if VERSION_FILE.exists():
-            VERSION_FILE.unlink()
-        file_orig.rename(VERSION_FILE)
-    else:
-        VERSION_FILE.chmod(VERSION_FILE.stat().st_mode | S_IWUSR)
-        copyfile(VERSION_FILE, file_orig)
-        file_expander(file_orig, VERSION_FILE, var_dict=use_vars)
-        replacers = {'title': PRODUCT_NAME, 'version': use_vars['release']}
-        file_update = []
-        for line in slurp(VERSION_FILE):
-            for (var, val) in replacers.items():
-                if line.startswith(f'__{var}__'):
-                    line = f"__{var}__ = '{val}'\n"
-            file_update.append(line)
-        spew(VERSION_FILE, file_update)
+    for version_file in VERSION_FILES:
+        MESSAGE_LOGGER(f'{verb} version file: {version_file}', True)
+        file_orig = Path(str(version_file) + '.orig')
+        if reset:
+            if version_file.exists():
+                version_file.unlink()
+            file_orig.rename(version_file)
+        else:
+            version_file.chmod(version_file.stat().st_mode | S_IWUSR)
+            copyfile(version_file, file_orig)
+            file_expander(file_orig, version_file, var_dict=use_vars)
+            replacers = {'title': PRODUCT_NAME, 'version': use_vars['release']}
+            file_update = []
+            for line in slurp(version_file):
+                for (var, val) in replacers.items():
+                    if line.startswith(f'__{var}__'):
+                        line = f"__{var}__ = '{val}'\n"
+                file_update.append(line)
+            spew(version_file, file_update)
 
 
 def freeze(_unused_args: Namespace) -> None:

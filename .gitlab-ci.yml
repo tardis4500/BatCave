@@ -10,10 +10,9 @@ stages:
 
 variables:
   PRODUCT: BatCave
-  BUILD_DIR: build
-  ARTIFACTS_DIR: $BUILD_DIR/artifacts
-  UNIT_TEST_DIR: $BUILD_DIR/unit_test_results
-  PYPI_PKG: $BUILD_DIR/artifacts/$PRODUCT-$RELEASE.tar.gz
+  ARTIFACTS_DIR: dist
+  UNIT_TEST_DIR: build/unit_test_results
+  PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
   RELEASE: 42.0.0
   GIT_AUTHOR_NAME: $GITLAB_USER_NAME
   GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL

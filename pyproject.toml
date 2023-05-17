@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+
+name = "{var:product}"  # batcave.__title__,
+version = "{var:release}"  # batcave.__version__,
+
+description = "Python Programming Toolkit"  # batcave.__summary__,
+readme = "DOCUMENTATION.md"
+license = {text = "MIT"} # batcave.__license__,
+
+authors = [
+    {name = "Jeffery G. Smith", email = "web@pobox.com"}  # batcave.__author__, batcave.__email__
+]
+
+requires-python = "~=3.10"
+keywords = ["python", "programming", "utilities"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Natural Language :: English",
+]
+
+dependencies = [
+    "docker ~= 6.1",
+    "GitPython ~= 3.1",
+    "google-cloud",
+    "kubernetes ~= 26.1",
+    "requests ~= 2.30",
+    "pywin32-stubs; sys_platform == 'win32'",
+    "WMI ~= 1.5; sys_platform == 'win32'",
+    "psutil ~= 5.9; platform_machine not in 'arm arm64 armv6l armv7l armv8b armv8l'",
+    "PyQt5 ~= 5.15; platform_machine not in 'aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l'"
+]
+# package_data={'batcave': ['py.typed']}
+
+[project.optional-dependencies]
+dev = ["setuptools", "twine", "wheel", "xmlrunner"]
+
+[project_urls]
+homepage = "https://gitlab.com/arisilon/batcave/"  # batcave.__uri__,
+documentation = "https://batcave.readthedocs.io"
+repository = "https://gitlab.com/arisilon/batcave/"
+changelog = "https://gitlab.com/arisilon/batcave/-/blob/master/CHANGELOG.md"
