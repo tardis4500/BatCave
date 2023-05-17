@@ -4,7 +4,6 @@
 # Import standard modules
 from argparse import Namespace
 from datetime import datetime
-from importlib import import_module, reload
 import os
 from pathlib import Path
 from random import randint
@@ -17,8 +16,8 @@ from venv import EnvBuilder
 
 # Import third-party-modules
 from requests import delete as rest_delete, post as rest_post
-from twine.commands.upload import main as upload
-from xmlrunner import XMLTestRunner
+from twine.commands.upload import main as upload  # type: ignore[missing-imports] # pylint: disable=import-error
+from xmlrunner import XMLTestRunner  # type: ignore[missing-imports] # pylint: disable=import-error
 
 # Import BatCave modules
 from batcave.automation import Action
