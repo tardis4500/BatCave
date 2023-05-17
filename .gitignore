@@ -238,6 +238,7 @@ $RECYCLE.BIN/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
-unit_test_results
+BatCave-0.0.0/
+unit_test_results/
 
 # cSpell:ignore gitignore, pycache, writefys

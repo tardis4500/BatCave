@@ -9,6 +9,7 @@ from pathlib import Path
 from random import randint
 from shutil import copyfile
 from stat import S_IWUSR
+from sys import executable as python_executable
 from tempfile import mkdtemp
 from typing import Dict, Optional, Tuple
 from unittest import defaultTestLoader
@@ -26,7 +27,6 @@ from batcave.expander import file_expander
 from batcave.fileutil import slurp, spew
 from batcave.lang import WIN32
 from batcave.cms import Client, ClientType
-from batcave.platarch import Platform
 from batcave.sysutil import pushd, popd, rmpath, syscmd, SysCmdRunner
 
 PROJECT_ROOT = Path().cwd()
@@ -110,24 +110,19 @@ def ci_build(args: Namespace) -> None:
 def builder(args: Namespace) -> None:
     """Run setuptools build."""
     (build_num, release) = get_build_info(args)
-    release_list = release.split('.')
     build_vars = {'product': PRODUCT_NAME,
                   'build_date': str(datetime.now()),
                   'build_name': f'{PRODUCT_NAME}_{release}_{build_num}',
                   'build_num': build_num,
-                  'platform': Platform().bart,
-                  'release': release,
-                  'major_version': release_list[0],
-                  'minor_version': release_list[1],
-                  'patch_version': release_list[2]}
+                  'release': release}
 
     MESSAGE_LOGGER('Running setuptools build', True)
     pushd(PROJECT_ROOT)
-    remake_dir(BUILD_DIR, 'build')
+    rmpath(BUILD_DIR)
     remake_dir(ARTIFACTS_DIR, 'artifacts')
     try:
         update_version_file(build_vars)
-        syscmd('python', '-m', 'build')
+        SysCmdRunner(python_executable, '-m', 'build').run()
     finally:
         popd()
         update_version_file(reset=True)
