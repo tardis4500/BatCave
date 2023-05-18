@@ -92,7 +92,7 @@ def static_analysis(_unused_args: Namespace) -> None:
     """Run pylint."""
     SysCmdRunner('pylint', MODULE_NAME, max_line_length=200, max_attributes=10, disable='duplicate-code,fixme').run()
     SysCmdRunner('flake8', MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204,ANN401').run()
-    SysCmdRunner('mypy', MODULE_NAME, show_error_codes=True).run()
+    SysCmdRunner('mypy', MODULE_NAME).run()
 
 
 def unit_tests(_unused_args: Namespace) -> None:
