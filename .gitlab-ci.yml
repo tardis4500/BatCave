@@ -41,10 +41,9 @@ static_analysis:
   extends: .builder
   script:
     - pip install -e .[stest]
-    - mypy --install-types
     - pylint batcave
     - flake8 batcave
-    - mypy batcave
+    - mypy --install-types batcave
 
 unit_tests:
   stage: unit_tests
