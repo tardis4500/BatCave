@@ -48,7 +48,10 @@ stest = [
     "flake8-pyproject", 
     "mypy", 
     "pylint", 
-    "PyQt5-stubs"
+    "PyQt5-stubs",
+    "types-PyYAML",
+    "types-psutil",
+    "types-requests"
 ]
 utest = ["xmlrunner"]
 publish = ["twine"]

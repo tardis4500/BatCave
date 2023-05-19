@@ -16,7 +16,6 @@ Development is best accomplished using virtualenv or virtualenv-wrapper where a 
 The static analysis tools can be installed with
 
     pip install -U -e .[stest]
-    mypy --install-types
 
 The static analysis test can be run with
 
