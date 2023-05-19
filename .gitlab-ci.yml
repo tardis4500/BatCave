@@ -28,18 +28,21 @@ cache:
     - tags
   before_script:
     - cat /etc/os-release
+    - python -V
     - apt-get -y update
     - apt-get -y install build-essential git libffi-dev libssl-dev
-    - python -V
-    - pip install -U pip
+    - python -m pip install -U pip
     - pip install -U setuptools wheel
-    - pip install -r requirements-frozen.txt
-  script:
-    - python builder.py $CI_JOB_STAGE $BUILD_ARGS
 
 static_analysis:
   stage: static_analysis
   extends: .builder
+  script:
+    - pip install -e .[stest]
+    - mypy --install-types
+    - pylint batcave
+    - flake8 batcave
+    - mypy batcave
 
 unit_tests:
   stage: unit_tests

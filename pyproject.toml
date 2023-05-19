@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 
-name = "{var:product}"  # batcave.__title__,
-version = "{var:release}"  # batcave.__version__,
+name = "tCave"  # batcave.__title__,
+version = "42.0.0"  # batcave.__version__,
 
 description = "Python Programming Toolkit"  # batcave.__summary__,
 readme = "DOCUMENTATION.md"
@@ -35,7 +35,6 @@ dependencies = [
     "google-cloud",
     "kubernetes ~= 26.1",
     "requests ~= 2.30",
-    "pywin32-stubs; sys_platform == 'win32'",
     "WMI ~= 1.5; sys_platform == 'win32'",
     "psutil ~= 5.9; platform_machine not in 'arm arm64 armv6l armv7l armv8b armv8l'",
     "PyQt5 ~= 5.15; platform_machine not in 'aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l'"
@@ -43,7 +42,16 @@ dependencies = [
 # package_data={'batcave': ['py.typed']}
 
 [project.optional-dependencies]
-dev = ["setuptools", "twine", "wheel", "xmlrunner"]
+stest = [
+    "flake8", 
+    "flake8-annotations", 
+    "flake8-pyproject", 
+    "mypy", 
+    "pylint", 
+    "PyQt5-stubs"
+]
+utest = ["xmlrunner"]
+publish = ["twine"]
 
 [project_urls]
 homepage = "https://gitlab.com/arisilon/batcave/"  # batcave.__uri__,
@@ -63,23 +71,20 @@ max-attributes = 10
 [tool.pylint.messages_control]
 disable = ["duplicate-code" , "fixme"]
 
-# [mypy-docker.*]
-# ignore_missing_imports = True
+[[tool.mypy.overrides]]
+module = "docker.*"
+ignore_missing_imports = true
 
 # [mypy-git.*]
 # ignore_missing_imports = True
 
-# [mypy-kubernetes.*]
-# ignore_missing_imports = True
+[[tool.mypy.overrides]]
+module = "kubernetes.*"
+ignore_missing_imports = true
 
-# [mypy-nssrc.*]
-# ignore_missing_imports = True
-
-# [mypy-P4.*]
-# ignore_missing_imports = True
-
-# [mypy-psutil.*]
-# ignore_missing_imports = True
+[[tool.mypy.overrides]]
+module = "P4.*"
+ignore_missing_imports = true
 
 # [mypy-pywintypes.*]
 # ignore_missing_imports = True

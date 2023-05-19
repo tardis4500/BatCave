@@ -6,16 +6,29 @@ A useful collection of tools for writing Python programs.
 
 Development is best accomplished using virtualenv or virtualenv-wrapper where a virtual environment can be generated:
 
-    pip install -r requirements.txt
+    mkvirtualenv batcave
 
-Useful tools for development can be installed with:
+## Testing
 
-    pip install -r requirements-dev.txt
+
+### Static Analysis
+    
+The static analysis tools can be installed with
+
+    pip install -U -e .[stest]
+    mypy --install-types
+
+The static analysis test can be run with
+
+    pylint batcave
+    flake8 batcave
+    mypy batcave
 
 ## Building
 
 Building is performed by changing to the Build directory and running the build.py script which will perform two actions
 
+1.
 1. run the unit tests and place the results in Build/unit_test_results/junit.xml
 1. run the setup.py to create a PyPi distribution in Build/artifacts
 
