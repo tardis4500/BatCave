@@ -584,7 +584,7 @@ class OSManager:
             raise
 
     def LinuxProcess(self, CommandLine: Optional[str] = None, ExecutablePath: Optional[str] = None,
-                     Name: Optional[str] = None, ProcessId: Optional[str] = None) -> List['LinuxProcess']:
+                     Name: Optional[str] = None, ProcessId: Optional[int] = None) -> List['LinuxProcess']:
         """Get the specified Linux process.
 
         Args:
@@ -611,11 +611,11 @@ class OSManager:
 
         process_list = [p for p in process_iter(attrs=('pid', 'cmdline', 'exe', 'name'))]  # pylint: disable=unnecessary-comprehension
         if CommandLine:
-            return [LinuxProcess(p.pid) for p in process_list if p.info['cmdline'] == CommandLine]
+            return [LinuxProcess(p.pid) for p in process_list if p.info['cmdline'] == CommandLine]  # type: ignore[attr-defined]
         if ExecutablePath:
-            return [LinuxProcess(p.pid) for p in process_list if p.info['exe'] == ExecutablePath]
+            return [LinuxProcess(p.pid) for p in process_list if p.info['exe'] == ExecutablePath]  # type: ignore[attr-defined]
         if Name:
-            return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]
+            return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]  # type: ignore[attr-defined]
         return []
 
     def LinuxService(self, Name: str, service_type: ServiceType, /) -> 'LinuxService':
@@ -771,7 +771,7 @@ class LinuxService(NamedOSObject):
 class LinuxProcess:
     """Class to create a universal abstract interface for a Linux process."""
 
-    def __init__(self, ProcessId: str, /):
+    def __init__(self, ProcessId: int, /):
         """
         Args:
             ProcessId: The process ID of the process.

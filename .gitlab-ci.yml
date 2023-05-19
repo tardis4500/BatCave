@@ -92,4 +92,4 @@ publish:
   variables:
     BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_PRODUCTION_TOKEN
 
-# cSpell:ignore pypi virtualenvs
+# cSpell:ignore pypi virtualenvs batcave stest mypy

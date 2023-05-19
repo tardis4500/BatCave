@@ -40,11 +40,11 @@ __all__ = ('__title__', '__summary__', '__uri__',
            '__author__', '__email__',
            '__license__', '__copyright__')
 
-__title__ = '{var:product}'
+__title__ = 'BatCave'
 __summary__ = 'Python Programming Toolkit'
 __uri__ = 'https://gitlab.com/arisilon/batcave/'
 
-__version__ = '{var:release}'
+__version__ = '42.0.0'
 __build_name__ = '{var:build_name}'
 __build_date__ = '{var:build_date}'
 

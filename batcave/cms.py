@@ -33,7 +33,7 @@ from .lang import is_debug, switch, BatCaveError, BatCaveException, PathName
 
 if sys.platform == 'win32':
     from win32api import error as Win32Error, RegOpenKeyEx, RegQueryValueEx  # pylint: disable=import-error,no-name-in-module
-    from win32con import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, KEY_READ  # pylint: disable=import-error,no-name-in-module
+    from win32con import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE  # pylint: disable=import-error,no-name-in-module
     from win32typing import PyHKEY  # pylint: disable=import-error,no-name-in-module
 
 P4_LOADED: str
@@ -1011,7 +1011,7 @@ class Client:
                 if sys.platform == 'win32':
                     for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
                         try:
-                            key_handle: PyHKEY = RegOpenKeyEx(key, r'Software\perforce\environment', 0, KEY_READ)
+                            key_handle: PyHKEY = RegOpenKeyEx(cast(PyHKEY, key), r'Software\perforce\environment', 0)
                             if RegQueryValueEx(key_handle, var):
                                 return RegQueryValueEx(key_handle, var)[0]
                         except Win32Error as err:

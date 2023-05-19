@@ -10,9 +10,8 @@ Development is best accomplished using virtualenv or virtualenv-wrapper where a 
 
 ## Testing
 
-
 ### Static Analysis
-    
+
 The static analysis tools can be installed with
 
     pip install -U -e .[stest]
@@ -27,7 +26,6 @@ The static analysis test can be run with
 
 Building is performed by changing to the Build directory and running the build.py script which will perform two actions
 
-1.
 1. run the unit tests and place the results in Build/unit_test_results/junit.xml
 1. run the setup.py to create a PyPi distribution in Build/artifacts
 
@@ -43,4 +41,4 @@ This is the procedure for releasing BatCave
 1. Move issues to "Closed"
 1. Close Milestone
 
-<!--- cSpell:ignore virtualenv -->
+<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy -->
