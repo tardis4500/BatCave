@@ -56,4 +56,4 @@ This is the procedure for releasing BatCave
 1. Move issues to "Closed"
 1. Close Milestone
 
-<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy xmlrunner -->
+<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy xmlrunner utest -->

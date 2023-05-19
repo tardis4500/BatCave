@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### [42.0.0] - Unreleased
 
+- Added:
+  - Added new TypeAlias typing. (GitLab #62)
+
 - Changed
   - Upgrade minimum Python to 3.10. (GitLab #62)
 

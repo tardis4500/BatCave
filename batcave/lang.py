@@ -14,7 +14,7 @@ from pathlib import Path, PurePath
 from string import Template
 import sys
 from sys import executable, platform, version_info, path as sys_path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TypeAlias
 
 # Useful constants
 DEFAULT_ENCODING = 'UTF-8'
@@ -23,9 +23,9 @@ BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
 VALIDATE_PYTHON = True
 WIN32 = platform == 'win32'
 
-CommandResult = str | List[str]
-MessageString = str | Template
-PathName = str | Path | PurePath
+CommandResult: TypeAlias = str | List[str]
+MessageString: TypeAlias = str | Template
+PathName: TypeAlias = str | Path | PurePath
 
 
 class MsgStr:
