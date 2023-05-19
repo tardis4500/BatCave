@@ -7,7 +7,7 @@ from typing import Optional
 from xml.etree.ElementTree import ParseError
 
 from .data import DataError, DataSource, SourceType
-from .lang import switch, BatCaveError, BatCaveException, PathName
+from .lang import BatCaveError, BatCaveException, PathName
 
 
 class ConfigurationError(BatCaveException):
@@ -68,12 +68,12 @@ class ConfigCollection:
         try:
             self._data_source = DataSource(SourceType.xml, self._config_filename, name=self.name, schema=self._CURRENT_CONFIG_SCHEMA, create=create)
         except DataError as err:
-            for case in switch(err.code):
-                if case(DataError.FILE_OPEN.code):
+            match err.code:
+                case DataError.FILE_OPEN.code:
                     raise ConfigurationError(ConfigurationError.CONFIG_NOT_FOUND, file=self._config_filename) from err
-                if case(DataError.BAD_SCHEMA.code):
+                case DataError.BAD_SCHEMA.code:
                     raise ConfigurationError(ConfigurationError.BAD_SCHEMA, file=self._config_filename) from err
-                if case():
+                case _:
                     raise
         except ParseError as err:
             raise ConfigurationError(ConfigurationError.BAD_FORMAT, file=self._config_filename) from err

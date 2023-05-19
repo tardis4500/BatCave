@@ -7,9 +7,6 @@ from pathlib import Path
 from platform import uname
 from sys import version_info
 
-# Import internal modules
-from .lang import switch
-
 OsType = Enum('OsType', ('linux', 'windows'))
 
 
@@ -21,28 +18,24 @@ class Platform:
         sys_info = uname()
         batcave_os = bart_os = sys_info.system.replace('-', '')
         batcave_version = batcave_arch = ''
-        bart_version = bartarch = ''
+        bart_version = bart_arch = ''
         p4ver = p4_arch = du_os = build = ''
-        for case in switch(batcave_os):
-            if case('AIX'):
+        match batcave_os:
+            case 'AIX':
                 batcave_version = bart_version = sys_info.version + sys_info.release
-                batcave_arch = bartarch = 'ppc'
+                batcave_arch = bart_arch = 'ppc'
                 build = f'{sys_info.system} {sys_info.version}.{sys_info.release} PowerPC'
                 p4ver = batcave_version
-                break
-
-            if case('HPUX'):
+            case 'HPUX':
                 os_major = sys_info.release.split('.')[1]
                 os_minor = sys_info.release.split('.')[2]
                 batcave_version = bart_version = os_major + os_minor
-                batcave_arch = bartarch = sys_info.machine.split('/')[0]
+                batcave_arch = bart_arch = sys_info.machine.split('/')[0]
                 build = f'{sys_info.system} {sys_info.release} {sys_info.machine}'
                 p4ver = os_major
-                break
-
-            if case('Linux'):
+            case 'Linux':
                 batcave_version = bart_version = sys_info.release.split('.')[0] + sys_info.release.split('.')[1]
-                bartarch = sys_info.machine
+                bart_arch = sys_info.machine
                 if sys_info.machine == 'x86_64':
                     batcave_arch = 'i686'
                 else:
@@ -55,19 +48,15 @@ class Platform:
                 p4ver = batcave_version
                 if (p4_arch := sys_info.processor.replace(' ', '_')) in ('i686', 'i386', 'athalon'):
                     p4_arch = 'x86'
-                break
-
-            if case('Darwin'):
+            case 'Darwin':
                 batcave_version = bart_version = sys_info.release.split('.')[0] + sys_info.release.split('.')[1]
-                batcave_arch = bartarch = sys_info.machine
+                batcave_arch = bart_arch = sys_info.machine
                 build = f'{sys_info.system} {sys_info.release} {sys_info.machine}'
                 p4ver = '80'
                 if (p4_arch := sys_info.processor.replace(' ', '_')) in ('i686', 'i386', 'athalon'):
                     p4_arch = 'x86'
-                break
-
-            if case('Windows'):
-                (batcave_version, batcave_arch, p4ver, bart_version, bartarch) = ('',) * 5
+            case 'Windows':
+                (batcave_version, batcave_arch, p4ver, bart_version, bart_arch) = ('',) * 5
                 batcave_os = 'win32'
                 du_os = 'win'
                 if sys_info.machine.endswith('64'):
@@ -77,17 +66,18 @@ class Platform:
                     p4_arch = 'x86'
                     bart_os = 'win32'
                 build = f'{sys_info.system} {sys_info.release} {p4_arch[1:]}-bit ({sys_info.version})'
-                break
 
-        for case in switch(attr):
-            if case('bart'):
-                return bart_os + bart_version + bartarch
-            if case('distutils'):
+        match attr:
+            case 'bart':
+                return bart_os + bart_version + bart_arch
+            case 'distutils':
                 return '%s-%s-%s' % (du_os, uname().machine.lower(), '.'.join([str(i) for i in version_info[:2]]))
-            if case('batcave_run'):
+            case 'batcave_run':
                 return batcave_os + batcave_version + batcave_arch
-            if case('batcave_build'):
+            case 'batcave_build':
                 return build
-            if case('p4'):
+            case 'p4':
                 return '%s%s%s' % (batcave_os.lower().replace('windows', 'nt'), p4ver, p4_arch)
         raise AttributeError(f'Unknown platform type: {attr}')
+
+# cSpell:ignore batcave
