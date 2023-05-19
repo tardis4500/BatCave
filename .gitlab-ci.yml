@@ -3,7 +3,7 @@ image: python:3.10-slim
 stages:
   - static_analysis
   - unit_tests
-  - ci_build
+  - build
   - install_test
   - publish_test
   - publish
@@ -55,11 +55,12 @@ unit_tests:
     reports:
       junit: $UNIT_TEST_DIR/*
 
-ci_build:
-  stage: ci_build
+build:
+  stage: build
   extends: .builder
-  variables:
-    BUILD_ARGS: $RELEASE $CI_JOB_ID
+  script:
+    - pip install -e .[build]
+    - python -m build
   artifacts:
     paths:
       - $ARTIFACTS_DIR

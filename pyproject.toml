@@ -55,6 +55,7 @@ stest = [
     "types-pywin32; sys_platform == 'win32'"
 ]
 utest = ["unittest-xml-reporting"]
+build = ["build"]
 publish = ["twine"]
 
 [project_urls]

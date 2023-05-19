@@ -36,10 +36,13 @@ The unit tests can be run with
 
 ## Building
 
-Building is performed by changing to the Build directory and running the build.py script which will perform two actions
+The build tools can be installed with
 
-1. run the unit tests and place the results in Build/unit_test_results/junit.xml
-1. run the setup.py to create a PyPi distribution in Build/artifacts
+    pip install -U -e .[build]
+
+The build can be run with
+
+    python -m build
 
 ## Publishing a Release
 
