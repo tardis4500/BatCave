@@ -127,45 +127,6 @@ class PythonVersionError(BatCaveException):
     BAD_VERSION = BatCaveError(1, Template('Python $needed required but $used used'))
 
 
-class switch:  # pylint: disable=invalid-name
-    """Class to implement a Pythonic switch statement.
-
-    Taken verbatim from: http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/410692
-
-    Title: Readable switch construction without lambdas or dictionaries
-    Submitter: Brian Beck (other recipes)
-    Last Updated: 2005/04/26
-    Version no: 1.7
-
-    Description:
-        Python's lack of a 'switch' statement has garnered much discussion and even a PEP.
-        The most popular substitute uses dictionaries to map cases to functions, which requires lots of defs or lambdas.
-        While the approach shown here may be O(n) for cases, it aims to duplicate C's original 'switch' functionality and
-        structure with reasonable accuracy.
-    """
-
-    def __init__(self, value: Any, /):
-        self.value = value
-        self.fall = False
-        self.first = True
-
-    def __iter__(self):
-        if self.first:
-            self.first = False
-            yield self.match
-        else:
-            return
-
-    def match(self, *args) -> bool:
-        """Indicate whether or not to enter a case suite."""
-        if self.fall or not args:
-            return True
-        if self.value in args:
-            self.fall = True
-            return True
-        return False
-
-
 def bool_to_str(expr: bool | str, /) -> str:
     """Converts an expression to a lowercase boolean string value.
 
