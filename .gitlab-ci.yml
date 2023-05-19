@@ -43,7 +43,7 @@ static_analysis:
     - pip install -e .[stest]
     - pylint batcave
     - flake8 batcave
-    - mypy --install-types batcave
+    - mypy batcave
 
 unit_tests:
   stage: unit_tests
