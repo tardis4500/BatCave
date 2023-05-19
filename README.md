@@ -7,6 +7,8 @@ A useful collection of tools for writing Python programs.
 Development is best accomplished using virtualenv or virtualenv-wrapper where a virtual environment can be generated:
 
     mkvirtualenv batcave
+    python -m pip install -U pip
+    pip install -U setuptools wheel
 
 ## Testing
 
@@ -21,6 +23,16 @@ The static analysis test can be run with
     pylint batcave
     flake8 batcave
     mypy batcave
+
+### Unit Tests
+
+The unit testing tools can be installed with
+
+    pip install -U -e .[utest]
+
+The unit tests can be run with
+
+    python -m xmlrunner discover -o unit_test_results
 
 ## Building
 
@@ -41,4 +53,4 @@ This is the procedure for releasing BatCave
 1. Move issues to "Closed"
 1. Close Milestone
 
-<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy -->
+<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy xmlrunner -->

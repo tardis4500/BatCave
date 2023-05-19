@@ -11,7 +11,7 @@ stages:
 variables:
   PRODUCT: BatCave
   ARTIFACTS_DIR: dist
-  UNIT_TEST_DIR: build/unit_test_results
+  UNIT_TEST_DIR: unit_test_results
   PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
   RELEASE: 42.0.0
   GIT_AUTHOR_NAME: $GITLAB_USER_NAME
@@ -48,6 +48,9 @@ static_analysis:
 unit_tests:
   stage: unit_tests
   extends: .builder
+  script:
+    - pip install -e .[utest]
+    - python -m xmlrunner discover -o $UNIT_TEST_DIR
   artifacts:
     reports:
       junit: $UNIT_TEST_DIR/*

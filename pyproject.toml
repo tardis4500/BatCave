@@ -54,7 +54,7 @@ stest = [
     "types-requests",
     "types-pywin32; sys_platform == 'win32'"
 ]
-utest = ["xmlrunner"]
+utest = ["unittest-xml-reporting"]
 publish = ["twine"]
 
 [project_urls]
