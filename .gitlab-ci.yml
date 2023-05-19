@@ -33,6 +33,8 @@ cache:
     - apt-get -y install build-essential git libffi-dev libssl-dev
     - python -m pip install -U pip
     - pip install -U setuptools wheel
+  script:
+    - exit 1
 
 static_analysis:
   stage: static_analysis
