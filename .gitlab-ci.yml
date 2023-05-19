@@ -1,5 +1,15 @@
 image: python:3.10-slim
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == master || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
+
 stages:
   - static_analysis
   - unit_tests
@@ -23,14 +33,12 @@ cache:
   paths:
     - .local/share/virtualenvs
 
-.builder:
-  except:
-    - tags
+.base:
   before_script:
     - cat /etc/os-release
     - python -V
-    - apt-get -y update
-    - apt-get -y install build-essential git libffi-dev libssl-dev
+    # - apt-get -y update
+    # - apt-get -y install build-essential git libffi-dev libssl-dev
     - python -m pip install -U pip
     - pip install -U setuptools wheel
   script:
@@ -38,7 +46,7 @@ cache:
 
 static_analysis:
   stage: static_analysis
-  extends: .builder
+  extends: .base
   script:
     - pip install -e .[stest]
     - pylint batcave
@@ -47,7 +55,7 @@ static_analysis:
 
 unit_tests:
   stage: unit_tests
-  extends: .builder
+  extends: .base
   script:
     - pip install -e .[utest]
     - python -m xmlrunner discover -o $UNIT_TEST_DIR
@@ -57,7 +65,7 @@ unit_tests:
 
 build:
   stage: build
-  extends: .builder
+  extends: .base
   script:
     - pip install -e .[build]
     - python -m build
@@ -67,20 +75,15 @@ build:
 
 install_test:
   stage: install_test
-  except:
-    - tags
-  before_script:
-    - echo Testing install
   script:
     - pip install $PYPI_PKG
 
 .publisher:
-  extends: .builder
-  only:
-    - master
-    - /^release\/.*$/
-  when: manual
-  allow_failure: false
+  extends: .base
+  rules:
+    - if: $CI_COMMIT_BRANCH == master || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
+      when: manual
+      allow_failure: false
 
 publish_test:
   stage: publish_test
