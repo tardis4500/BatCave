@@ -9,10 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### [42.0.0] - Unreleased
 
+- Added:
+  - Added new TypeAlias typing. (GitLab #62)
+
 - Changed
   - Upgrade minimum Python to 3.10. (GitLab #62)
+  - Replaced switch with new match syntax. (GitLab #62)
 
-<!-- This comment will prevent merge conflicts -->
+- Removed
+  - Removed switch support. (GitLab #66)
+  - Removed xml_flat and xml_single support from data module. (GitLab #66)
+
 ## Release History
 
 ### [41.0.0] - 2022-09-20

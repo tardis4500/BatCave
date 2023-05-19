@@ -1,9 +1,19 @@
 image: python:3.10-slim
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
+
 stages:
   - static_analysis
   - unit_tests
-  - ci_build
+  - build
   - install_test
   - publish_test
   - publish
@@ -11,7 +21,7 @@ stages:
 variables:
   PRODUCT: BatCave
   ARTIFACTS_DIR: dist
-  UNIT_TEST_DIR: build/unit_test_results
+  UNIT_TEST_DIR: unit_test_results
   PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
   RELEASE: 42.0.0
   GIT_AUTHOR_NAME: $GITLAB_USER_NAME
@@ -23,22 +33,16 @@ cache:
   paths:
     - .local/share/virtualenvs
 
-.builder:
-  except:
-    - tags
+.base:
   before_script:
     - cat /etc/os-release
     - python -V
-    - apt-get -y update
-    - apt-get -y install build-essential git libffi-dev libssl-dev
     - python -m pip install -U pip
     - pip install -U setuptools wheel
-  script:
-    - exit 1
 
 static_analysis:
   stage: static_analysis
-  extends: .builder
+  extends: .base
   script:
     - pip install -e .[stest]
     - pylint batcave
@@ -47,36 +51,37 @@ static_analysis:
 
 unit_tests:
   stage: unit_tests
-  extends: .builder
+  extends: .base
+  script:
+    - pip install -e .[utest]
+    - python -m xmlrunner discover -o $UNIT_TEST_DIR
   artifacts:
     reports:
       junit: $UNIT_TEST_DIR/*
 
-ci_build:
-  stage: ci_build
-  extends: .builder
-  variables:
-    BUILD_ARGS: $RELEASE $CI_JOB_ID
+build:
+  stage: build
+  extends: .base
+  script:
+    - pip install -e .[build]
+    - python -m build
   artifacts:
     paths:
       - $ARTIFACTS_DIR
 
 install_test:
   stage: install_test
-  except:
-    - tags
-  before_script:
-    - echo Testing install
   script:
     - pip install $PYPI_PKG
 
 .publisher:
-  extends: .builder
-  only:
-    - master
-    - /^release\/.*$/
-  when: manual
-  allow_failure: false
+  extends: .base
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
+      when: manual
+      allow_failure: false
+  script:
+    - python build.py publish $BUILD_ARGS
 
 publish_test:
   stage: publish_test
@@ -92,4 +97,4 @@ publish:
   variables:
     BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_PRODUCTION_TOKEN
 
-# cSpell:ignore pypi virtualenvs
+# cSpell:ignore pypi virtualenvs batcave stest mypy utest xmlrunner

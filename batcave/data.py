@@ -81,9 +81,9 @@ from xml.etree.ElementTree import ElementTree
 import xml.etree.ElementTree as xml_etree
 
 # Import internal modules
-from .lang import DEFAULT_ENCODING, switch, BatCaveError, BatCaveException, PathName
+from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, PathName
 
-SourceType = Enum('SourceType', ('text', 'ini', 'pickle', 'xml_single', 'xml_flat', 'xml'))
+SourceType = Enum('SourceType', ('text', 'ini', 'pickle', 'xml'))
 
 
 class DataError(BatCaveException):
@@ -193,25 +193,15 @@ class DataSource:
         Returns:
             Nothing.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 self._source = {}
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 self._source = RawConfigParser()
-                break
-            if case(SourceType.xml_single):
-                pass
-            if case(SourceType.xml_flat):
-                pass
-            if case(SourceType.xml):
+            case SourceType.xml:
                 self._source = xml_etree.Element(self.name)
                 self._connection = xml_etree.ElementTree(self._source)
-                break
-        if self.type != SourceType.xml_single:
-            self.add_table(self.INFO_TABLE).add_row(schema=str(self._schema))
+        self.add_table(self.INFO_TABLE).add_row(schema=str(self._schema))
         self.commit()
 
     def _load(self) -> None:  # pylint: disable=too-many-branches
@@ -225,8 +215,8 @@ class DataSource:
             DataError.BAD_ROOT: If the root of the data source does not match the name.
             DataError.BAD_URL: If the data source is specified as a malformed URL.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
+        match self.type:
+            case SourceType.text:
                 self._source = {}
                 table_name: str = ''
                 with open(self._connect_info, encoding=DEFAULT_ENCODING) as data_source:
@@ -242,21 +232,14 @@ class DataSource:
                                 raise DataError(DataError.BAD_COLUMN, col=pair, line=line) from err
                             row[col] = val
                         self._source[table_name].append(row)
-                break
-            if case(SourceType.pickle):
+            case SourceType.pickle:
                 with open(self._connect_info, encoding=DEFAULT_ENCODING) as data_source:
                     self._source = pickle_load(cast(IO[bytes], data_source))
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 self._source = RawConfigParser()
                 with open(self._connect_info, encoding=DEFAULT_ENCODING) as ini_tmp:
                     self._source.read_file(ini_tmp)
-                break
-            if case(SourceType.xml_single):
-                pass
-            if case(SourceType.xml_flat):
-                pass
-            if case(SourceType.xml):
+            case SourceType.xml:
                 if isinstance(self._connect_info, list):
                     self._connection = xml_etree.ElementTree(xml_etree.fromstring(' '.join(self._connect_info)))
                 else:
@@ -276,7 +259,6 @@ class DataSource:
                 self._source = self._connection.getroot()
                 if self._source.tag != self.name:
                     raise DataError(DataError.BAD_ROOT, source_name=self._connect_info, root_name=self._source.tag, expected=self.name)
-                break
 
     def _validate_schema(self) -> None:
         """Determine if the data source schema is valid.
@@ -339,24 +321,15 @@ class DataSource:
         Raises:
             DataError.INVALID_OPERATION: If the data source type does not support adding a table.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 self._source[name] = []
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 self._source.add_section(name)
                 self._source.set(name, self.INI_ROW_LIST_OPT, '')
-                break
-            if case(SourceType.xml_single):
-                raise DataError(DataError.INVALID_OPERATION, function='add_table', source_type=self.type)
-            if case(SourceType.xml_flat):
-                break
-            if case(SourceType.xml):
+            case SourceType.xml:
                 table = xml_etree.SubElement(self._source, self._XML_TABLE_TAG)
                 table.attrib[self._XML_TABLE_NAME_ATTRIBUTE] = name
-                break
         return self.get_table(name)
 
     def close(self) -> None:
@@ -376,32 +349,24 @@ class DataSource:
         Returns:
             Nothing.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
+        match self.type:
+            case SourceType.text:
                 self._connection = open(self._connect_info, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                 for (table_name, rows) in self._source.items():
                     self._connection.write(self._TEXT_TABLE_DELIMITER + table_name + '\n')
                     for row in rows:
                         self._connection.write(self._TEXT_TABLE_DELIMITER.join([f'{col}{self._TEXT_VAL_DELIMITER}{row[col]}' for col in row]) + '\n')
                 self._connection.close()
-                break
-            if case(SourceType.pickle):
+            case SourceType.pickle:
                 self._connection = open(self._connect_info, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                 pickle_dump(self._source, cast(IO, self._connection))
                 self._connection.close()
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 self._connection = open(self._connect_info, 'w', encoding=DEFAULT_ENCODING)  # pylint: disable=consider-using-with
                 self._source.write(self._connection)
                 self._connection.close()
-                break
-            if case(SourceType.xml_single):
-                pass
-            if case(SourceType.xml_flat):
-                pass
-            if case(SourceType.xml):
+            case SourceType.xml:
                 cast(ElementTree, self._connection).write(cast(str, self._connect_info), 'ISO-8859-1')
-                break
 
     def get_table(self, name: str, /) -> 'DataTable':  # pylint: disable=too-many-branches
         """Get the requested data table.
@@ -416,31 +381,19 @@ class DataSource:
             DataError.BAD_TABLE: If the requested table is not found.
         """
         table = None
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 if name in self._source:
                     table = self._source[name]
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 if self._source.has_section(name):
                     row_list = self._source.get(name, self.INI_ROW_LIST_OPT)
                     table = [int(r) for r in row_list.split(',')] if row_list else []
-                break
-            if case(SourceType.xml_single):
-                if name == self.name:
-                    table = self._source
-                break
-            if case(SourceType.xml_flat):
-                table = self._source.findall(name)
-                break
-            if case(SourceType.xml):
+            case SourceType.xml:
                 for tmp_table in self._source.iter(self._XML_TABLE_TAG):
                     if tmp_table.get(self._XML_TABLE_NAME_ATTRIBUTE) == name:
                         table = tmp_table
                         break
-                break
         if table is None:
             raise DataError(DataError.BAD_TABLE, table_name=name, source_name=self.name)
         return DataTable(self.type, name, table, self._source)
@@ -452,24 +405,13 @@ class DataSource:
             The list of table in the data source.
         """
         table_names: List[str] = []
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 table_names = [t for t in self._source]  # pylint: disable=unnecessary-comprehension
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 table_names = [t for t in self._source.sections() if self.INI_ROW_TAG not in t]
-                break
-            if case(SourceType.xml_single):
-                table_names = [self.name]
-                break
-            if case(SourceType.xml_flat):
-                table_names = self._source.findall()
-                break
-            if case(SourceType.xml):
+            case SourceType.xml:
                 table_names = [t.get(self._XML_TABLE_NAME_ATTRIBUTE) for t in self._source.iter(self._XML_TABLE_TAG)]
-                break
         return [self.get_table(t) for t in table_names]
 
     def has_table(self, name: str, /) -> bool:
@@ -481,28 +423,17 @@ class DataSource:
         Returns:
             Returns True if the named table exists in the data source, False otherwise.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 if name in self._source:
                     return True
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 if self._source.has_section(name):
                     return True
-                break
-            if case(SourceType.xml_single):
-                if name == self.name:
-                    return True
-                break
-            if case(SourceType.xml_flat):
-                return True
-            if case(SourceType.xml):
+            case SourceType.xml:
                 for tmp_table in self._source.iter(self._XML_TABLE_TAG):
                     if tmp_table.get(self._XML_TABLE_NAME_ATTRIBUTE) == name:
                         return True
-                break
         return False
 
 
@@ -549,25 +480,13 @@ class DataRow:
         if not self.has_col(col):
             return
 
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 del self._row[col]
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 self._parent.remove_option(col)
-                break
-            if case(SourceType.xml_single):
-                if col == self._XML_SINGLE_COL_NAME:
-                    del self._row.attrib[col]
-                    break
-            if case(SourceType.xml):
+            case SourceType.xml:
                 self._row.remove(self._row.find(col))
-                break
-            if case(SourceType.xml_flat):
-                del self._row.attrib[col]
-                break
 
     def delete(self) -> None:
         """Delete this data row.
@@ -575,11 +494,10 @@ class DataRow:
         Returns:
             Nothing.
         """
-        for case in switch(self.type):
-            if case(SourceType.ini):
+        match self.type:
+            case SourceType.ini:
                 self._parent.remove_section(self._row)
-                break
-            if case():
+            case _:
                 self._parent.remove(self._row)
 
     def get_columns(self) -> List[str]:
@@ -588,21 +506,12 @@ class DataRow:
         Returns:
             The list of columns in the data row.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 return list(self._row.keys())
-            if case(SourceType.ini):
+            case SourceType.ini:
                 return self._parent.options(self._row)
-            if case(SourceType.xml_single):
-                cols = [e.tag for e in self._row.getiterator()]
-                if self._row.get(self._XML_SINGLE_COL_NAME):
-                    cols.append(self._XML_SINGLE_COL_NAME)
-                return cols
-            if case(SourceType.xml_flat):
-                return list(self._row.attrib.keys())
-            if case(SourceType.xml):
+            case SourceType.xml:
                 return [e.tag for e in list(self._row) if e.tag != self._XML_ROW_TAG]
         return []
 
@@ -615,24 +524,14 @@ class DataRow:
         Returns:
             The value of the column.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 if self.has_col(col):
                     return self._row[col]
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 if self.has_col(col):
                     return self._parent.get(self._row, col)
-                break
-            if case(SourceType.xml_single):
-                if col == self._XML_SINGLE_COL_NAME:
-                    return self._row.get(col)
-                break
-            if case(SourceType.xml_flat):
-                return self._row.get(col)
-            if case(SourceType.xml):
+            case SourceType.xml:
                 return self._row.findtext(col)
         return ''
 
@@ -645,22 +544,15 @@ class DataRow:
         Returns:
             Returns True if the named column exists in the data source, False otherwise.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 return col in self._row
-            if case(SourceType.ini):
+            case SourceType.ini:
                 return self._parent.has_option(self._row, col)
-            if case(SourceType.xml_single):
-                if col == self._XML_SINGLE_COL_NAME:
-                    return bool(self._row.get(col))
-            if case(SourceType.xml):
+            case SourceType.xml:
                 if self._row.find(col) is not None:
                     return True
                 return False
-            if case(SourceType.xml_flat):
-                return bool(self._row.get(col))
         return False
 
     def setvalue(self, col: str, value: str, /) -> None:
@@ -673,28 +565,16 @@ class DataRow:
         Returns:
             Nothing.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
+        match self.type:
+            case SourceType.text | SourceType.pickle:
                 self._row[col] = value
-                break
-            if case(SourceType.ini):
+            case SourceType.ini:
                 self._parent.set(self._row, col, value)
-                break
-            if case(SourceType.xml_single):
-                if col == self._XML_SINGLE_COL_NAME:
-                    self._row.attrib[col] = value
-                    break
-            if case(SourceType.xml):
+            case SourceType.xml:
                 col_ref = self._row.find(col)
                 if col_ref is None:
                     col_ref = xml_etree.SubElement(self._row, col)
                 col_ref.text = value
-                break
-            if case(SourceType.xml_flat):
-                self._row.attrib[col] = value
-                break
 
 
 class DataTable:
@@ -745,18 +625,10 @@ class DataTable:
         Returns:
             The parent of a row in this table.
         """
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
-                pass
-            if case(SourceType.xml):
+        match self.type:
+            case SourceType.text | SourceType.pickle | SourceType.xml:
                 return self._table
-            if case(SourceType.ini):
-                pass
-            if case(SourceType.xml_single):
-                pass
-            if case(SourceType.xml_flat):
+            case SourceType.ini:
                 return self._parent
         raise DataError(DataError.INVALID_TYPE)
 
@@ -774,27 +646,15 @@ class DataTable:
             Nothing.
         """
         raw_row: Any = None
-        for case in switch(self.type):
-            if case(SourceType.text):
-                pass
-            if case(SourceType.pickle):
-                pass
-            if case(SourceType.ini):
+        match self.type:
+            case SourceType.text | SourceType.pickle | SourceType.xml:
                 row_num = (int(self._table[-1]) + 1) if self._table else 1
                 self._parent.add_section(self._INI_ROW_FORMAT % (self.name, row_num))
                 self._table.append(row_num)
                 self._parent.set(self.name, DataSource.INI_ROW_LIST_OPT, ','.join([str(r) for r in self._table]))
                 raw_row = self._INI_ROW_FORMAT % (self.name, row_num)
-                break
-            if case(SourceType.xml_single):
-                raw_row = xml_etree.SubElement(self._parent, self._XML_SINGLE_ROW_TAG)
-                break
-            if case(SourceType.xml_flat):
-                raw_row = xml_etree.SubElement(self._parent, self.name)
-                break
-            if case(SourceType.xml):
+            case SourceType.xml:
                 raw_row = xml_etree.SubElement(self._table, self._XML_ROW_TAG)
-                break
         row = DataRow(self.type, raw_row, self._get_row_parent())
         for (var, val) in values.items():
             row.setvalue(var, val)

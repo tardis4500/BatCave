@@ -50,7 +50,7 @@ from xml.etree.ElementTree import fromstringlist as xml_parse, Element
 
 # Import BatCave packages
 from .fileutil import slurp
-from .lang import DEFAULT_ENCODING, is_debug, str_to_pythonval, switch, BatCaveError, BatCaveException, PathName, WIN32
+from .lang import DEFAULT_ENCODING, is_debug, str_to_pythonval, BatCaveError, BatCaveException, PathName, WIN32
 
 OutputFormat = Enum('OutputFormat', ('text', 'html', 'csv'))
 
@@ -116,20 +116,16 @@ class Formatter:
         self.prefix = ''
         self.link_regex = re_compile(f'\\{self._LINK_PRELIM}(.+?)(\\|(.+))?\\}}')
 
-        for case in switch(self.format):
-            if case(OutputFormat.csv):
-                pass
-            if case(OutputFormat.text):
+        match self.format:
+            case OutputFormat.csv | OutputFormat.text:
                 self.bos = self.eos = self._bol = ''
                 self.eol = '\n'
-                break
-            if case(OutputFormat.html):
+            case OutputFormat.html:
                 self.bos = '<ul>'
                 self.eos = '</ul>'
                 self._bol = '<h2><li>'
                 self.eol = '</li></h2>'
-                break
-            if case():
+            case _:
                 raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
 
     @property
@@ -137,14 +133,13 @@ class Formatter:
         """A read-only property which returns the beginning of line formatting."""
         if self.level == 0:
             sep = ',' if (self.format == OutputFormat.csv) else '. '
-            for case in switch(self.format):
-                if case(OutputFormat.csv):
-                    pass
-                if case(OutputFormat.text):
+            match self.format:
+                case OutputFormat.csv | OutputFormat.text:
                     return chr(64 + self.count) + sep
-                if case(OutputFormat.html):
+                case OutputFormat.html:
                     return self._bol
-                raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
+                case _:
+                    raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         else:
             if self.format == OutputFormat.csv:
                 space = ''
@@ -176,18 +171,15 @@ class Formatter:
         link = match.group(1)
         text = match.group(3) if (len(match.groups()) == 3) else ''
         replace_with = ''
-        for case in switch(self.format):
-            if case(OutputFormat.csv):
+        match self.format:
+            case OutputFormat.csv:
                 replace_with = f'"=HYPERLINK(""{link}"", ""{text}"")"' if text else link
-                break
-            if case(OutputFormat.text):
+            case OutputFormat.text:
                 replace_with = f'{text} ({link})' if text else link
-                break
-            if case(OutputFormat.html):
+            case OutputFormat.html:
                 text = text if text else link
                 replace_with = f'<a href="{link}">{text}</a>'
-                break
-            if case():
+            case _:
                 raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.format)
         return line.replace(replace_what, replace_with)
 
@@ -601,21 +593,18 @@ class Procedure:
         header = footer = ''
         self.formatter = Formatter(self.output_format)
         self.setup_expander(env)
-        for case in switch(self.output_format):
-            if case(OutputFormat.csv):
+        match self.output_format:
+            case OutputFormat.csv:
                 header = f',{self.header.strip()} for {{var:Environment}}\n'
                 footer = ''
-                break
-            if case(OutputFormat.text):
+            case OutputFormat.text:
                 header = f'{self.header.strip()} for {{var:Environment}}\n'
                 footer = ''
-                break
-            if case(OutputFormat.html):
+            case OutputFormat.html:
                 header = '<html><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><body><center>'
                 header += f'<h1>{self.header} for {{var:Environment}}</h1></center><ol type="A">'
                 footer = '</ol></body></html>'
-                break
-            if case():
+            case _:
                 raise ProcedureError(ProcedureError.BAD_FORMAT, format=self.output_format)
 
         content = ''

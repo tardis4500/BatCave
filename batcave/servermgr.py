@@ -15,7 +15,7 @@ from platform import node
 from socket import getfqdn, gethostbyname, gaierror
 from string import Template
 from time import sleep
-from typing import cast, List, Optional, Tuple, Union
+from typing import cast, List, Optional, Tuple, TypeAlias
 from xml.etree.ElementTree import Element, SubElement, parse as xml_parse
 
 # Import third-party modules
@@ -25,7 +25,7 @@ from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
 from .platarch import OsType
 from .serverpath import ServerPath  # pylint: disable=cyclic-import
 from .sysutil import syscmd, CMDError
-from .lang import switch, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
+from .lang import BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if sys.platform == 'win32':
     from pywintypes import com_error  # pylint: disable=no-name-in-module,import-error
@@ -52,9 +52,9 @@ ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running
 ServiceType = Enum('ServiceType', ('systemd', 'sysv', 'upstart', 'windows'))
 TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
 
-ServerType = Union[str, 'Server']
-ServerManager = Union[WMI, 'OSManager']
-WMIObject = Union[bool, WMI]
+ServerType: TypeAlias = str | 'Server'
+ServerManager: TypeAlias = WMI | 'OSManager'
+WMIObject: TypeAlias = bool | WMI
 
 
 class ServerObjectManagementError(BatCaveException):
@@ -463,10 +463,10 @@ class Server:
         Raises:
             ServerObjectManagementError.NOT_UNIQUE: If more than one management object was found.
         """
-        for case in switch(len(results := self.get_management_objects(item_type, wmi, **filters))):
-            if case(0):
+        match len(results := self.get_management_objects(item_type, wmi, **filters)):
+            case 0:
                 return None
-            if case(1):
+            case 1:
                 return results[0]
         raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=item_type, filters=filters)
 
@@ -584,7 +584,7 @@ class OSManager:
             raise
 
     def LinuxProcess(self, CommandLine: Optional[str] = None, ExecutablePath: Optional[str] = None,
-                     Name: Optional[str] = None, ProcessId: Optional[str] = None) -> List['LinuxProcess']:
+                     Name: Optional[str] = None, ProcessId: Optional[int] = None) -> List['LinuxProcess']:
         """Get the specified Linux process.
 
         Args:
@@ -611,11 +611,11 @@ class OSManager:
 
         process_list = [p for p in process_iter(attrs=('pid', 'cmdline', 'exe', 'name'))]  # pylint: disable=unnecessary-comprehension
         if CommandLine:
-            return [LinuxProcess(p.pid) for p in process_list if p.info['cmdline'] == CommandLine]
+            return [LinuxProcess(p.pid) for p in process_list if p.info['cmdline'] == CommandLine]  # type: ignore[attr-defined]
         if ExecutablePath:
-            return [LinuxProcess(p.pid) for p in process_list if p.info['exe'] == ExecutablePath]
+            return [LinuxProcess(p.pid) for p in process_list if p.info['exe'] == ExecutablePath]  # type: ignore[attr-defined]
         if Name:
-            return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]
+            return [LinuxProcess(p.pid) for p in process_list if p.info['name'] == Name]  # type: ignore[attr-defined]
         return []
 
     def LinuxService(self, Name: str, service_type: ServiceType, /) -> 'LinuxService':
@@ -771,7 +771,7 @@ class LinuxService(NamedOSObject):
 class LinuxProcess:
     """Class to create a universal abstract interface for a Linux process."""
 
-    def __init__(self, ProcessId: str, /):
+    def __init__(self, ProcessId: int, /):
         """
         Args:
             ProcessId: The process ID of the process.
@@ -851,20 +851,16 @@ class Win32_ScheduledTask(NamedOSObject):
             ServerObjectManagementError.BAD_OBJECT_SIGNAL: If the signal is unknown.
         """
         control_args: Tuple = tuple()
-        for case in switch(signal):
-            if case(TaskSignal.enable):
+        match signal:
+            case TaskSignal.enable:
                 control_args = ('/Change', '/ENABLE')
-                break
-            if case(TaskSignal.disable):
+            case TaskSignal.disable:
                 control_args = ('/Change', '/DISABLE')
-                break
-            if case(TaskSignal.run):
+            case TaskSignal.run:
                 control_args = ('/Run',)
-                break
-            if case(TaskSignal.end):
+            case TaskSignal.end:
                 control_args = ('/End',)
-                break
-            if case():
+            case _:
                 raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         self._run_task_scheduler(*control_args)
@@ -980,61 +976,49 @@ class Service(ManagementObject):
             ServerObjectManagementError.BAD_TRANSITION: If ignore_state is False and the requested action is not valid for the current state.
             ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
         """
-        for case in switch(signal):
-            if case(self.ServiceSignal.enable, self.ServiceSignal.start, self.ServiceSignal.resume, self.ServiceSignal.restart):
-                for signal_case in switch(signal):
-                    if signal_case(self.ServiceSignal.enable):
+        match signal:
+            case self.ServiceSignal.enable | self.ServiceSignal.start | self.ServiceSignal.resume | self.ServiceSignal.restart:
+                match signal:
+                    case self.ServiceSignal.enable:
                         control_method = 'EnableService'
-                        break
-                    if signal_case(self.ServiceSignal.start):
+                    case self.ServiceSignal.start:
                         control_method = 'StartService'
-                        break
-                    if signal_case(self.ServiceSignal.resume):
+                    case self.ServiceSignal.resume:
                         control_method = 'ResumeService'
-                        break
-                    if signal_case(self.ServiceSignal.restart):
+                    case self.ServiceSignal.restart:
                         control_method = 'RestartService'
-                        break
                 final_state = self.ServiceState.Running
-                break
-            if case(self.ServiceSignal.disable, self.ServiceSignal.stop):
+            case self.ServiceSignal.disable | self.ServiceSignal.stop:
                 control_method = 'StopService' if self.ServiceSignal.stop else 'DisableService'
                 final_state = self.ServiceState.Stopped
-                break
-            if case(self.ServiceSignal.pause):
+            case self.ServiceSignal.pause:
                 control_method = 'PauseService'
                 final_state = self.ServiceState.Paused
-                break
-            if case():
+            case _:
                 raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         control_method = final_state = ''
         if not ignore_state:
             wait_for = self.ServiceState.Running
-            for case in switch(self.state):
-                if case(self.ServiceState.StartPending, self.ServiceState.Running, self.ServiceState.ContinuePending):
+            match self.state:
+                case self.ServiceState.StartPending | self.ServiceState.Running | self.ServiceState.ContinuePending:
                     wait_for = self.ServiceState.Running
                     if signal in (self.ServiceSignal.enable, self.ServiceSignal.start, self.ServiceSignal.resume):
                         control_method = ''
-                    break
-                if case(self.ServiceState.StopPending, self.ServiceState.Stopped):
+                case self.ServiceState.StopPending | self.ServiceState.Stopped:
                     wait_for = self.ServiceState.Stopped
-                    for signal_case in switch(signal):
-                        if signal_case(self.ServiceSignal.disable, self.ServiceSignal.stop):
+                    match signal:
+                        case self.ServiceSignal.disable, self.ServiceSignal.stop:
                             control_method = ''
-                            break
-                        if signal_case(self.ServiceSignal.resume, self.ServiceSignal.restart):
+                        case self.ServiceSignal.resume, self.ServiceSignal.restart:
                             control_method = 'StartService'
-                            break
-                        if signal_case(self.ServiceSignal.pause):
+                        case self.ServiceSignal.pause:
                             raise ServerObjectManagementError(ServerObjectManagementError.BAD_TRANSITION, from_state='stopped', to_state='paused')
-                    break
-                if case(self.ServiceState.PausePending, self.ServiceState.Paused):
+                case self.ServiceState.PausePending | self.ServiceState.Paused:
                     wait_for = self.ServiceState.Paused
                     if signal == self.ServiceSignal.start:
                         control_method = 'ResumeService'
-                    break
-                if case():
+                case _:
                     raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_STATE, state=self.state)
             wait_length = 0
             while self.state != wait_for:
@@ -1077,14 +1061,12 @@ class Process(ManagementObject):
             ServerObjectManagementError.STATUS_CHECK_TIMEOUT: If wait is True and timeout is not False and the object has not reached the required state.
         """
         control_method = ''
-        for case in switch(signal):
-            if case(self.ProcessSignal.stop):
+        match signal:
+            case self.ProcessSignal.stop:
                 control_method = 'Terminate'
-                break
-            if case(self.ProcessSignal.kill):
+            case self.ProcessSignal.kill:
                 control_method = 'Terminate' if WIN32 else 'Kill'
-                break
-            if case():
+            case _:
                 raise ServerObjectManagementError(ServerObjectManagementError.BAD_OBJECT_SIGNAL, signal=signal.name)
 
         if control_method:

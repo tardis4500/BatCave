@@ -21,7 +21,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 # Import internal modules
 from .sysutil import popd, pushd
-from .lang import DEFAULT_ENCODING, switch, BatCaveError, BatCaveException, PathName
+from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, PathName
 
 
 class ConvertError(BatCaveException):
@@ -40,7 +40,7 @@ class PackError(BatCaveException):
         INVALID_TYPE: An invalid archive type was specified.
         NO_FILES: No files were found to pack into the archive.
     """
-    INVALID_TYPE = BatCaveError(1, Template('Unknown archive type: $arctype'))
+    INVALID_TYPE = BatCaveError(1, Template('Unknown archive type: $arc_type'))
     NO_FILES = BatCaveError(2, 'No files to add')
 
 
@@ -100,9 +100,9 @@ def eol_convert(filename: PathName, mode: ConversionMode, /, *, backup: bool = T
     """
     filename = Path(filename)
     if backup:
-        if (backupfile := filename.parent / f'{filename.name}.bak').exists():
-            raise ConvertError(ConvertError.BACKUP_EXISTS, file=backupfile)
-        copy(filename, backupfile)
+        if (backup_file := filename.parent / f'{filename.name}.bak').exists():
+            raise ConvertError(ConvertError.BACKUP_EXISTS, file=backup_file)
+        copy(filename, backup_file)
 
     with open(filename, 'rb') as stream:
         data = stream.read().replace(b'\r\n', b'\n')
@@ -113,15 +113,16 @@ def eol_convert(filename: PathName, mode: ConversionMode, /, *, backup: bool = T
         stream.write(data)
 
 
-def pack(arcfile: PathName, items: Iterable, /, itemloc: Optional[PathName] = None, *, arctype: str = '', ignore_empty: bool = True) -> None:  # pylint: disable=too-many-locals,too-many-branches
+def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[PathName] = None, *,  # pylint: disable=too-many-locals,too-many-branches
+         archive_type: str = '', ignore_empty: bool = True) -> None:
     """Create a compressed archive.
 
     Attributes:
-        arcfile: The name of the archive file to create.
+        archive_file: The name of the archive file to create.
         items: The items to put in the archive.
-        itemloc (optional, default=None): The root location of the items. If None, the current directory
-        arctype (optional, default=None): the type of archive to create.
-            If None, the type is dervied from the arcfile extension.
+        item_location (optional, default=None): The root location of the items. If None, the current directory
+        archive_type (optional, default=None): the type of archive to create.
+            If None, the type is derived from the archive_file extension.
         ignore_empty (optional, default=True): If True, allows creating an empty archive.
 
     Returns:
@@ -130,26 +131,26 @@ def pack(arcfile: PathName, items: Iterable, /, itemloc: Optional[PathName] = No
     Raises:
         PackError.NO_FILES: If ignore_empty is False and there are no files to place in the archive.
     """
-    archive = Path(arcfile)
-    arctype = archive.suffix.lstrip('.') if not arctype else arctype
+    archive = Path(archive_file)
+    archive_type = archive.suffix.lstrip('.') if not archive_type else archive_type
 
-    if itemloc:
-        pushd(itemloc)
+    if item_location:
+        pushd(item_location)
 
     tar_name = Path()
-    tarbug = False
-    pkgfile = None
-    if arctype == 'zip':
-        pkgfile = PACKER_CLASSES[arctype](archive, 'w', ZIP_DEFLATED)
+    tar_bug = False
+    pkg_file = None
+    if archive_type == 'zip':
+        pkg_file = PACKER_CLASSES[archive_type](archive, 'w', ZIP_DEFLATED)
         adder = 'write'
     else:
-        if compression := COMPRESSION_TYPE.get(arctype, ''):
+        if compression := COMPRESSION_TYPE.get(archive_type, ''):
             tar_name = archive.with_suffix('.tar')
-            tarbug = True
+            tar_bug = True
         else:
             tar_name = archive
 
-        pkgfile = tar_open(tar_name, 'w:' + compression)  # pylint: disable=consider-using-with
+        pkg_file = tar_open(tar_name, 'w:' + compression)  # pylint: disable=consider-using-with
         adder = 'add'
 
     added = False
@@ -159,19 +160,19 @@ def pack(arcfile: PathName, items: Iterable, /, itemloc: Optional[PathName] = No
             if (adder == 'write') and item.is_dir():
                 for (root, _unused_dirs, files) in walk(item):
                     for files_name in files:
-                        getattr(pkgfile, adder)(Path(root, files_name))
+                        getattr(pkg_file, adder)(Path(root, files_name))
             else:
-                getattr(pkgfile, adder)(item)
-    pkgfile.close()
+                getattr(pkg_file, adder)(item)
+    pkg_file.close()
     if (not ignore_empty) and (not added):
         raise PackError(PackError.NO_FILES)
 
-    if tarbug:
+    if tar_bug:
         if archive.exists():
             archive.unlink()
         tar_name.rename(archive)
 
-    if itemloc:
+    if item_location:
         popd()
 
 
@@ -201,24 +202,24 @@ def spew(filename: PathName, outlines: Iterable, /) -> None:
         output_stream.writelines(outlines)
 
 
-def unpack(arcfile: PathName, dest: Optional[PathName] = None, /, *, arctype: str = '') -> None:
+def unpack(archive_file: PathName, dest: Optional[PathName] = None, /, *, archive_type: str = '') -> None:
     """Extract the contents of a compressed file.
 
     Attributes:
-        arcfile: The name of the archive file
+        archive_file: The name of the archive file
         dest (optional, default=None): The root location to which to extract. If None, the current directory
-        arctype (optional, default=None): the type of archive being extracted.
-            If None, the type is dervied from the arcfile extension.
+        archive_type (optional, default=None): the type of archive being extracted.
+            If None, the type is derived from the archive_file extension.
 
     Returns:
         Nothing.
 
     Raises:
-        PackError.INVALID_TYPE: If the arctype is unknown.
+        PackError.INVALID_TYPE: If the archive_type is unknown.
     """
-    archive = Path(arcfile).resolve()
-    if not arctype:
-        arctype = 'tar' if ('.tar.' in archive.name) else archive.suffix.lstrip('.')
+    archive = Path(archive_file).resolve()
+    if not archive_type:
+        archive_type = 'tar' if ('.tar.' in archive.name) else archive.suffix.lstrip('.')
 
     if dest:
         use_dest = Path(dest)
@@ -226,30 +227,28 @@ def unpack(arcfile: PathName, dest: Optional[PathName] = None, /, *, arctype: st
         pushd(use_dest)
 
     lister = extractor = ''
-    pkgfile: Any = None
-    for case in switch(arctype):
-        if case('bz2', 'gz', 'xz', 'zip'):
-            pkgfile = PACKER_CLASSES[arctype](archive)
+    pkg_file: Any = None
+    match archive_type:
+        case 'bz2' | 'gz' | 'xz' | 'zip':
+            pkg_file = PACKER_CLASSES[archive_type](archive)
             lister = 'namelist'
             extractor = 'read'
-            break
-        if case('tar'):
-            pkgfile = tar_open(archive)  # pylint: disable=consider-using-with
+        case 'tar':
+            pkg_file = tar_open(archive)  # pylint: disable=consider-using-with
             lister = 'getmembers'
             extractor = 'extract'
-            break
-        if case():
-            raise PackError(PackError.INVALID_TYPE, arctype=arctype)
+        case _:
+            raise PackError(PackError.INVALID_TYPE, arc_type=archive_type)
 
-    for member_info in getattr(pkgfile, lister)():
-        member_path = Path(member_info.name if (arctype == 'tar') else member_info)
-        data = getattr(pkgfile, extractor)(member_info)
+    for member_info in getattr(pkg_file, lister)():
+        member_path = Path(member_info.name if (archive_type == 'tar') else member_info)
+        data = getattr(pkg_file, extractor)(member_info)
         if extractor == 'read':
             member_path.parent.mkdir(parents=True, exist_ok=True)
             if not (member_path.is_dir() or member_info.endswith('/')):
                 with open(member_path, 'wb') as member_file:
                     member_file.write(data)
-    pkgfile.close()
+    pkg_file.close()
 
     if dest:
         popd()

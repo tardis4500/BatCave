@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 
-name = "tCave"  # batcave.__title__,
+name = "BatCave"  # batcave.__title__,
 version = "42.0.0"  # batcave.__version__,
 
 description = "Python Programming Toolkit"  # batcave.__summary__,
@@ -43,17 +43,19 @@ dependencies = [
 
 [project.optional-dependencies]
 stest = [
-    "flake8", 
-    "flake8-annotations", 
-    "flake8-pyproject", 
-    "mypy", 
-    "pylint", 
+    "flake8",
+    "flake8-annotations",
+    "flake8-pyproject",
+    "mypy",
+    "pylint",
     "PyQt5-stubs",
     "types-PyYAML",
     "types-psutil",
-    "types-requests"
+    "types-requests",
+    "types-pywin32; sys_platform == 'win32'"
 ]
-utest = ["xmlrunner"]
+utest = ["unittest-xml-reporting"]
+build = ["build"]
 publish = ["twine"]
 
 [project_urls]
@@ -78,9 +80,6 @@ disable = ["duplicate-code" , "fixme"]
 module = "docker.*"
 ignore_missing_imports = true
 
-# [mypy-git.*]
-# ignore_missing_imports = True
-
 [[tool.mypy.overrides]]
 module = "kubernetes.*"
 ignore_missing_imports = true
@@ -89,26 +88,14 @@ ignore_missing_imports = true
 module = "P4.*"
 ignore_missing_imports = true
 
-# [mypy-pywintypes.*]
-# ignore_missing_imports = True
+[[tool.mypy.overrides]]
+module = "pywintypes.*"
+ignore_missing_imports = true
 
-# [mypy-setuptools.*]
-# ignore_missing_imports = True
+[[tool.mypy.overrides]]
+module = "win32typing.*"
+ignore_missing_imports = true
 
-# [mypy-xmlrunner.*]
-# ignore_missing_imports = True
-
-# [mypy-win32api.*]
-# ignore_missing_imports = True
-
-# [mypy-win32com.*]
-# ignore_missing_imports = True
-
-# [mypy-win32con.*]
-# ignore_missing_imports = True
-
-# [mypy-win32typing.*]
-# ignore_missing_imports = True
-
-# [mypy-wmi.*]
-# ignore_missing_imports = True
+[[tool.mypy.overrides]]
+module = "wmi.*"
+ignore_missing_imports = true

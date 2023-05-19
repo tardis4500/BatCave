@@ -19,7 +19,7 @@ from docker import DockerClient
 from docker.models.containers import Container as DockerContainer
 
 # Import internal modules
-from .lang import switch, BatCaveError, BatCaveException, CommandResult, WIN32
+from .lang import BatCaveError, BatCaveException, CommandResult, WIN32
 from .sysutil import SysCmdRunner
 
 CloudType = Enum('CloudType', ('local', 'gcloud', 'dockerhub'))
@@ -96,8 +96,8 @@ class Cloud:
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support an API call.
         """
-        for case in switch(self.type):
-            if case(CloudType.gcloud):
+        match self.type:
+            case CloudType.gcloud:
                 return gcloud(*args, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
@@ -124,8 +124,8 @@ class Cloud:
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support login.
         """
-        for case in switch(self.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.type:
+            case CloudType.local | CloudType.dockerhub:
                 return [Container(self, c.name) for c in self._client.containers.list(filters=filters)]
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
@@ -151,18 +151,16 @@ class Cloud:
         Raises:
             CloudError.INVALID_OPERATION: If the value of self.ctype is not in CLOUD_TYPES.
         """
-        for case in switch(self.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.type:
+            case CloudType.local | CloudType.dockerhub:
                 self._client = DockerClient()
                 if self.type == CloudType.dockerhub:
                     self._client.login(*self.auth)
-                break
-            if case(CloudType.gcloud):
+            case CloudType.gcloud:
                 gcloud('auth', 'activate-service-account', key_file=Path.home() / '.ssh' / f'{self.auth[0]}.json', syscmd_args={'ignore_stderr': True})
                 gcloud('auth', 'configure-docker', syscmd_args={'ignore_stderr': True})
                 self._client = True
-                break
-            if case():
+            case _:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.type.name)
 
 
@@ -188,14 +186,12 @@ class Image:
         self._name = name
         self._docker_client: DockerClient = self.cloud.client if isinstance(self.cloud.client, DockerClient) else DockerClient()
         self._ref: Any
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub:
                 self._ref = self.cloud.client.images.get(self.name)
-                break
-            if case(CloudType.gcloud):
+            case CloudType.gcloud:
                 self._ref = None
-                break
-            if case():
+            case _:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def __enter__(self):
@@ -222,10 +218,10 @@ class Image:
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support image tags.
         """
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub:
                 return self._ref.tags
-            if case(CloudType.gcloud):
+            case CloudType.gcloud:
                 args: List[str] = ['--format=json']
                 if image_filter:
                     args += ['--filter=' + image_filter]
@@ -241,8 +237,8 @@ class Image:
         Returns:
             The image object.
         """
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub | CloudType.gcloud:
                 self._ref = self._docker_client.images.pull(self.name)
                 return self
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
@@ -253,8 +249,8 @@ class Image:
         Returns:
             The server log from the push.
         """
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub, CloudType.gcloud):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub | CloudType.gcloud:
                 docker_log = [literal_eval(line.strip()) for line in self._docker_client.images.push(self.name).splitlines() if line]
                 errors = [line['error'] for line in docker_log if 'error' in line]
                 if errors:
@@ -278,8 +274,8 @@ class Image:
         """
         if update:
             self.pull()
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub:
                 return self.cloud.client.containers.run(self.name, detach=detach, **kwargs)
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
@@ -293,17 +289,15 @@ class Image:
             CloudError.INVALID_OPERATION: If the cloud type does not support image tagging.
         """
         new_ref: Optional[Image] = None
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub:
                 self.pull()
                 self._ref.tag(new_tag)
                 (new_ref := Image(self.cloud, new_tag)).push()
-                break
-            if case(CloudType.gcloud):
+            case CloudType.gcloud:
                 self.cloud.exec('container', 'images', 'add-tag', self.name, new_tag, ignore_stderr=True)
                 new_ref = Image(self.cloud, new_tag)
-                break
-            if case():
+            case _:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
         return new_ref
 
@@ -328,11 +322,10 @@ class Container:
         self._cloud = cloud
         self._name = name
         self._ref: Any = None
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub:
                 self._ref = self.cloud.client.containers.get(self.name)
-                break
-            if case():
+            case _:
                 raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
     def __enter__(self):
@@ -353,8 +346,8 @@ class Container:
         Raises:
             CloudError.INVALID_OPERATION: If the cloud type does not support stopping an container.
         """
-        for case in switch(self.cloud.type):
-            if case(CloudType.local, CloudType.dockerhub):
+        match self.cloud.type:
+            case CloudType.local | CloudType.dockerhub:
                 return self._ref.stop()
         raise CloudError(CloudError.INVALID_OPERATION, ctype=self.cloud.type.name)
 
