@@ -3,31 +3,20 @@
 
 # Import standard modules
 from argparse import Namespace
-from datetime import datetime
 import os
 from pathlib import Path
 from random import randint
-from shutil import copyfile
-from stat import S_IWUSR
-from sys import executable as python_executable
-from tempfile import mkdtemp
-from typing import Dict, Optional, Tuple
-from unittest import defaultTestLoader
-from venv import EnvBuilder
 
 # Import third-party-modules
 from requests import delete as rest_delete, post as rest_post
 from twine.commands.upload import main as upload  # type: ignore[missing-imports] # pylint: disable=import-error
-from xmlrunner import XMLTestRunner  # type: ignore[missing-imports] # pylint: disable=import-error
 
 # Import BatCave modules
 from batcave.automation import Action
 from batcave.commander import Argument, Commander, SubParser
-from batcave.expander import file_expander
 from batcave.fileutil import slurp, spew
-from batcave.lang import WIN32
 from batcave.cms import Client, ClientType
-from batcave.sysutil import pushd, popd, rmpath, syscmd, SysCmdRunner
+from batcave.sysutil import SysCmdRunner
 
 PROJECT_ROOT = Path().cwd()
 PRODUCT_NAME = 'BatCave'
@@ -36,14 +25,8 @@ MODULE_NAME = 'batcave'
 SOURCE_DIR = PROJECT_ROOT / MODULE_NAME
 VERSION_FILES = [PROJECT_ROOT / 'pyproject.toml', SOURCE_DIR / '__init__.py']
 
-BUILD_DIR = PROJECT_ROOT / 'build'
 ARTIFACTS_DIR = PROJECT_ROOT / 'dist'
-UNIT_TEST_DIR = BUILD_DIR / 'unit_test_results'
 CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
-
-REQUIREMENTS_FILE = PROJECT_ROOT / 'requirements.txt'
-FREEZE_FILE = PROJECT_ROOT / 'requirements-frozen.txt'
-WIN32_PACKAGES = ('pywin32', 'pywin32-ctypes', 'WMI')
 
 PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
@@ -66,66 +49,14 @@ def main() -> None:
     gitlab_args = [Argument('gitlab_user'), Argument('gitlab_password')]
     release_args = [Argument('release')] + gitlab_args
     publish_args = release_args + pypi_args
-    Commander('BatCave builder', subparsers=[SubParser('dev_build', dev_build),
-                                             SubParser('static_analysis', static_analysis),
-                                             SubParser('unit_tests', unit_tests),
-                                             SubParser('ci_build', ci_build, [Argument('release'), Argument('build-num')]),
-                                             SubParser('publish_test', publish_to_pypi, publish_args),
+    Commander('BatCave builder', subparsers=[SubParser('publish_test', publish_to_pypi, publish_args),
                                              SubParser('publish', publish_to_pypi, publish_args),
-                                             SubParser('freeze', freeze),
                                              SubParser('post_release_update', post_release_update,
                                                        [Argument('-i', '--increment-release', action='store_true'),
                                                         Argument('-t', '--tag-source', action='store_true'),
                                                         Argument('-r', '--create-release', action='store_true'),
                                                         Argument('-c', '--checkin', action='store_true')] + release_args),
-                                             SubParser('delete_release', delete_release, release_args)], default=dev_build).execute()
-
-
-def dev_build(args: Namespace) -> None:
-    """Run a developer build."""
-    static_analysis(args)
-    unit_tests(args)
-    builder(args)
-
-
-def static_analysis(_unused_args: Namespace) -> None:
-    """Run pylint."""
-    SysCmdRunner('pylint', MODULE_NAME, max_line_length=200, max_attributes=10, disable='duplicate-code,fixme').run()
-    SysCmdRunner('flake8', MODULE_NAME, max_line_length=200, ignore='ANN002,ANN003,ANN101,ANN204,ANN401').run()
-    SysCmdRunner('mypy', MODULE_NAME).run()
-
-
-def unit_tests(_unused_args: Namespace) -> None:
-    """Run unit tests."""
-    MESSAGE_LOGGER('Running unit tests', True)
-    remake_dir(UNIT_TEST_DIR, 'unit test')
-    XMLTestRunner(output=str(UNIT_TEST_DIR)).run(defaultTestLoader.discover(str(PROJECT_ROOT)))
-
-
-def ci_build(args: Namespace) -> None:
-    """Run the build on the CI server."""
-    builder(args)
-
-
-def builder(args: Namespace) -> None:
-    """Run setuptools build."""
-    (build_num, release) = get_build_info(args)
-    build_vars = {'product': PRODUCT_NAME,
-                  'build_date': str(datetime.now()),
-                  'build_name': f'{PRODUCT_NAME}_{release}_{build_num}',
-                  'build_num': build_num,
-                  'release': release}
-
-    MESSAGE_LOGGER('Running setuptools build', True)
-    pushd(PROJECT_ROOT)
-    rmpath(BUILD_DIR)
-    remake_dir(ARTIFACTS_DIR, 'artifacts')
-    try:
-        update_version_file(build_vars)
-        SysCmdRunner(python_executable, '-m', 'build').run()
-    finally:
-        popd()
-        update_version_file(reset=True)
+                                             SubParser('delete_release', delete_release, release_args)]).execute()
 
 
 def publish_to_pypi(args: Namespace) -> None:
@@ -184,65 +115,6 @@ def post_release_update(args: Namespace) -> None:
         response.raise_for_status()
 
 
-def remake_dir(dir_path: Path, info_str: str) -> None:
-    """Remove and recreate directory."""
-    if dir_path.exists():
-        MESSAGE_LOGGER(f'Removing old {info_str} directory')
-        rmpath(dir_path)
-    MESSAGE_LOGGER(f'Creating {info_str} directory')
-    dir_path.mkdir(parents=True)
-
-
-def update_version_file(build_vars: Optional[Dict[str, str]] = None, reset: bool = False) -> None:
-    """Updates the version file for the project."""
-    use_vars = build_vars if build_vars else {}
-    verb = 'Resetting' if reset else 'Updating'
-    for version_file in VERSION_FILES:
-        MESSAGE_LOGGER(f'{verb} version file: {version_file}', True)
-        file_orig = Path(str(version_file) + '.orig')
-        if reset:
-            if version_file.exists():
-                version_file.unlink()
-            file_orig.rename(version_file)
-        else:
-            version_file.chmod(version_file.stat().st_mode | S_IWUSR)
-            copyfile(version_file, file_orig)
-            file_expander(file_orig, version_file, var_dict=use_vars)
-            replacers = {'title': PRODUCT_NAME, 'version': use_vars['release']}
-            file_update = []
-            for line in slurp(version_file):
-                for (var, val) in replacers.items():
-                    if line.startswith(f'__{var}__'):
-                        line = f"__{var}__ = '{val}'\n"
-                file_update.append(line)
-            spew(version_file, file_update)
-
-
-def freeze(_unused_args: Namespace) -> None:
-    """Create the requirement-freeze.txt file leaving out the development tools and adding platform specifiers."""
-    venv_dir = Path(mkdtemp())
-    print('Creating virtual environment in:', venv_dir)
-    EnvBuilder(with_pip=True).create(venv_dir)
-    venv_bin = venv_dir / ('Scripts' if WIN32 else 'bin')
-    python = (venv_bin / 'python').with_suffix('.exe' if WIN32 else '')
-    os.environ['PATH'] = os.path.pathsep.join((str(venv_bin), os.environ['PATH']))
-    print('Upgrading pip')
-    syscmd(python, '-m', 'pip', 'install', '-qqq', '--upgrade', 'pip')
-    print('Updating pip install tools')
-    pip('install', '-qqq', 'setuptools', 'wheel', upgrade=True)
-    print('Installing modules from', REQUIREMENTS_FILE)
-    pip('install', '-qqq', upgrade=True, requirement=REQUIREMENTS_FILE)
-    print('Creating frozen requirements file:', FREEZE_FILE)
-    spew(FREEZE_FILE, pip('freeze', requirement=REQUIREMENTS_FILE))
-    rmpath(venv_dir)
-
-
-def get_build_info(args: Namespace) -> Tuple[str, str]:
-    """Return the build number and release."""
-    return (args.build_num if hasattr(args, 'build_num') else '0',
-            args.release if hasattr(args, 'release') else '0.0.0')
-
-
 def delete_release(args: Namespace) -> None:
     """Delete a release from GitLab."""
     MESSAGE_LOGGER(f'Deleting the GitLab release v{args.release}', True)
@@ -253,4 +125,4 @@ def delete_release(args: Namespace) -> None:
 if __name__ == '__main__':
     main()
 
-# cSpell:ignore bdist bldverfile checkin cibuild ctypes pywin sdist syscmd venv xmlrunner batcave fileutil platarch vardict
+# cSpell:ignore batcave fileutil syscmd checkin

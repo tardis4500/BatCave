@@ -37,12 +37,8 @@ cache:
   before_script:
     - cat /etc/os-release
     - python -V
-    # - apt-get -y update
-    # - apt-get -y install build-essential git libffi-dev libssl-dev
     - python -m pip install -U pip
     - pip install -U setuptools wheel
-  script:
-    - exit 1
 
 static_analysis:
   stage: static_analysis
@@ -84,6 +80,8 @@ install_test:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
       when: manual
       allow_failure: false
+  script:
+    - python build.py publish $BUILD_ARGS
 
 publish_test:
   stage: publish_test
