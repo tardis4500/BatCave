@@ -9,14 +9,12 @@ Development is best accomplished using virtualenv or virtualenv-wrapper where a 
     mkvirtualenv batcave
     python -m pip install -U pip
     pip install -U setuptools wheel
+    pip install -U flit
+    flit install -s -deps all
 
 ## Testing
 
 ### Static Analysis
-
-The static analysis tools can be installed with
-
-    pip install -U -e .[stest]
 
 The static analysis test can be run with
 
@@ -26,23 +24,15 @@ The static analysis test can be run with
 
 ### Unit Tests
 
-The unit testing tools can be installed with
-
-    pip install -U -e .[utest]
-
 The unit tests can be run with
 
     python -m xmlrunner discover -o unit_test_results
 
 ## Building
 
-The build tools can be installed with
-
-    pip install -U -e .[build]
-
 The build can be run with
 
-    python -m build
+    flit build
 
 ## Publishing a Release
 
