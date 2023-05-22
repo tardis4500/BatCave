@@ -19,7 +19,7 @@ stages:
   - publish
 
 variables:
-  PRODUCT: BatCave
+  PRODUCT: batcave
   ARTIFACTS_DIR: dist
   UNIT_TEST_DIR: unit_test_results
   PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
@@ -34,26 +34,28 @@ cache:
     - .local/share/virtualenvs
 
 .base:
+  variables:
+    FLIT_ROOT_INSTALL: 1
   before_script:
     - cat /etc/os-release
     - python -V
     - python -m pip install -U pip
     - pip install -U setuptools wheel
+    - pip install -U flit
+    - flit install -s --deps all
 
 static_analysis:
   stage: static_analysis
   extends: .base
   script:
-    - pip install -e .[stest]
-    - pylint batcave
-    - flake8 batcave
-    - mypy batcave
+    - pylint $PRODUCT
+    - flake8 $PRODUCT
+    - mypy $PRODUCT
 
 unit_tests:
   stage: unit_tests
   extends: .base
   script:
-    - pip install -e .[utest]
     - python -m xmlrunner discover -o $UNIT_TEST_DIR
   artifacts:
     reports:
@@ -63,8 +65,9 @@ build:
   stage: build
   extends: .base
   script:
-    - pip install -e .[build]
-    - python -m build
+    - apt-get update
+    - apt-get -y -qq --no-install-recommends install git
+    - flit build
   artifacts:
     paths:
       - $ARTIFACTS_DIR
@@ -81,20 +84,20 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - python build.py publish $BUILD_ARGS
+    - twine upload --config-file $PYPIRC -r $PYPI_REPO dist/*
 
 publish_test:
   stage: publish_test
   environment: Staging
   extends: .publisher
   variables:
-    BUILD_ARGS: test $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
+    PYPI_REPO: testpypi
 
 publish:
   stage: publish
   environment: Production
   extends: .publisher
   variables:
-    BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_PRODUCTION_TOKEN
+    PYPI_REPO: testpypi
 
-# cSpell:ignore pypi virtualenvs batcave stest mypy utest xmlrunner
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi

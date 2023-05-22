@@ -52,6 +52,6 @@ __author__ = 'Jeffery G. Smith'
 __email__ = 'web@pobox.com'
 
 __license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2021 Jeffery G. Smith'
+__copyright__ = 'Copyright (c) 2023 Jeffery G. Smith'
 
 # cSpell:ignore iispy netutil qbpy tcpy platarch cloudmgr servermgr configmgr fileutil statemachine

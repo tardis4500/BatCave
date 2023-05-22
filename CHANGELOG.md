@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Upgrade minimum Python to 3.10. (GitLab #62)
   - Replaced switch with new match syntax. (GitLab #62)
+  - Update pipeline to use flit. (GitLab #68)
 
 - Removed
   - Removed switch support. (GitLab #66)
