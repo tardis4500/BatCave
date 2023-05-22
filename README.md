@@ -10,7 +10,7 @@ Development is best accomplished using virtualenv or virtualenv-wrapper where a 
     python -m pip install -U pip
     pip install -U setuptools wheel
     pip install -U flit
-    flit install -s -deps all
+    flit install -s --deps all
 
 ## Testing
 
