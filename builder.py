@@ -5,7 +5,6 @@
 from argparse import Namespace
 import os
 from pathlib import Path
-from random import randint
 
 # Import third-party-modules
 from requests import delete as rest_delete, post as rest_post
@@ -28,7 +27,6 @@ VERSION_FILES = [PROJECT_ROOT / 'pyproject.toml', SOURCE_DIR / '__init__.py']
 ARTIFACTS_DIR = PROJECT_ROOT / 'dist'
 CI_BUILD_FILE = PROJECT_ROOT / '.gitlab-ci.yml'
 
-PYPI_TEST_URL = 'https://test.pypi.org/legacy/'
 GITLAB_RELEASES_URL = 'https://gitlab.com/api/v4/projects/arisilon%2Fbatcave/releases'
 
 pip = SysCmdRunner('pip', show_cmd=False, show_stdout=False, syscmd_args={'ignore_stderr': True}).run
@@ -49,8 +47,7 @@ def main() -> None:
     gitlab_args = [Argument('gitlab_user'), Argument('gitlab_password')]
     release_args = [Argument('release')] + gitlab_args
     publish_args = release_args + pypi_args
-    Commander('BatCave builder', subparsers=[SubParser('publish_test', publish_to_pypi, publish_args),
-                                             SubParser('publish', publish_to_pypi, publish_args),
+    Commander('BatCave builder', subparsers=[SubParser('publish', publish_to_pypi, publish_args),
                                              SubParser('post_release_update', post_release_update,
                                                        [Argument('-i', '--increment-release', action='store_true'),
                                                         Argument('-t', '--tag-source', action='store_true'),
@@ -61,22 +58,10 @@ def main() -> None:
 
 def publish_to_pypi(args: Namespace) -> None:
     """Publish to the specified PyPi server."""
-    message = 'Publishing to PyPi'
-    if args.release == 'test':
-        message += ' Test'
-    MESSAGE_LOGGER(message, True)
-    upload_args = [f'--user={args.pypi_user}', f'--password={args.pypi_password}', f'{ARTIFACTS_DIR}/*']
-    if args.release == 'test':
-        upload_args += ['--repository-url', PYPI_TEST_URL]
-        for artifact in ARTIFACTS_DIR.iterdir():
-            if artifact.suffix == '.gz':
-                artifact.unlink()
-            else:
-                artifact.rename(ARTIFACTS_DIR / f'{PRODUCT_NAME}-{randint(1, 1000)}-py3-none-any.whl')
-    upload(upload_args)
-    if args.release != 'test':
-        args.increment_release = args.tag_source = args.create_release = args.checkin = True
-        post_release_update(args)
+    MESSAGE_LOGGER('Publishing to PyPi', True)
+    upload([f'--user={args.pypi_user}', f'--password={args.pypi_password}', f'{ARTIFACTS_DIR}/*'])
+    args.increment_release = args.tag_source = args.create_release = args.checkin = True
+    post_release_update(args)
 
 
 def post_release_update(args: Namespace) -> None:
