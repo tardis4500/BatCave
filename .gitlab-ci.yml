@@ -19,7 +19,7 @@ stages:
   - publish
 
 variables:
-  PRODUCT: BatCave
+  PRODUCT: batcave
   ARTIFACTS_DIR: dist
   UNIT_TEST_DIR: unit_test_results
   PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
@@ -48,9 +48,9 @@ static_analysis:
   stage: static_analysis
   extends: .base
   script:
-    - pylint batcave
-    - flake8 batcave
-    - mypy batcave
+    - pylint $PRODUCT
+    - flake8 $PRODUCT
+    - mypy $PRODUCT
 
 unit_tests:
   stage: unit_tests
