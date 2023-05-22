@@ -84,20 +84,20 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - python build.py publish $BUILD_ARGS
+    - twine upload --config-file $PYPIRC -r $PYPI_REPO dist/*
 
 publish_test:
   stage: publish_test
   environment: Staging
   extends: .publisher
   variables:
-    BUILD_ARGS: test $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_TEST_TOKEN
+    PYPI_REPO: testpypi
 
 publish:
   stage: publish
   environment: Production
   extends: .publisher
   variables:
-    BUILD_ARGS: $RELEASE $GITLAB_USER_LOGIN $GITLAB_USER_TOKEN $PYPI_PRODUCTION_TOKEN
+    PYPI_REPO: testpypi
 
-# cSpell:ignore pypi virtualenvs batcave stest mypy utest xmlrunner
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi
