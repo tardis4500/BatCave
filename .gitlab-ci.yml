@@ -65,7 +65,7 @@ build:
   stage: build
   extends: .base
   script:
-    - apt-get -y -qq --no-install-recommends git
+    - apt-get -y -qq --no-install-recommends install git
     - flit build
   artifacts:
     paths:
