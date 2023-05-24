@@ -93,7 +93,7 @@ publish_test:
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
-    BUMP_ARG: --tag-num
+    BUMP_ARG: --tag-num --no-tag-commit
 
 publish:
   stage: publish
