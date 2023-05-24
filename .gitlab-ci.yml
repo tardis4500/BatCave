@@ -85,6 +85,7 @@ install_test:
       allow_failure: false
   script:
     - twine upload --config-file $PYPIRC -r $PYPI_REPO dist/*
+    - bumpver update $BUMP_ARG
 
 publish_test:
   stage: publish_test
@@ -92,6 +93,7 @@ publish_test:
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
+    BUMP_ARG: --tag-num
 
 publish:
   stage: publish
