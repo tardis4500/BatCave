@@ -42,6 +42,7 @@ cache:
     - python -m pip install -U pip
     - pip install -U setuptools wheel
     - pip install -U virtualenvwrapper
+    - source /usr/local/bin/virtualenvwrapper.sh
     - mkvirtualenv batcave
     - pip install -U flit
     - flit install -s --deps all
