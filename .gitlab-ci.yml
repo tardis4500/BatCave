@@ -20,6 +20,7 @@ stages:
 
 variables:
   PRODUCT: batcave
+  VIRTUAL_ENV: venv
   ARTIFACTS_DIR: dist
   UNIT_TEST_DIR: unit_test_results
   PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
@@ -31,21 +32,24 @@ variables:
 
 cache:
   paths:
-    - /root/.virtualenvs
+    - $VIRTUAL_ENV
 
 .base:
-  variables:
-    FLIT_ROOT_INSTALL: 1
   before_script:
     - cat /etc/os-release
     - python -V
-    - python -m pip install -U pip
-    - pip install -U setuptools wheel
-    - pip install -U virtualenvwrapper
-    - source /usr/local/bin/virtualenvwrapper.sh
-    - mkvirtualenv -vvvvv batcave; echo ret=$?
-    - pip install -U flit
-    - flit install -s --deps all
+    - pip install -U virtualenv
+    - if [ ! -e $VIRTUAL_ENV ]
+      then
+        virtualenv $VIRTUAL_ENV
+        source $VIRTUAL_ENV/bin/activate
+        python -m pip install -U pip
+        pip install -U setuptools wheel
+        pip install -U flit
+        flit install -s --deps all
+      else
+        source $VIRTUAL_ENV/bin/activate
+      fi
 
 static_analysis:
   stage: static_analysis
@@ -103,4 +107,4 @@ publish:
   variables:
     PYPI_REPO: testpypi
 
-# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenvwrapper mkvirtualenv
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv
