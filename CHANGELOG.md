@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added:
   - Added new TypeAlias typing. (GitLab #62)
+  - Implement virtual environment in build pipeline.
 
 - Changed
   - Upgrade minimum Python to 3.10. (GitLab #62)
