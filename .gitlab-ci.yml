@@ -23,8 +23,6 @@ variables:
   VIRTUAL_ENV: venv
   ARTIFACTS_DIR: dist
   UNIT_TEST_DIR: unit_test_results
-  PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
-  RELEASE: 42.0.0
   GIT_AUTHOR_NAME: $GITLAB_USER_NAME
   GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
@@ -84,7 +82,7 @@ build:
 install_test:
   stage: install_test
   script:
-    - pip install $PYPI_PKG
+    - pip install $ARTIFACTS_DIR/*.tar.gz
 
 .publisher:
   extends: .base
@@ -93,7 +91,7 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - twine upload --config-file $PYPIRC -r $PYPI_REPO dist/*
+    - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
 
 publish_test:
   stage: publish_test
