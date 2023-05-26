@@ -31,7 +31,7 @@ variables:
 
 cache:
   paths:
-    - .local/share/virtualenvs
+    - /root/.virtualenvs
 
 .base:
   variables:
@@ -43,7 +43,7 @@ cache:
     - pip install -U setuptools wheel
     - pip install -U virtualenvwrapper
     - source /usr/local/bin/virtualenvwrapper.sh
-    - mkvirtualenv -vvvvv batcave
+    - mkvirtualenv -vvvvv batcave; echo ret=$?
     - pip install -U flit
     - flit install -s --deps all
 
