@@ -43,7 +43,7 @@ cache:
     - pip install -U setuptools wheel
     - pip install -U virtualenvwrapper
     - source /usr/local/bin/virtualenvwrapper.sh
-    - mkvirtualenv batcave
+    - mkvirtualenv -vvvvv batcave
     - pip install -U flit
     - flit install -s --deps all
 
@@ -103,4 +103,4 @@ publish:
   variables:
     PYPI_REPO: testpypi
 
-# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenvwrapper mkvirtualenv
