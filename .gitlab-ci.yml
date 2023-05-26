@@ -35,6 +35,8 @@ cache:
     - $VIRTUAL_ENV
 
 .base:
+  variables:
+    FLIT_ROOT_INSTALL: 1
   before_script:
     - cat /etc/os-release
     - python -V
