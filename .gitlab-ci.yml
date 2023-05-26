@@ -20,10 +20,9 @@ stages:
 
 variables:
   PRODUCT: batcave
+  VIRTUAL_ENV: venv
   ARTIFACTS_DIR: dist
   UNIT_TEST_DIR: unit_test_results
-  PYPI_PKG: dist/$PRODUCT-$RELEASE.tar.gz
-  RELEASE: 42.0.0rc1
   GIT_AUTHOR_NAME: $GITLAB_USER_NAME
   GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
@@ -31,7 +30,7 @@ variables:
 
 cache:
   paths:
-    - .local/share/virtualenvs
+    - $VIRTUAL_ENV
 
 .base:
   variables:
@@ -39,10 +38,18 @@ cache:
   before_script:
     - cat /etc/os-release
     - python -V
-    - python -m pip install -U pip
-    - pip install -U setuptools wheel
-    - pip install -U flit
-    - flit install -s --deps all
+    - pip install -U virtualenv
+    - if [ ! -e $VIRTUAL_ENV ];
+      then
+        virtualenv $VIRTUAL_ENV;
+        source $VIRTUAL_ENV/bin/activate;
+        python -m pip install -U pip;
+        pip install -U setuptools wheel;
+        pip install -U flit;
+        flit install -s --deps all;
+      else
+        source $VIRTUAL_ENV/bin/activate;
+      fi
 
 static_analysis:
   stage: static_analysis
@@ -75,7 +82,7 @@ build:
 install_test:
   stage: install_test
   script:
-    - pip install $PYPI_PKG
+    - pip install $ARTIFACTS_DIR/*.tar.gz
 
 .publisher:
   extends: .base
@@ -84,7 +91,7 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - twine upload --config-file $PYPIRC -r $PYPI_REPO dist/*
+    - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
 
 publish_test:
@@ -102,4 +109,4 @@ publish:
   variables:
     PYPI_REPO: testpypi
 
-# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv
