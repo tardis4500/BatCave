@@ -41,7 +41,7 @@ cache:
     - pip install -U virtualenv
     - if [ ! -e $VIRTUAL_ENV ];
       then
-        echo "Creating up virtual environment"
+        echo "Creating up virtual environment";
         virtualenv $VIRTUAL_ENV;
         source $VIRTUAL_ENV/bin/activate;
         python -m pip install -U pip;
@@ -49,7 +49,7 @@ cache:
         pip install -U flit;
         flit install -s --deps all;
       else
-        echo "Activating virtual environment"
+        echo "Activating virtual environment";
         source $VIRTUAL_ENV/bin/activate;
       fi
 
