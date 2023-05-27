@@ -28,10 +28,6 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
 
-cache:
-  paths:
-    - $VIRTUAL_ENV
-
 .base:
   variables:
     FLIT_ROOT_INSTALL: 1
@@ -47,6 +43,9 @@ cache:
     - pip install -U setuptools wheel
     - pip install -U flit
     - flit install -s --deps all
+  cache:
+    paths:
+      - $VIRTUAL_ENV
 
 static_analysis:
   stage: static_analysis
