@@ -11,11 +11,11 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
 
 stages:
-  - static_analysis
-  - unit_tests
+  - static-analysis
+  - unit-tests
   - build
-  - install_test
-  - publish_test
+  - install-test
+  - publish-test
   - release
 
 variables:
@@ -49,16 +49,16 @@ variables:
     paths:
       - $VIRTUAL_ENV
 
-static_analysis:
-  stage: static_analysis
+static-analysis:
+  stage: static-analysis
   extends: .base
   script:
     - pylint $PRODUCT
     - flake8 $PRODUCT
     - mypy $PRODUCT
 
-unit_tests:
-  stage: unit_tests
+unit-tests:
+  stage: unit-tests
   extends: .base
   script:
     - python -m xmlrunner discover -o $UNIT_TEST_DIR
@@ -75,8 +75,8 @@ build:
     paths:
       - $ARTIFACTS_DIR
 
-install_test:
-  stage: install_test
+install-test:
+  stage: install-test
   script:
     - pip install $ARTIFACTS_DIR/*.tar.gz
 
@@ -87,20 +87,18 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - echo https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
     - git remote add gitlab_pipeline_origin https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
-    - if [ $BUMPVER_PUSH == false ]; then git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH; fi
+    - git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH
 
-publish_test:
-  stage: publish_test
+publish-test:
+  stage: publish-test
   environment: Staging
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
     BUMP_ARG: --tag-num --no-tag-commit --no-push
-    BUMPVER_PUSH: "false"
 
 release:
   stage: release
@@ -108,6 +106,17 @@ release:
   extends: .publisher
   variables:
     PYPI_REPO: pypi
-    BUMP_ARG: --minor
+    BUMP_ARG: --tag rc --tag-num --no-tag-commit --no-push
+  script:
+    - bumpver update --final
+    - eval $(bumpver show --env --no-fetch)
+    - flit build
+    - !reference [.publisher, script]
+  release:
+    name: "Release v{$CURRENT_VERSION}"
+    description: "Release v{$CURRENT_VERSION}"
+    tag_name: $CURRENT_VERSION
+    milestones:
+      - "Release v{$CURRENT_VERSION}"
 
-# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv bumpver
