@@ -16,7 +16,7 @@ stages:
   - build
   - install_test
   - publish_test
-  - publish
+  - release
 
 variables:
   PRODUCT: batcave
@@ -98,11 +98,12 @@ publish_test:
     PYPI_REPO: testpypi
     BUMP_ARG: --tag-num --no-tag-commit
 
-publish:
+release:
   stage: publish
   environment: Production
   extends: .publisher
   variables:
-    PYPI_REPO: testpypi
+    PYPI_REPO: pypi
+    BUMP_ARG: --minor
 
 # cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv
