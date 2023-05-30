@@ -87,8 +87,8 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - echo https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git'
-    - git remote add gitlab_pipeline_origin https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git'
+    - echo https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
+    - git remote add gitlab_pipeline_origin https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
     - if [ $BUMPVER_PUSH == false ]; then git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH; fi
