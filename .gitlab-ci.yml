@@ -89,6 +89,7 @@ install_test:
   script:
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
+    - if [ $BUMPVER_PUSH == false ]; then git push origin HEAD:$CI_COMMIT_BRANCH; fi
 
 publish_test:
   stage: publish_test
@@ -97,8 +98,7 @@ publish_test:
   variables:
     PYPI_REPO: testpypi
     BUMP_ARG: --tag-num --no-tag-commit --no-push
-  after_script:
-    - git push
+    BUMPVER_PUSH: "false"
 
 release:
   stage: release
