@@ -87,6 +87,8 @@ install_test:
       when: manual
       allow_failure: false
   script:
+    - git --version
+    - ls -laF
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
 
