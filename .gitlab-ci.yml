@@ -68,8 +68,6 @@ build:
   stage: build
   extends: .base
   script:
-    - apt-get update
-    - apt-get -y -qq --no-install-recommends install git
     - flit build
   artifacts:
     paths:
@@ -87,8 +85,8 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - git --version
-    - ls -laF
+    - apt-get update
+    - apt-get -y -qq --no-install-recommends install git
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
 
