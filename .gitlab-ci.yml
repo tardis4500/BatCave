@@ -98,7 +98,7 @@ publish-test:
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
-    BUMP_ARG: --tag-num --no-tag-commit --no-push
+    BUMP_ARG: --tag-num
 
 release:
   stage: release
@@ -106,9 +106,9 @@ release:
   extends: .publisher
   variables:
     PYPI_REPO: pypi
-    BUMP_ARG: --tag rc --tag-num --no-tag-commit --no-push
+    BUMP_ARG: --tag rc --tag-num
   script:
-    - bumpver update --final
+    - bumpver update --final --tag-commit --push
     - eval $(bumpver show --env --no-fetch)
     - flit build
     - !reference [.publisher, script]
