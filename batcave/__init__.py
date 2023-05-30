@@ -44,7 +44,7 @@ __title__ = 'BatCave'
 __summary__ = 'Python Programming Toolkit'
 __uri__ = 'https://gitlab.com/arisilon/batcave/'
 
-__version__ = '42.0.0rc8'
+__version__ = '42.0.0rc9'
 __build_name__ = '{var:build_name}'
 __build_date__ = '{var:build_date}'
 
