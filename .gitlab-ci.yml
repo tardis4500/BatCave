@@ -99,7 +99,7 @@ publish_test:
     BUMP_ARG: --tag-num --no-tag-commit
 
 release:
-  stage: publish
+  stage: release
   environment: Production
   extends: .publisher
   variables:
