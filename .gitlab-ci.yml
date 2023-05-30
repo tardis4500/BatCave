@@ -106,9 +106,9 @@ release:
   extends: .publisher
   variables:
     PYPI_REPO: pypi
-    BUMP_ARG: --tag rc --tag-num
+    BUMP_ARG: --patch --tag rc --tag-num
   script:
-    - bumpver update --final --tag-commit --push
+    - bumpver update --tag final --tag-commit --push
     - eval $(bumpver show --env --no-fetch)
     - flit build
     - !reference [.publisher, script]
