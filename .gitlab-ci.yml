@@ -11,12 +11,12 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
 
 stages:
-  - static_analysis
-  - unit_tests
+  - static-analysis
+  - unit-tests
   - build
-  - install_test
-  - publish_test
-  - publish
+  - install-test
+  - publish-test
+  - release
 
 variables:
   PRODUCT: batcave
@@ -28,39 +28,37 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
 
-cache:
-  paths:
-    - $VIRTUAL_ENV
-
 .base:
   variables:
     FLIT_ROOT_INSTALL: 1
   before_script:
     - cat /etc/os-release
     - python -V
+    - apt-get update
+    - apt-get -y -qq --no-install-recommends install git
+    - python -m pip install -U pip
+    - pip install -U setuptools wheel
     - pip install -U virtualenv
-    - if [ ! -e $VIRTUAL_ENV ];
-      then
-        virtualenv $VIRTUAL_ENV;
-        source $VIRTUAL_ENV/bin/activate;
-        python -m pip install -U pip;
-        pip install -U setuptools wheel;
-        pip install -U flit;
-        flit install -s --deps all;
-      else
-        source $VIRTUAL_ENV/bin/activate;
-      fi
+    - if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
+    - source $VIRTUAL_ENV/bin/activate
+    - python -m pip install -U pip
+    - pip install -U setuptools wheel
+    - pip install -U flit
+    - flit install -s --deps all
+  cache:
+    paths:
+      - $VIRTUAL_ENV
 
-static_analysis:
-  stage: static_analysis
+static-analysis:
+  stage: static-analysis
   extends: .base
   script:
     - pylint $PRODUCT
     - flake8 $PRODUCT
     - mypy $PRODUCT
 
-unit_tests:
-  stage: unit_tests
+unit-tests:
+  stage: unit-tests
   extends: .base
   script:
     - python -m xmlrunner discover -o $UNIT_TEST_DIR
@@ -72,15 +70,13 @@ build:
   stage: build
   extends: .base
   script:
-    - apt-get update
-    - apt-get -y -qq --no-install-recommends install git
     - flit build
   artifacts:
     paths:
       - $ARTIFACTS_DIR
 
-install_test:
-  stage: install_test
+install-test:
+  stage: install-test
   script:
     - pip install $ARTIFACTS_DIR/*.tar.gz
 
@@ -91,20 +87,36 @@ install_test:
       when: manual
       allow_failure: false
   script:
+    - git remote add gitlab_pipeline_origin https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
+    - bumpver update $BUMP_ARG
+    - git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH
 
-publish_test:
-  stage: publish_test
+publish-test:
+  stage: publish-test
   environment: Staging
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
+    BUMP_ARG: --tag-num --no-tag-commit --no-push
 
-publish:
-  stage: publish
+release:
+  stage: release
   environment: Production
   extends: .publisher
   variables:
-    PYPI_REPO: testpypi
+    PYPI_REPO: pypi
+    BUMP_ARG: --tag rc --tag-num --no-tag-commit --no-push
+  script:
+    - bumpver update --final
+    - eval $(bumpver show --env --no-fetch)
+    - flit build
+    - !reference [.publisher, script]
+  release:
+    name: "Release v{$CURRENT_VERSION}"
+    description: "Release v{$CURRENT_VERSION}"
+    tag_name: $CURRENT_VERSION
+    milestones:
+      - "Release v{$CURRENT_VERSION}"
 
-# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv
+# cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv bumpver
