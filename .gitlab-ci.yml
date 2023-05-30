@@ -87,10 +87,10 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - git remote -v
+    - git remote add gitlab_pipeline_origin https://$GITLAB_USER_NAME:$GITLAB_USER_TOKEN@gitlab.com/arisilon/batcave.git
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
-    - if [ $BUMPVER_PUSH == false ]; then git push origin HEAD:$CI_COMMIT_BRANCH; fi
+    - if [ $BUMPVER_PUSH == false ]; then git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH; fi
 
 publish_test:
   stage: publish_test
