@@ -34,6 +34,8 @@ variables:
   before_script:
     - cat /etc/os-release
     - python -V
+    - apt-get update
+    - apt-get -y -qq --no-install-recommends install git
     - python -m pip install -U pip
     - pip install -U setuptools wheel
     - pip install -U virtualenv
@@ -85,8 +87,6 @@ install_test:
       when: manual
       allow_failure: false
   script:
-    - apt-get update
-    - apt-get -y -qq --no-install-recommends install git
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
 
