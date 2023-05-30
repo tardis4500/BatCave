@@ -105,7 +105,8 @@ release:
   environment: Production
   extends: .publisher
   variables:
-    PYPI_REPO: pypi
+    PYPI_REPO: testpypi
+    # PYPI_REPO: pypi
     BUMP_ARG: --patch --tag rc --tag-num
   script:
     - bumpver update --tag final --tag-commit --push
