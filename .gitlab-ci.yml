@@ -96,7 +96,9 @@ publish_test:
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
-    BUMP_ARG: --tag-num --no-tag-commit
+    BUMP_ARG: --tag-num --no-tag-commit --no-push
+  after_script:
+    - git push
 
 release:
   stage: release
