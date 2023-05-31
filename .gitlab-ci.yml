@@ -124,11 +124,11 @@ create-gitlab-release:
   script:
     - echo "Creating release $RELEASE"
   release:
-    name: "Release v{$RELEASE}"
-    description: "Release v{$RELEASE}"
+    name: "Release v$RELEASE"
+    description: "Release v$RELEASE"
     tag_name: $RELEASE
     milestones:
-      - "Release v{$RELEASE}"
+      - "Release v$RELEASE"
   needs:
     - publish
 
