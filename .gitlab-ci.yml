@@ -114,7 +114,7 @@ publish:
   script:
     - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
     - bumpver update --tag final --tag-commit
-    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
+    - git push --tags $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
     - flit build
     - !reference [.publisher, script]
 
