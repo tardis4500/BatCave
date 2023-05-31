@@ -109,6 +109,7 @@ release:
     # PYPI_REPO: pypi
     BUMP_ARG: --patch --tag rc --tag-num
   script:
+    - git pull
     - bumpver update --tag final --tag-commit
     - git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH
     - eval $(bumpver show --env --no-fetch)
