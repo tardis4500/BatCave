@@ -94,7 +94,7 @@ module = "wmi.*"
 ignore_missing_imports = true
 
 [tool.bumpver]
-current_version = "100.0.0rc1"
+current_version = "100.0.0"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version} [skip-ci]"
 commit = true
