@@ -29,7 +29,7 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
   GIT_REMOTE: gitlab_pipeline_origin
-  RELEASE: 200.0.1rc0
+  RELEASE: 201.0.0rc0
 
 .base:
   variables:
@@ -52,6 +52,22 @@ variables:
   cache:
     paths:
       - $VIRTUAL_ENV
+
+.bump-version:
+  script:
+    - bumpver update $BUMP_ARGS
+    - git push $PUSH_ARGS $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
+
+.publisher:
+  extends: .base
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
+      when: manual
+      allow_failure: false
+
+.pypi-upload:
+  script:
+    - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
 
 static-analysis:
   stage: static-analysis
@@ -84,24 +100,16 @@ install-test:
   script:
     - pip install $ARTIFACTS_DIR/*.tar.gz
 
-.publisher:
-  extends: .base
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH =~ /^release\/.*/ || $CI_COMMIT_BRANCH =~ /^feature\/.*/
-      when: manual
-      allow_failure: false
-  script:
-    - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
-    - bumpver update $BUMP_ARG
-    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
-
 publish-test:
   stage: publish-test
   environment: Staging
   extends: .publisher
   variables:
     PYPI_REPO: testpypi
-    BUMP_ARG: --tag-num
+    BUMP_ARGS: --tag-num
+  script:
+    - !reference [.pypi-upload, script]
+    - !reference [.bump-version, script]
 
 publish:
   stage: publish
@@ -110,19 +118,20 @@ publish:
   variables:
     PYPI_REPO: testpypi
     # PYPI_REPO: pypi
-    BUMP_ARG: --patch --tag rc --tag-num
+    BUMP_ARGS: --tag final --tag-commit
+    PUSH_ARGS: --tags
   script:
     - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
-    - bumpver update --tag final --tag-commit
-    - git push --tags $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
+    - !reference [.bump-version, script]
     - flit build
-    - !reference [.publisher, script]
+    - !reference [.pypi-upload, script]
 
 create-gitlab-release:
   stage: create-gitlab-release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - echo "Creating release $RELEASE"
+  extends: .bump-version
+  variables:
+    BUMP_ARGS: --patch --tag rc --tag-num
   release:
     name: "Release v$RELEASE"
     description: "Release v$RELEASE"
