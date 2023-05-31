@@ -29,7 +29,7 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
   GIT_REMOTE: gitlab_pipeline_origin
-  RELEASE: 100.0.0
+  RELEASE: 100.0.1rc0
 
 .base:
   variables:
