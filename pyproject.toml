@@ -103,4 +103,4 @@ push = false
 
 [tool.bumpver.file_patterns]
 "batcave/__init__.py" = ["__version__ = '{version}'"]
-".gitlab-ci.yml" = ["RELEASE = {version}"]
+".gitlab-ci.yml" = ["RELEASE: {version}"]
