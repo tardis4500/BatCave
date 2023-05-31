@@ -27,6 +27,7 @@ variables:
   GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
+  GIT_REMOTE: gitlab_pipeline_origin
 
 .base:
   variables:
@@ -45,7 +46,7 @@ variables:
     - pip install -U setuptools wheel
     - pip install -U flit
     - flit install -s --deps all
-    - git remote add gitlab_pipeline_origin https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
+    - git remote add $GIT_REMOTE https://$GITLAB_USER_LOGIN:$GITLAB_USER_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME.git
   cache:
     paths:
       - $VIRTUAL_ENV
@@ -90,7 +91,7 @@ install-test:
   script:
     - twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
     - bumpver update $BUMP_ARG
-    - git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH
+    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
 
 publish-test:
   stage: publish-test
@@ -109,9 +110,9 @@ release:
     # PYPI_REPO: pypi
     BUMP_ARG: --patch --tag rc --tag-num
   script:
-    - git pull
+    - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
     - bumpver update --tag final --tag-commit
-    - git push gitlab_pipeline_origin HEAD:$CI_COMMIT_BRANCH
+    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
     - eval $(bumpver show --env --no-fetch)
     - flit build
     - !reference [.publisher, script]
