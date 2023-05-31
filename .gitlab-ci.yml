@@ -16,6 +16,7 @@ stages:
   - build
   - install-test
   - publish-test
+  - publish
   - release
 
 variables:
@@ -28,6 +29,7 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
   GIT_REMOTE: gitlab_pipeline_origin
+  RELEASE: 1.0.1
 
 .base:
   variables:
@@ -101,8 +103,8 @@ publish-test:
     PYPI_REPO: testpypi
     BUMP_ARG: --tag-num
 
-release:
-  stage: release
+publish:
+  stage: publish
   environment: Production
   extends: .publisher
   variables:
@@ -113,14 +115,19 @@ release:
     - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
     - bumpver update --tag final --tag-commit
     - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
-    - eval $(bumpver show --env --no-fetch)
     - flit build
     - !reference [.publisher, script]
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   release:
-    name: "Release v{$CURRENT_VERSION}"
-    description: "Release v{$CURRENT_VERSION}"
-    tag_name: $CURRENT_VERSION
+    name: "Release v{$RELEASE}"
+    description: "Release v{$RELEASE}"
+    tag_name: $RELEASE
     milestones:
-      - "Release v{$CURRENT_VERSION}"
+      - "Release v{$RELEASE}"
+  needs:
+    - publish
 
 # cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv bumpver
