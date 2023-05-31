@@ -1,6 +1,6 @@
 # flake8: noqa
 # pylint: disable-all
-# cSpell:ignore unindented todos numericals
+# cSpell:ignore unindented todos numericals docstrings
 
 # Step1: Add module level docstrings, including attributes.
 # Step2: Add module level function docstrings.
