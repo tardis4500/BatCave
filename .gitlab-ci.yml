@@ -17,7 +17,7 @@ stages:
   - install-test
   - publish-test
   - publish
-  - release
+  - create-gitlab-release
 
 variables:
   PRODUCT: batcave
@@ -118,9 +118,11 @@ publish:
     - flit build
     - !reference [.publisher, script]
 
-release:
-  stage: release
+create-gitlab-release:
+  stage: create-gitlab-release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Creating release $RELEASE"
   release:
     name: "Release v{$RELEASE}"
     description: "Release v{$RELEASE}"
