@@ -57,7 +57,7 @@ variables:
 .bump-version:
   script:
     - bumpver update $BUMP_ARGS
-    - git push $PUSH_ARGS $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
+    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
 
 .publisher:
   extends: .base
@@ -119,19 +119,18 @@ publish:
   variables:
     PYPI_REPO: testpypi
     # PYPI_REPO: pypi
-    BUMP_ARGS: --tag final --tag-commit
-    PUSH_ARGS: --tags
+    BUMP_ARGS: --patch --tag rc --tag-num
   script:
     - curl --location --output /usr/local/bin/release-cli "https://release-cli-downloads.s3.amazonaws.com/latest/release-cli-linux-amd64"
     - sudo chmod +x /usr/local/bin/release-cli
     - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
-    - !reference [.bump-version, script]
+    - bumpver update --tag final --tag-commit
+    - git push --tags $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
     - flit build
     - !reference [.pypi-upload, script]
     - eval $(bumpver show --env)
     - release-cli create --name "Release v$CURRENT_RELEASE" --description "Release v$CURRENT_RELEASE" --tag-name $CURRENT_RELEASE --milestone "Release v$CURRENT_RELEASE"
-    - bumpver update --patch --tag rc --tag-num
-    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
+    - !reference [.bump-version, script]
 
 # create-gitlab-release:
 #   stage: create-gitlab-release
