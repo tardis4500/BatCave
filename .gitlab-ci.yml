@@ -18,6 +18,7 @@ stages:
   - publish-test
   - publish
   - create-gitlab-release
+  - post-release-version-bump
 
 variables:
   PRODUCT: batcave
@@ -129,9 +130,6 @@ publish:
 create-gitlab-release:
   stage: create-gitlab-release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  extends: .bump-version
-  variables:
-    BUMP_ARGS: --patch --tag rc --tag-num
   release:
     name: "Release v$RELEASE"
     description: "Release v$RELEASE"
@@ -140,5 +138,14 @@ create-gitlab-release:
       - "Release v$RELEASE"
   needs:
     - publish
+
+
+post-release-version-bump:
+  stage: post-release-version-bump
+  extends: .bump-version
+  variables:
+    BUMP_ARGS: --patch --tag rc --tag-num
+  needs:
+    - create-gitlab-release
 
 # cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv bumpver
