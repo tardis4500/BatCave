@@ -59,7 +59,7 @@ class Cloud:
         Args:
             ctype: The cloud provider for this instance. Must be a member of CloudType.
             auth (optional, default=None): For local or Docker Hub this is a (username, password) tuple.
-                For Google Cloud it is a service account keyfile found at ~/.ssh/{value}.json.
+                For Google Cloud it is the path to a service account key file.
             login (optional, default=True): Whether or not to login to the cloud provider at instance initialization.
 
         Attributes:
@@ -157,7 +157,7 @@ class Cloud:
                 if self.type == CloudType.dockerhub:
                     self._client.login(*self.auth)
             case CloudType.gcloud:
-                gcloud('auth', 'activate-service-account', key_file=Path.home() / '.ssh' / f'{self.auth[0]}.json', syscmd_args={'ignore_stderr': True})
+                gcloud('auth', 'activate-service-account', key_file=Path(self.auth[0]), syscmd_args={'ignore_stderr': True})
                 gcloud('auth', 'configure-docker', syscmd_args={'ignore_stderr': True})
                 self._client = True
             case _:
