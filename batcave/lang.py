@@ -1,6 +1,7 @@
 """This module provides Python language utilities.
 
 Attributes:
+    DEFAULT_ENCODING: The default encoding used for text file operations.
     BATCAVE_HOME: The home directory of the module.
     FROZEN (bool): Is this module running in a frozen application. Quick version of sys.frozen
     VALIDATE_PYTHON (bool, default=True): Whether this module should validate the minimum version of Python when loaded.
@@ -15,6 +16,10 @@ from string import Template
 import sys
 from sys import executable, platform, version_info, path as sys_path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, TypeAlias
+
+# Import third-party modules
+from dotmap import DotMap
+from yaml import safe_dump as yaml_dump, safe_load as yaml_load
 
 # Useful constants
 DEFAULT_ENCODING = 'UTF-8'
@@ -137,6 +142,36 @@ def bool_to_str(expr: bool | str, /) -> str:
         'true' if the expression evaluates to True, 'false' otherwise.
     """
     return str(bool(expr)).lower()
+
+
+def dotmap_to_yaml(dotmap_thing: DotMap, yaml_file: Path) -> None:
+    """Convert a DotMap to a YAML file.
+
+    Args:
+        dotmap_thing: The DotMap to convert.
+        yaml_file: The YAML file to which to write the DotMap.
+
+    Returns:
+        Nothing.
+    """
+    with open(yaml_file, 'w', encoding=DEFAULT_ENCODING) as yaml_stream:
+        return yaml_dump(dotmap_thing.toDict(), yaml_stream)
+
+
+def yaml_to_dotmap(yaml_info: str | Path) -> DotMap:
+    """Converts a YAML file to a DotMap.
+
+    Args:
+        yaml_info: The YAML to which to read into a DotMap. If this is a string it is presumed to be raw YAML
+                    otherwise it is expected to be a Path object which can be open and read.
+
+    Returns:
+        A DotMap representing the YAML content.
+    """
+    if isinstance(yaml_info, str):
+        return DotMap(yaml_load(yaml_info))
+    with open(yaml_info, encoding=DEFAULT_ENCODING) as yaml_stream:
+        return DotMap(yaml_load(yaml_stream))
 
 
 def flatten(thing: Iterable[Iterable], /, *, recursive: bool = True) -> Iterable:
@@ -269,4 +304,4 @@ def xor(value1: Any, value2: Any, /) -> bool:
     """
     return bool(value1) ^ bool(value2)
 
-# cSpell:ignore batcave pythonval
+# cSpell:ignore batcave dotmap pythonval
