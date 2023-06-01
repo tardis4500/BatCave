@@ -20,11 +20,13 @@ from PyQt5.QtGui import QCloseEvent, QIcon, QImage  # pylint: disable=no-name-in
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMainWindow, QMessageBox, QWidget  # pylint: disable=no-name-in-module
 
 # Import internal modules
-from . import __title__
 from .lang import MsgStr, FROZEN, BATCAVE_HOME
-from .version import get_version_info, VersionStyle
+from .version import AppVersion, VersionStyle
 
 MessageType = Enum('MessageType', ('about', 'info', 'question', 'warning', 'error', 'results'))
+
+APP_TITLE = 'The App'
+ABOUT_INFO = 'No About Info Available'
 
 
 class Title(MsgStr):
@@ -33,11 +35,11 @@ class Title(MsgStr):
     Attributes:
         _messages: The different message types.
     """
-    _messages = {'about': 'About ' + __title__,
-                 'info': __title__ + ' Information',
-                 'question': __title__ + ' Question',
-                 'warning': __title__ + ' Warning',
-                 'error': __title__ + ' ERROR',
+    _messages = {'about': f'About {APP_TITLE}',
+                 'info': f'{APP_TITLE} Information',
+                 'question': f'{APP_TITLE} Question',
+                 'warning': f'{APP_TITLE} Warning',
+                 'error': f'{APP_TITLE} ERROR',
                  'results': 'Search Results'}
 
     def __init__(self, **kwargs):
@@ -54,10 +56,10 @@ class Brief(MsgStr):
     Attributes:
         _messages: The different message types.
     """
-    _messages = {'about': get_version_info(VersionStyle.one_line),
-                 'info': __title__ + ' Information',
-                 'question': __title__ + ' Question',
-                 'warning': __title__ + ' Warning',
+    _messages = {'about': ABOUT_INFO,
+                 'info': f'{APP_TITLE} Information',
+                 'question': f'{APP_TITLE} Question',
+                 'warning': f'{APP_TITLE} Warning',
                  'error': "I'm Sorry Dave, I Can't Do That",
                  'results': 'Search Results'}
 
@@ -180,14 +182,18 @@ class BatCaveBaseGUI:
 class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
     """This class provides functionality for a main window."""
 
-    def __init__(self, parent: Optional[QWidget] = None, title: str = '', icon: Optional[QIcon] = None):
+    def __init__(self, parent: Optional[QWidget] = None, title: str = '', version: Optional[AppVersion] = None, icon: Optional[QIcon] = None):
         """
         Args:
             parent (optional, default=None): The parent for the window.
             title (optional, default=''): The title for the window.
             icon (optional, default=None): The icon for the window.
         """
-        super().__init__(parent, title=(title if title else get_version_info(VersionStyle.brief)), icon=icon)  # type: ignore[call-arg]
+        super().__init__(parent, title=(title if title else version.get_info(VersionStyle.brief) if version else 'Main'), icon=icon)  # type: ignore[call-arg]
+        global ABOUT_INFO, APP_TITLE  # pylint: disable=global-statement
+        if version:
+            APP_TITLE = version.title
+            ABOUT_INFO = version.get_info(VersionStyle.about_box)
         self.actionAbout.triggered.connect(self.OnAbout)  # type: ignore[attr-defined]
 
     def OnAbout(self) -> None:
@@ -196,7 +202,7 @@ class BatCaveMainWindow(QMainWindow, BatCaveBaseGUI):
         Returns:
             Nothing.
         """
-        MessageBox(self, get_version_info(VersionStyle.about_box), MessageType.about).exec()
+        MessageBox(self, ABOUT_INFO, MessageType.about).exec()
 
 
 class BatCaveDialog(QDialog, BatCaveBaseGUI):

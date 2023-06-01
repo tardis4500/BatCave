@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Type
 
 # Import internal modules
-from .version import get_version_info, VersionStyle
+from .version import AppVersion, VersionStyle
 from .lang import str_to_pythonval
 
 
@@ -46,7 +46,7 @@ class Commander:
 
     def __init__(self, description: str, arguments: Sequence[Argument] = tuple(), subparsers: Iterable[SubParser] = tuple(),  # pylint: disable=too-many-locals,too-many-arguments
                  subparser_common_args: Sequence[Argument] = tuple(), default: Optional[Callable] = None, parents: Sequence[ArgumentParser] = tuple(),
-                 parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, add_version: bool = True,
+                 parse_extra: bool = False, extra_var_sep: str = ':', convert_extra: bool = True, version: Optional[AppVersion] = None,
                  version_style: VersionStyle = VersionStyle.one_line, formatter_class: Type[HelpFormatter] = ArgumentDefaultsHelpFormatter):
         """
         Args:
@@ -60,7 +60,7 @@ class Commander:
                 using the value of extra_var_sep as extra arguments of the form: argument:value.
             extra_var_sep (optional, default=:): The character used to separate the extra vars from the values.
             convert_extra (optional, default=True): If True then used str_to_pythonval on the values in the parse_extra arguments.
-            add_version (optional, default=True): If True then add a version argument to the parser and use version.get_version_info.
+            version (optional, default=None): If not None then add a version argument to the parser and use AppVersion.get_info.
             version_style (optional, default=one_line): The version.VERSION_STYLE to use for the version argument output.
             formatter_class (optional, default=ArgumentDefaultsHelpFormatter): The formatter class to pass to the parser.
 
@@ -84,8 +84,8 @@ class Commander:
 
         self.parser = ArgumentParser(description=description, formatter_class=formatter_class, parents=parents)  # type: ignore[arg-type]
         _add_arguments_to_parser(self.parser, arguments)
-        if add_version:
-            self.parser.add_argument('-v', '--version', action='version', version=get_version_info(version_style))
+        if version:
+            self.parser.add_argument('-v', '--version', action='version', version=version.get_info(version_style))
 
         if subparsers:
             subparser_objects = self.parser.add_subparsers(dest='command')

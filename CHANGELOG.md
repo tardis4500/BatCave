@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Implement virtual environment in build pipeline.
 
 - Changed
+  - Improved version module. (GitLab #55)
   - Upgrade minimum Python to 3.10. (GitLab #62)
   - Replaced switch with new match syntax. (GitLab #62)
   - Upgrade build tooling. (GitLab #65)
