@@ -122,7 +122,7 @@ publish:
     BUMP_ARGS: --patch --tag rc --tag-num
   script:
     - curl --location --output /usr/local/bin/release-cli "https://release-cli-downloads.s3.amazonaws.com/latest/release-cli-linux-amd64"
-    - sudo chmod +x /usr/local/bin/release-cli
+    - chmod +x /usr/local/bin/release-cli
     - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
     - bumpver update --tag final --tag-commit
     - git push --tags $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
