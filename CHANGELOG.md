@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed
   - Improved version module. (GitLab #55)
   - Require full path to Google Cloud service account key file. (GitLab #57)
+  - Support ssh authentication on remote server actions. (GitLab #61)
   - Upgrade minimum Python to 3.10. (GitLab #62)
   - Replaced switch with new match syntax. (GitLab #62)
   - Upgrade build tooling. (GitLab #65)

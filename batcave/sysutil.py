@@ -22,7 +22,7 @@ from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
-from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO
+from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO, TypeAlias
 
 # Import internal modules
 from .lang import DEFAULT_ENCODING, flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
@@ -44,6 +44,8 @@ S_660 = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
 S_664 = S_660 | S_IROTH
 S_770 = S_IRWXU | S_IRWXG
 S_775 = S_770 | S_IROTH | S_IXOTH
+
+ServerAuthType: TypeAlias = str | Path | Tuple[str, str] | None
 
 
 class CMDError(BatCaveException):
@@ -377,10 +379,65 @@ def _rmtree_onerror(caller: Callable, path_str: PathName, excinfo: Any) -> None:
     path_str.unlink()
 
 
+def _construct_remote_driver(remote: Optional[bool | str] = False, remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False,  # pylint: disable=too-many-locals,too-many-branches
+                             remote_auth: Optional[ServerAuthType] = None, remote_powershell: bool = False) -> List[str]:
+    """Construct the remote command execution prefix for syscmd.
+
+    Args:
+        remote=False
+        remote_is_windows=None
+        copy_for_remote=False
+        remote_auth=False
+        remote_powershell=False
+
+    Returns:
+        The list which specifies the prefix for executing a remote command.
+
+    Raises:
+        CMDError.INVALID_OPERATION:
+            If PowerShell remoting is requested while trying to pass remote credentials,
+            If remote execution requires the executable to be copied before execution and the local or remote system is Linux.
+            If remote execution requires the executable to be copied before execution and PowerShell remoting is requested.
+    """
+    remote_is_windows = WIN32 if (remote_is_windows is None) else remote_is_windows
+    if WIN32:
+        if remote_is_windows:
+            if remote_powershell:
+                if remote_auth or copy_for_remote:
+                    raise CMDError(CMDError.INVALID_OPERATION, func='remote_auth' if remote_auth else 'copy_for_remote', context='PowerShell')
+                remote_driver = ['powershell', '-NoLogo', '-NonInteractive', '-Command', 'Invoke-Command', '-ComputerName', str(remote), '-ScriptBlock']
+            else:
+                remote_driver = ['psexec', rf'\\{remote}', '-accepteula', '-nobanner', '-h']
+                if isinstance(remote_auth, tuple):
+                    remote_driver += ['-u', remote_auth[0], '-p', remote_auth[1]]
+                if copy_for_remote:
+                    remote_driver.append('-c')
+                    copy_for_remote = False
+        else:
+            if copy_for_remote:
+                raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
+            remote_driver = ['plink', '-batch', '-v']
+            if isinstance(remote_auth, tuple):
+                remote_driver += ['-l', remote_auth[0], '-pw', remote_auth[1]]
+            elif remote_auth:
+                remote_driver += ['-i', remote_auth]  # type: ignore[list-item]
+            remote_driver += [str(remote)]
+    else:
+        if copy_for_remote:
+            raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
+        remote_driver = ['ssh', '-t', '-t']
+        if isinstance(remote_auth, tuple):
+            remote_driver += ['-J', f'{remote_auth[0]}@{remote_auth[1]}']
+        elif remote_auth:
+            remote_driver += ['-i', remote_auth]  # type: ignore[list-item]
+        remote_driver += [str(remote)]
+    return remote_driver
+
+
 def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
            ignore_stderr: bool = False, append_stderr: bool = False, fail_on_error: bool = True, show_cmd: bool = False,
            use_shell: bool = False, flatten_output: bool = False, remote: Optional[bool | str] = False,
-           remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[Tuple[str, str]] = None,
+           remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[ServerAuthType] = None,
            remote_powershell: bool = False) -> CommandResult:
     """Wrapper to provide a better interface to subprocess.Popen().
 
@@ -399,52 +456,24 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
         remote_is_windows=None
         copy_for_remote=False
         remote_auth=False
+        remote_powershell=False
 
     Returns:
         The string (or string-list) output of the command.
 
     Raises:
-        CMDError.INVALID_OPERATION:
-            If PowerShell remoting is requested while trying to pass remote credentials,
-            If remote execution requires the executable to be copied before execution and the local or remote system is Linux.
-            If remote execution requires the executable to be copied before execution and PowerShell remoting is requested.
-            If any remote options are provided but remote is False.
+        CMDError.INVALID_OPERATION: If any remote options are provided but remote is False.
         CMDError.CMD_NOT_FOUND: If the requested command is not found.
         CMDError.CMD_ERROR: If fail_on_error is True, and the return code is non-zero, or there is output on stderr if ignore_stderr is True.
     """
     cmd_spec = [str(command)] + [str(c) for c in cmd_args]
     remote_driver: List[str] = []
+    if (not remote) and (remote_auth or copy_for_remote or remote_powershell or remote_is_windows):
+        raise CMDError(CMDError.INVALID_OPERATION, func='remote options', context='local servers')
+    if remote and WIN32 and remote_is_windows and not remote_powershell:
+        ignore_stderr = True  # psexec puts status info on stderr
     if remote:
-        remote_is_windows = WIN32 if (remote_is_windows is None) else remote_is_windows
-        if WIN32:
-            if remote_is_windows:
-                if remote_powershell:
-                    if remote_auth or copy_for_remote:
-                        raise CMDError(CMDError.INVALID_OPERATION, func='remote_auth' if remote_auth else 'copy_for_remote', context='PowerShell')
-                    remote_driver = ['powershell', '-NoLogo', '-NonInteractive', '-Command', 'Invoke-Command', '-ComputerName', str(remote), '-ScriptBlock']
-                else:
-                    ignore_stderr = True  # psexec puts status info on stderr
-                    remote_driver = ['psexec', rf'\\{remote}', '-accepteula', '-nobanner', '-h']
-                    if remote_auth:
-                        remote_driver += ['-u', remote_auth[0], '-p', remote_auth[1]]
-                    if copy_for_remote:
-                        remote_driver.append('-c')
-                        copy_for_remote = False
-            else:
-                if copy_for_remote:
-                    raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
-                remote_driver = ['plink', '-batch', '-v']
-                if remote_auth:
-                    remote_driver += ['-l', remote_auth[0], '-pw', remote_auth[1]]
-                remote_driver += [str(remote)]
-        else:
-            if copy_for_remote:
-                raise CMDError(CMDError.INVALID_OPERATION, func='copy_for_remote', context='Linux')
-            remote_driver = ['ssh', '-t', '-t']
-            if remote_auth:
-                remote_driver += ['-u', remote_auth[0], '-p', remote_auth[1]]
-            remote_driver += [str(remote)]
-
+        remote_driver = _construct_remote_driver(remote, remote_is_windows, copy_for_remote, remote_auth, remote_powershell)
         remote_cmd = cmd_spec
         if use_shell and remote_is_windows:
             remote_cmd = ['cmd', '/c'] + cmd_spec
@@ -452,8 +481,6 @@ def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, s
         if remote_powershell:
             remote_cmd = ['{'] + remote_cmd + ['}']
         cmd_spec = remote_driver + remote_cmd
-    elif remote_auth or copy_for_remote or remote_powershell or remote_is_windows:
-        raise CMDError(CMDError.INVALID_OPERATION, func='remote options', context='local servers')
 
     cmd_str = ' '.join([f'"{c}"' for c in cmd_spec])
     if show_cmd or is_debug('SYSCMD'):

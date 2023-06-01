@@ -24,7 +24,7 @@ from psutil import process_iter, NoSuchProcess, Process as _LinuxProcess
 # Import internal modules
 from .platarch import OsType
 from .serverpath import ServerPath  # pylint: disable=cyclic-import
-from .sysutil import syscmd, CMDError
+from .sysutil import syscmd, CMDError, ServerAuthType
 from .lang import BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 
 if sys.platform == 'win32':
@@ -121,13 +121,13 @@ class Server:
     _WSA_NAME_OR_SERVICE_NOT_KNOWN = -2
     _WSAHOST_NOT_FOUND = 11001
 
-    def __init__(self, hostname: Optional[str] = None, domain: Optional[str] = None, *, auth: Tuple = tuple(), defer_wmi: bool = True, ip: str = '',
+    def __init__(self, hostname: Optional[str] = None, domain: Optional[str] = None, *, auth: Optional[ServerAuthType] = None, defer_wmi: bool = True, ip: str = '',
                  os_type: OsType = OsType.windows if WIN32 else OsType.linux):
         """
         Args:
             hostname (optional): The server hostname. If not specified, will default to the name of the localhost.
             domain (optional): The server domain. If not specified, will default to the domain of the localhost.
-            auth (optional, default=tuple()): A tuple of (username, password) for access to the host if remote.
+            auth (optional, default=None): A tuple of (username, password) for access to the host if remote.
             defer_wmi (optional, default=True): Only valid for Windows servers. If True, defers initializing the WMI interface until first use.
             ip (optional): The server IP address. If not specified, will default to the IP of the localhost.
             os_type (optional): The server type. If not specified, will default to the type of the localhost.
@@ -187,7 +187,7 @@ class Server:
             ServerObjectManagementError.REMOTE_CONNECTION_ERROR: If there was an error connecting to the WMI manager.
         """
         manager_args = {} if self.is_local else {'computer': self.hostname}
-        if self._auth:
+        if isinstance(self._auth, tuple):
             manager_args['user'] = self._auth[0]
             manager_args['password'] = self._auth[1]
 
@@ -287,7 +287,7 @@ class Server:
             cmd_args += ['/RP', password]
         if not self.is_local:
             cmd_args += ['/S', self.hostname]
-        if self._auth:
+        if isinstance(self._auth, tuple):
             cmd_args += ['/U', self._auth[0], '/P', self._auth[1]]
         _run_task_scheduler(*cmd_args)
         task_object = self.get_scheduled_task(task)
@@ -404,7 +404,7 @@ class Server:
         cmd_args = ['/Query', '/FO', 'CSV']
         if not self.is_local:
             cmd_args += ['/S', self.fqdn]
-        if self._auth:
+        if isinstance(self._auth, tuple):
             cmd_args += ('/U', self._auth[0], '/P', self._auth[1])
         return [self.get_scheduled_task(t['TaskName']) for t in DictReader(_run_task_scheduler(*cmd_args))]
 
@@ -552,11 +552,11 @@ class Server:
 class OSManager:
     """Class to make non WMI OS management look like WMI management."""
 
-    def __init__(self, computer: str = '', auth: Tuple = tuple()):
+    def __init__(self, computer: str = '', auth: ServerAuthType = None):
         """
         Args:
             computer (optional, default=''): The remote computer.
-            auth (optional, default=tuple()): A (username, password) tuple for remote server access.
+            auth (optional, default=None): A (username, password) tuple for remote server access.
 
         Attributes:
             auth: The value of the auth argument.
@@ -645,7 +645,7 @@ class OSManager:
 class NamedOSObject:  # pylint: disable=too-few-public-methods
     """Class to allow management of all OS objects using a similar interface."""
 
-    def __init__(self, Name: str, computer: str, auth: Tuple[str, str], /):
+    def __init__(self, Name: str, computer: str, auth: ServerAuthType, /):
         """
         Args:
             Name: The name of the object.
@@ -666,7 +666,7 @@ class NamedOSObject:  # pylint: disable=too-few-public-methods
 class LinuxService(NamedOSObject):
     """Class to create a universal abstract interface for a Linux daemon service."""
 
-    def __init__(self, Name: str, computer: str, auth: Tuple[str, str], service_type: ServiceType, /):
+    def __init__(self, Name: str, computer: str, auth: ServerAuthType, service_type: ServiceType, /):
         """
         Args:
             Name: The name of the object.
@@ -833,7 +833,7 @@ class Win32_ScheduledTask(NamedOSObject):
         args = list(cmd_args) + ['/TN', self.Name]
         if self.computer:
             args += ['/S', self.computer]
-        if self.auth:
+        if isinstance(self.auth, tuple):
             args += ('/U', self.auth[0], '/P', self.auth[1])
         return _run_task_scheduler(*args, **sys_cmd_args)
 
