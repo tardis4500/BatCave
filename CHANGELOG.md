@@ -10,13 +10,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [42.0.0] - Unreleased
 
 - Added:
-  - Added dotmap_to_yaml and yaml_to_dotmap functions to the lang module. (GitLab #64)
   - Added new TypeAlias typing. (GitLab #62)
+  - Added dotmap_to_yaml and yaml_to_dotmap functions to the lang module. (GitLab #64)
   - Implement virtual environment in build pipeline.
 
 - Changed
   - Upgrade minimum Python to 3.10. (GitLab #62)
   - Replaced switch with new match syntax. (GitLab #62)
+  - Upgrade build tooling. (GitLab #65)
+  - Use bumpver. (GitLab #67)
   - Update pipeline to use flit. (GitLab #68)
 
 - Removed
@@ -1409,4 +1411,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
       cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
       cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
-      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance removeprefix dotmap -->
+      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance removeprefix dotmap bumpver -->
