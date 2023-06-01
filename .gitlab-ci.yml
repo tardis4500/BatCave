@@ -17,8 +17,8 @@ stages:
   - install-test
   - publish-test
   - publish
-  - create-gitlab-release
-  - post-release-version-bump
+  # - create-gitlab-release
+  # - post-release-version-bump
 
 variables:
   PRODUCT: batcave
@@ -122,30 +122,35 @@ publish:
     BUMP_ARGS: --tag final --tag-commit
     PUSH_ARGS: --tags
   script:
+    - curl --location --output /usr/local/bin/release-cli "https://release-cli-downloads.s3.amazonaws.com/latest/release-cli-linux-amd64"
+    - sudo chmod +x /usr/local/bin/release-cli
     - git pull $GIT_REMOTE $CI_COMMIT_BRANCH
     - !reference [.bump-version, script]
     - flit build
     - !reference [.pypi-upload, script]
+    - eval $(bumpver show --env)
+    - release-cli create --name "Release v$CURRENT_RELEASE" --description "Release v$CURRENT_RELEASE" --tag-name $CURRENT_RELEASE --milestone "Release v$CURRENT_RELEASE"
+    - bumpver update --patch --tag rc --tag-num
+    - git push $GIT_REMOTE HEAD:$CI_COMMIT_BRANCH
 
-create-gitlab-release:
-  stage: create-gitlab-release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  release:
-    name: "Release v$RELEASE"
-    description: "Release v$RELEASE"
-    tag_name: $RELEASE
-    milestones:
-      - "Release v$RELEASE"
-  needs:
-    - publish
+# create-gitlab-release:
+#   stage: create-gitlab-release
+#   image: registry.gitlab.com/gitlab-org/release-cli:latest
+#   release:
+#     name: "Release v$RELEASE"
+#     description: "Release v$RELEASE"
+#     tag_name: $RELEASE
+#     milestones:
+#       - "Release v$RELEASE"
+#   needs:
+#     - publish
 
-
-post-release-version-bump:
-  stage: post-release-version-bump
-  extends: .bump-version
-  variables:
-    BUMP_ARGS: --patch --tag rc --tag-num
-  needs:
-    - create-gitlab-release
+# post-release-version-bump:
+#   stage: post-release-version-bump
+#   extends: .bump-version
+#   variables:
+#     BUMP_ARGS: --patch --tag rc --tag-num
+#   needs:
+#     - create-gitlab-release
 
 # cSpell:ignore batcave pypi virtualenvs mypy xmlrunner pypirc testpypi virtualenv venv bumpver
