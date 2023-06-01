@@ -30,7 +30,7 @@ variables:
   GIT_COMMITTER_NAME: $GITLAB_USER_NAME
   GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
   GIT_REMOTE: gitlab_pipeline_origin
-  # RELEASE: 204.0.0rc0rc0rc0
+  # RELEASE: 205.0.0rc0rc0rc0rc0
 
 .base:
   variables:
@@ -129,7 +129,7 @@ publish:
     - flit build
     - !reference [.pypi-upload, script]
     - eval $(bumpver show --env)
-    - release-cli create --name "Release v$CURRENT_VERSION" --description "Release v$CURRENT_VERSION" --tag-name $CURRENT_VERSION --milestone "Release v$CURRENT_VERSION"
+    - release-cli create --name "Release $CURRENT_VERSION" --description "Release $CURRENT_VERSION" --tag-name "v$CURRENT_VERSION" --milestone "Release $CURRENT_VERSION"
     - !reference [.bump-version, script]
 
 # create-gitlab-release:
