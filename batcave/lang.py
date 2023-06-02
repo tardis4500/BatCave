@@ -144,7 +144,7 @@ def bool_to_str(expr: bool | str, /) -> str:
     return str(bool(expr)).lower()
 
 
-def dotmap_to_yaml(dotmap_thing: DotMap, yaml_file: Path) -> None:
+def dotmap_to_yaml(dotmap_thing: DotMap, yaml_file: PathName, /) -> None:
     """Convert a DotMap to a YAML file.
 
     Args:
@@ -158,7 +158,7 @@ def dotmap_to_yaml(dotmap_thing: DotMap, yaml_file: Path) -> None:
         return yaml_dump(dotmap_thing.toDict(), yaml_stream)
 
 
-def yaml_to_dotmap(yaml_info: str | Path) -> DotMap:
+def yaml_to_dotmap(yaml_info: str | PathName, /) -> DotMap:
     """Converts a YAML file to a DotMap.
 
     Args:
