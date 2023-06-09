@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [42.0.0] - Unreleased
+### [42.0.1] - 2023-06-08
+
+- Changed:
+  - Fixed issue with types and new union operator. (GitLab #70)
+
+## Release History
+
+### [42.0.0] - 2023-06-06
 
 - Added:
   - Added new TypeAlias typing. (GitLab #62)
@@ -27,8 +34,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Removed
   - Removed switch support. (GitLab #66)
   - Removed xml_flat and xml_single support from data module. (GitLab #66)
-
-## Release History
 
 ### [41.0.0] - 2022-09-20
 

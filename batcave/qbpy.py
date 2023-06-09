@@ -1,7 +1,7 @@
 """This module provides a Pythonic interface to the QuickBuild RESTful API."""
 
 # Import standard modules
-from typing import cast, Any, Dict, List, Optional
+from typing import cast, Any, Dict, List, Optional, Union
 from xml.etree.ElementTree import fromstring, tostring, Element
 
 # Import third-party modules
@@ -75,7 +75,7 @@ class QuickBuildDashboard(QuickBuildObject):  # pylint: disable=too-few-public-m
 class QuickBuildCfg(QuickBuildObject):
     """Class to create a universal abstract interface for a QuickBuild configuration."""
 
-    def _get_id(self, thing: int | 'QuickBuildCfg', /) -> int:
+    def _get_id(self, thing: Union[int, 'QuickBuildCfg'], /) -> int:
         """Get the ID of the specified configuration.
 
         Args:

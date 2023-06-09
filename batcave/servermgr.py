@@ -15,7 +15,7 @@ from platform import node
 from socket import getfqdn, gethostbyname, gaierror
 from string import Template
 from time import sleep
-from typing import cast, List, Optional, Tuple, TypeAlias
+from typing import cast, List, Optional, Tuple, TypeAlias, Union
 from xml.etree.ElementTree import Element, SubElement, parse as xml_parse
 
 # Import third-party modules
@@ -52,9 +52,9 @@ ServiceState = Enum('ServiceState', ('StartPending', 'ContinuePending', 'Running
 ServiceType = Enum('ServiceType', ('systemd', 'sysv', 'upstart', 'windows'))
 TaskSignal = Enum('TaskSignal', ('enable', 'disable', 'run', 'end'))
 
-ServerType: TypeAlias = str | 'Server'
-ServerManager: TypeAlias = WMI | 'OSManager'
-WMIObject: TypeAlias = bool | WMI
+ServerType: TypeAlias = Union[str, 'Server']
+ServerManager: TypeAlias = Union[WMI, 'OSManager']
+WMIObject: TypeAlias = Union[bool, WMI]
 
 
 class ServerObjectManagementError(BatCaveException):
@@ -1095,7 +1095,7 @@ if sys.platform == 'win32':
     class COMObject:
         """Class to create a universal abstract interface for a Windows COM object."""
 
-        def __init__(self, ref: str | 'COMObject', hostname: str = '', /):
+        def __init__(self, ref: Union[str, 'COMObject'], hostname: str = '', /):
             """
             Args:
                 ref: The Windows COM object.
