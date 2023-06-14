@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [42.0.2] - 2023-06-14
+
+- Added:
+  - Added pywin32-stubs as a requirement. (GitLab #72)
+
+## Release History
+
 ### [42.0.1] - 2023-06-08
 
 - Changed:
   - Fixed issue with types and new union operator. (GitLab #70)
-
-## Release History
 
 ### [42.0.0] - 2023-06-06
 
