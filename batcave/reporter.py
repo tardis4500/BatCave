@@ -273,9 +273,9 @@ class ReportObject:
             _attributes: A dictionary of attributes for this object as initialized by the attr argument.
         """
         self._attributes: Dict[str, Attribute] = {}
+        self.container: Optional[Type[ReportObject]] = container
         for (attr, val) in attributes.items():
             self._set_attribute(attr, val)
-        self.container: Optional[Type[ReportObject]] = container
 
     def _get_attr_ref(self, attr: str, /) -> Attribute:
         """Get a reference to the requested attributes.

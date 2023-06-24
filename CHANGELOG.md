@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [42.0.3] - 2023-06-24
+
+- Changed:
+  - Fix reporter.ReportObject creation when specifying an attribute. (GitLab #73)
+
+## Release History
+
 ### [42.0.2] - 2023-06-14
 
 - Added:
   - Added pywin32-stubs as a requirement. (GitLab #72)
-
-## Release History
 
 ### [42.0.1] - 2023-06-08
 
