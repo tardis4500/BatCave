@@ -79,8 +79,7 @@ class SimpleMenu(Menu):
     return_text: bool = False
 
     def __post_init__(self):
-        item_list = list(self.item_list) + ['Exit']  # pylint: disable=access-member-before-definition
-        self.item_list = [MenuItem(str(i), item_list[i - 1]) for i in range(1, len(item_list) + 1)] + [MenuItem('0', 'Exit')]
+        self.items = [MenuItem(str(i), self.items[i - 1]) for i in range(1, len(self.items) + 1)] + [MenuItem('0', 'Exit')]
 
     def show(self) -> str:
         """Show the menu.
@@ -89,4 +88,4 @@ class SimpleMenu(Menu):
             The choice selected from the menu.
         """
         choice = cast(str, super().show())
-        return self.item_list[int(choice) - 1] if self.return_text else choice
+        return self.items[int(choice) - 1].desc if self.return_text else choice
