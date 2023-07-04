@@ -57,7 +57,7 @@ class BatCaveDateTime:
             return self.datetime - other.datetime
         return self.datetime - other
 
-    def _dt_to_str(self, dt_obj: datetime) -> str:
+    def _dt_to_str(self, dt_obj: 'datetime') -> str:
         return dt_obj.strftime(self._OUTPUT_FORMAT)
 
     def _str_to_dt(self, dt_str: str) -> datetime:
