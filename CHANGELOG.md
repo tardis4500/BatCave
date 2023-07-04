@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [42.1.0] - Unreleased
+
+- Added:
+  - Added the time module. (GitLab #75)
+
+## Release History
+
 ### [42.0.4] - 2023-06-2
 
 - Changed:
   - Fix menu.SimpleMenu class. (GitLab #74)
-
-## Release History
 
 ### [42.0.3] - 2023-06-24
 

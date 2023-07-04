@@ -48,7 +48,7 @@ from string import Template
 from typing import cast, Any, Dict, List, Match, Optional, Sequence, Tuple
 from xml.etree.ElementTree import fromstringlist as xml_parse, Element
 
-# Import BatCave packages
+# Import internal modules
 from .fileutil import slurp
 from .lang import DEFAULT_ENCODING, is_debug, str_to_pythonval, BatCaveError, BatCaveException, PathName, WIN32
 

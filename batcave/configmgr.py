@@ -6,6 +6,7 @@ from string import Template
 from typing import Optional
 from xml.etree.ElementTree import ParseError
 
+# Import internal modules
 from .data import DataError, DataSource, SourceType
 from .lang import BatCaveError, BatCaveException, PathName
 
