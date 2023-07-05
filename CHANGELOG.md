@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [42.1.0] - Unreleased
+### [42.1.0] - 2023-07-05
 
 - Added:
   - Added the time module. (GitLab #75)
