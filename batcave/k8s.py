@@ -13,7 +13,7 @@ from typing import cast, Any, Callable, List, Optional, Type, TypeVar
 
 # Import third-party modules
 from kubernetes import config as k8s_config
-from kubernetes.client import BatchV1Api, CoreV1Api, V1Namespace, V1ObjectMeta
+from kubernetes.client import AppsV1Api, BatchV1Api, CoreV1Api, V1Namespace, V1ObjectMeta
 from kubernetes.stream import stream as k8s_process
 from yaml import safe_load as yaml_load
 
@@ -21,9 +21,21 @@ from yaml import safe_load as yaml_load
 from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, CommandResult, PathName
 from .sysutil import SysCmdRunner
 
-K8sObject = TypeVar('K8sObject', 'Pod', 'Job', 'Namespace')  # pylint: disable=invalid-name
-
-kubectl = SysCmdRunner('kubectl').run  # pylint: disable=invalid-name
+K8sObject = TypeVar('K8sObject', 'Namespace',  # pylint: disable=invalid-name
+                    'Binding', 'Configmap', 'Endpoints', 'Event', 'Limitrange', 'Persistentvolumeclaim',
+                    'Pod', 'Replicationcontroller', 'Resourcequota', 'Secret', 'Service', 'Serviceaccount',
+                    'Daemonset', 'Deployment', 'Replicaset', 'Statefulset',
+                    'Cronjob', 'Job')
+XFORM_CLASS_NAMES = {'configmap': 'config_map', 'cronjob': 'cron_job',
+                     'daemonset': 'daemon_set',
+                     'limitrange': 'imit_range',
+                     'persistentvolumeclaim': 'persistent_volume_claim',
+                     'replicaset': 'replica_set',
+                     'replicationcontroller': 'replication_controller',
+                     'resourcequota': 'resource_quota',
+                     'serviceaccount': 'service_account',
+                     'statefulset': 'stateful_set'}
+kubectl = SysCmdRunner('kubectl').run
 
 
 class ClusterError(BatCaveException):
@@ -73,11 +85,12 @@ class Cluster:
         self._context = context
         k8s_config.load_kube_config(self.config, self._context)
         self._core_api = CoreV1Api()
+        self._apps_api = AppsV1Api()
         self._batch_api = BatchV1Api()
 
     def __getattr__(self, attr: str) -> Any:
         if '_' in attr:
-            (verb, item_class_name) = attr.split('_')
+            (verb, item_class_name) = attr.split('_', 1)
             if item_class_name.endswith('s'):
                 item_class_name = item_class_name[0:-1]
                 plural = 's'
@@ -204,10 +217,11 @@ class Cluster:
         method_name = method
         if item_class.NAMESPACED:
             method_name += '_namespaced'
-        method_name += f'_{item_class.__name__.lower()}'
+        k8s_class_name = XFORM_CLASS_NAMES.get(item_class_name := item_class.__name__.lower(), item_class_name)
+        method_name += f'_{k8s_class_name}'
         if suffix:
             method_name += f'_{suffix}'
-        for api in (self._core_api, self._batch_api):
+        for api in (self._core_api, self._apps_api, self._batch_api):
             if hasattr(api, method_name):
                 return getattr(api, method_name)
         raise AttributeError(f'No method found: {method_name}')
@@ -301,9 +315,49 @@ class ClusterObject:  # pylint: disable=too-few-public-methods
         return getattr(self._object_ref.metadata, attr)
 
 
+class Binding(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes cron job."""
+
+
+class Configmap(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes cron job."""
+
+
+class Cronjob(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes cron job."""
+
+
+class Daemonset(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes cron job."""
+
+
+class Deployment(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes deployment."""
+
+
+class Endpoints(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes deployment."""
+
+
+class Event(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes deployment."""
+
+
+class Job(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes job."""
+
+
+class Limitrange(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes deployment."""
+
+
 class Namespace(ClusterObject):  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Kubernetes namespace."""
     NAMESPACED = False
+
+
+class Persistentvolumeclaim(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes deployment."""
 
 
 class Pod(ClusterObject):
@@ -417,7 +471,31 @@ class Pod(ClusterObject):
         self.exec('rm', filename)
 
 
-class Job(ClusterObject):  # pylint: disable=too-few-public-methods
-    """Class to create a universal abstract interface for a Kubernetes job."""
+class Replicationcontroller(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
 
-# cSpell:ignore kube kubeconfig
+
+class Resourcequota(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
+
+
+class Secret(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
+
+
+class Service(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
+
+
+class Serviceaccount(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
+
+
+class Replicaset(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
+
+
+class Statefulset(ClusterObject):  # pylint: disable=too-few-public-methods
+    """Class to create a universal abstract interface for a Kubernetes service."""
+
+# cSpell:ignore kube kubeconfig batcave cronjob xform configmap limitrange persistentvolumeclaim replicationcontroller resourcequota serviceaccount daemonset replicaset statefulset

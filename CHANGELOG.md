@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [42.2.0] - 2023-08-10
+
+- Added:
+  - Added more Kubernetes objects to k8s module. (GitLab #76)
+
+## Release History
+
 ### [42.1.0] - 2023-07-05
 
 - Added:
   - Added the time module. (GitLab #75)
-
-## Release History
 
 ### [42.0.4] - 2023-06-2
 

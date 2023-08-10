@@ -32,7 +32,7 @@ from .sysutil import popd, pushd, rmtree_hard
 from .lang import is_debug, BatCaveError, BatCaveException, PathName
 
 if sys.platform == 'win32':
-    from win32api import error as Win32Error, RegOpenKeyEx, RegQueryValueEx  # pylint: disable=import-error,no-name-in-module
+    from win32api import error as Win32Error, RegOpenKeyEx, RegQueryValueEx  # type:ignore # pylint: disable=import-error,no-name-in-module
     from win32con import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE  # pylint: disable=import-error,no-name-in-module
     from win32typing import PyHKEY  # pylint: disable=import-error,no-name-in-module
 
