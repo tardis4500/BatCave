@@ -4,9 +4,9 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "batcave"
-authors = [{name = "Jeffery G. Smith", email = "web@pobox.com"}]
+authors = [{ name = "Jeffery G. Smith", email = "web@pobox.com" }]
 readme = "DOCUMENTATION.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 dynamic = ["version", "description"]
 
 requires-python = "~=3.10"
@@ -34,7 +34,7 @@ dependencies = [
     "pywin32-stubs; sys_platform == 'win32'",
     "WMI ~= 1.5; sys_platform == 'win32'",
     "psutil ~= 5.9; platform_machine not in 'arm arm64 armv6l armv7l armv8b armv8l'",
-    "PyQt5 ~= 5.15; platform_machine not in 'aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l'"
+    "PyQt5 ~= 5.15; platform_machine not in 'aarch64 aarch64_be arm arm64 armv6l armv7l armv8b armv8l'",
 ]
 
 [project.optional-dependencies]
@@ -51,12 +51,12 @@ test = [
     "types-psutil",
     "types-requests",
     "types-pywin32; sys_platform == 'win32'",
-    "unittest-xml-reporting"
+    "unittest-xml-reporting",
 ]
 # doc = []
 
-[project_urls]
-homepage = "https://gitlab.com/arisilon/batcave/"  # batcave.__uri__,
+[project.urls]
+homepage = "https://gitlab.com/arisilon/batcave/"                            # batcave.__uri__,
 documentation = "https://batcave.readthedocs.io"
 repository = "https://gitlab.com/arisilon/batcave/"
 changelog = "https://gitlab.com/arisilon/batcave/-/blob/master/CHANGELOG.md"
@@ -71,7 +71,7 @@ max-line-length = 200
 max-attributes = 10
 
 [tool.pylint.messages_control]
-disable = ["duplicate-code" , "fixme"]
+disable = ["duplicate-code", "fixme"]
 
 [[tool.mypy.overrides]]
 module = "docker.*"
