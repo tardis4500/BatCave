@@ -12,6 +12,11 @@ Development is best accomplished using virtualenv or virtualenv-wrapper where a 
     pip install -U flit
     flit install -s --deps all (on Windows omit the -s)
 
+To update the current development environment
+
+    Windows: pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}
+    Linux: pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install --upgrade
+
 ## Testing
 
 ### Static Analysis
