@@ -277,7 +277,7 @@ class Client:
     _DEFAULT_P4PORT = 'perforce:1666'
     _INFO_DUMMY_CLIENT = 'BatCave_info_dummy_client'
 
-    def __init__(self, ctype: ClientType, /, name: str = '', connect_info: str = '', *, user: str = '',
+    def __init__(self, ctype: ClientType, /, name: str = '', connect_info: str = '', *, user: str = '',  # pylint: disable=too-many-arguments
                  root: Optional[Path] = None, alt_roots: Optional[Sequence[str]] = None, mapping: Optional[List[str]] = None, hostless: bool = False,
                  changelist_options: Optional[str] = None, line_style: Optional[LineStyle] = None, cleanup: Optional[bool] = None,
                  create: Optional[bool] = None, info: bool = False, password: Optional[str] = None, branch: Optional[str] = None):

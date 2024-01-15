@@ -64,11 +64,13 @@ changelog = "https://gitlab.com/arisilon/batcave/-/blob/master/CHANGELOG.md"
 [tool.flake8]
 max-line-length = 200
 ignore = ["ANN002", "ANN003", "ANN101", "ANN204", "ANN401"]
+
 [tool.pylint.format]
 max-line-length = 200
 
 [tool.pylint.design]
 max-attributes = 10
+max-args = 10
 
 [tool.pylint.messages_control]
 disable = ["duplicate-code", "fixme"]

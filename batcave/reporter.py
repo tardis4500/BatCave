@@ -177,7 +177,7 @@ class SimpleAttribute:
         return attr in self._valid
 
 
-class MetaAttribute:
+class MetaAttribute:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a report attribute which returns a value based on the value of a SimpleAttribute."""
 
     def __init__(self, attr: str, /, **val_map):
@@ -259,7 +259,7 @@ _ATTRIBUTES = {OUTPUT_ATTR: SimpleAttribute('html', 'text'),
                LST_TRM_ATTR: MetaAttribute(OUTPUT_ATTR, text='', html='')}
 
 
-class ReportObject:
+class ReportObject:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a report object."""
 
     def __init__(self, container: Optional[Type['ReportObject']] = None, /, **attributes):
