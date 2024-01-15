@@ -13,6 +13,7 @@ jobs:
       image: python:3.10-slim
     timeout-minutes: 60
     env:
+      PRODUCT: batcave
       FLIT_ROOT_INSTALL: 1
     steps:
     - uses: actions/checkout@v4.1.0
