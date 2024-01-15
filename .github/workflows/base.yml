@@ -12,6 +12,7 @@ env:
   PRODUCT: batcave
   VIRTUAL_ENV: venv
   ARTIFACTS_DIR: dist
+  FLIT_ROOT_INSTALL: 1
   UNIT_TEST_DIR: unit_test_results
   GIT_AUTHOR_NAME: "${{ github.actor }}"
   GIT_AUTHOR_EMAIL: "${{ github.actor }}"
@@ -25,8 +26,6 @@ jobs:
     container:
       image: python:3.10-slim
     timeout-minutes: 60
-    env:
-      FLIT_ROOT_INSTALL: 1
     steps:
     - uses: actions/checkout@v4.1.0
     # - uses: actions/cache@v3.3.2
