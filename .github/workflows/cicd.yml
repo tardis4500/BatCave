@@ -1,4 +1,4 @@
-name: BatCave
+name: BatCave CI/CD
 on:
   push:
   pull_request:
@@ -6,19 +6,6 @@ on:
 concurrency:
   group: "${{ github.ref }}"
   cancel-in-progress: true
-
-env:
-  GITLAB_USER_TOKEN: "${{ secrets.GITLAB_USER_TOKEN }}"
-  PYPIRC:  "${{ secrets.PYPIRC }}"
-  PRODUCT: batcave
-  VIRTUAL_ENV: venv
-  ARTIFACTS_DIR: dist
-  UNIT_TEST_DIR: unit_test_results
-  GIT_AUTHOR_NAME: "${{ github.actor }}"
-  GIT_AUTHOR_EMAIL: "${{ github.actor }}"
-  GIT_COMMITTER_NAME: "${{ github.actor }}"
-  GIT_COMMITTER_EMAIL: "${{ github.actor }}"
-  GIT_REMOTE: gitlab_pipeline_origin
 
 jobs:
   static-analysis:

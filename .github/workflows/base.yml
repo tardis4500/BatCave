@@ -6,6 +6,19 @@ on:
         required: true
         type: string
 
+env:
+  GITLAB_USER_TOKEN: "${{ secrets.GITLAB_USER_TOKEN }}"
+  PYPIRC:  "${{ secrets.PYPIRC }}"
+  PRODUCT: batcave
+  VIRTUAL_ENV: venv
+  ARTIFACTS_DIR: dist
+  UNIT_TEST_DIR: unit_test_results
+  GIT_AUTHOR_NAME: "${{ github.actor }}"
+  GIT_AUTHOR_EMAIL: "${{ github.actor }}"
+  GIT_COMMITTER_NAME: "${{ github.actor }}"
+  GIT_COMMITTER_EMAIL: "${{ github.actor }}"
+  GIT_REMOTE: gitlab_pipeline_origin
+
 jobs:
   base:
     runs-on: ubuntu-latest
@@ -13,7 +26,6 @@ jobs:
       image: python:3.10-slim
     timeout-minutes: 60
     env:
-      PRODUCT: batcave
       FLIT_ROOT_INSTALL: 1
     steps:
     - uses: actions/checkout@v4.1.0
