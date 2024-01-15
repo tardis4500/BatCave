@@ -33,5 +33,5 @@ jobs:
     - run: pip install -U setuptools wheel
     - run: pip install -U flit
     - run: flit install -s --deps all
-    - run: git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
+    # - run: git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
     - run: cicd-support/${{ inputs.action }}
