@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+pylint $PRODUCT
+flake8 $PRODUCT
+mypy $PRODUCT

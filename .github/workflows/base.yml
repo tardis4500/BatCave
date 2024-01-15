@@ -1,0 +1,37 @@
+name: BatCave CI/CD Base
+on:
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10-slim
+    timeout-minutes: 60
+    env:
+      FLIT_ROOT_INSTALL: 1
+    steps:
+    - uses: actions/checkout@v4.1.0
+    - uses: actions/cache@v3.3.2
+      with:
+        path: "$VIRTUAL_ENV"
+        key: default
+    - run: cat /etc/os-release
+    - run: python -V
+    - run: apt-get update
+    - run: apt-get -y -qq --no-install-recommends install curl git
+    - run: python -m pip install -U pip
+    - run: pip install -U setuptools wheel
+    - run: pip install -U virtualenv
+    - run: if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
+    - run: source $VIRTUAL_ENV/bin/activate
+    - run: python -m pip install -U pip
+    - run: pip install -U setuptools wheel
+    - run: pip install -U flit
+    - run: flit install -s --deps all
+    - run: git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
+    - run: cicd-support/${{ inputs.action }}
