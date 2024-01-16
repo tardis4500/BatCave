@@ -1,3 +1,28 @@
 #!/usr/bin/env bash
 set -eu
-flit build
+
+cat /etc/os-release
+python -V
+apt-get update
+apt-get -y -qq --no-install-recommends install curl git
+python -m pip install -U pip
+pip install -U setuptools wheel
+# pip install -U virtualenv
+# if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
+# source $VIRTUAL_ENV/bin/activate
+python -m pip install -U pip
+pip install -U setuptools wheel
+pip install -U flit
+flit install -s --deps all
+# git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
+
+case $1 in
+    static-analysis )
+        pylint $PRODUCT
+        flake8 $PRODUCT
+        mypy $PRODUCT ;;
+    unit-tests )
+        python -m xmlrunner discover -o $UNIT_TEST_DIR ;;
+    build )
+        flit build ;;
+esac
