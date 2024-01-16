@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-set -eu
-python -m xmlrunner discover -o $UNIT_TEST_DIR

@@ -30,31 +30,40 @@ jobs:
       - uses: actions/checkout@v4.1.0
       - run: cicd-support/build static-analysis
 
-#   unit-tests:
-#     uses: ./.github/workflows/base.yml
-#     with:
-#       action: unit-tests
+  unit-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10-slim
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - run: cicd-support/build unit-tests
 # # 'artifacts.junit' was not transformed because there is no suitable equivalent in GitHub Actions
 
-#   build:
-#     needs:
-#       - static-analysis
-#       - unit-tests
-#     uses: ./.github/workflows/base.yml
-#     with:
-#       action: build
+  build:
+    needs:
+      - static-analysis
+      - unit-tests
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10-slim
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - run: cicd-support/build build
 #     - uses: actions/upload-artifact@v4.0.0
 #       if: success()
 #       with:
 #         name: "${{ github.job }}"
 #         path: "$ARTIFACTS_DIR"
 
-  # install-test:
-  #   needs: build
-  #   steps:
-  #   - uses: actions/checkout@v4.1.0
-  #   # - uses: actions/download-artifact@v4.1.0
-  #   - run: pip install $ARTIFACTS_DIR/*.tar.gz
+  install-test:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10-slim
+    steps:
+    - uses: actions/checkout@v4.1.0
+    # - uses: actions/download-artifact@v4.1.0
+    - run: pip install $ARTIFACTS_DIR/*.tar.gz
 
 #   publish-test:
 #     needs: install-test
