@@ -49,11 +49,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.0
       - run: cicd-support/build build
-#     - uses: actions/upload-artifact@v4.0.0
-#       if: success()
-#       with:
-#         name: "${{ github.job }}"
-#         path: "$ARTIFACTS_DIR"
+      - uses: actions/upload-artifact@v4.0.0
+        if: success()
+        with:
+          name: "${{ github.job }}"
+          path: "$ARTIFACTS_DIR"
 
   install-test:
     needs: build
@@ -62,7 +62,7 @@ jobs:
       image: python:3.10-slim
     steps:
     - uses: actions/checkout@v4.1.0
-    # - uses: actions/download-artifact@v4.1.0
+    - uses: actions/download-artifact@v4.1.0
     - run: pip install $ARTIFACTS_DIR/*.tar.gz
 
 #   publish-test:
