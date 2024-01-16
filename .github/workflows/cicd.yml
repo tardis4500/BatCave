@@ -1,4 +1,4 @@
-name: BatCave CI/CD
+name: BatCave
 on:
   push:
   pull_request:
@@ -8,7 +8,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: "3.10"
   GITLAB_USER_TOKEN: "${{ secrets.GITLAB_USER_TOKEN }}"
   PYPIRC:  "${{ secrets.PYPIRC }}"
   PRODUCT: batcave
@@ -26,7 +25,7 @@ jobs:
   static-analysis:
     runs-on: ubuntu-latest
     container:
-      image: python:${{ vars.PYTHON_VERSION }}-slim
+      image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4.1.0
       - run: cicd-support/build static-analysis
