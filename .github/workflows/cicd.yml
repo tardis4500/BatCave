@@ -1,3 +1,9 @@
+# TODO:
+# - implement cache for virtualenv
+# - parameterize python version
+# - parameterize artifact directory
+# - publish unit test results
+
 name: BatCave
 on:
   push:
