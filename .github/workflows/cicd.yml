@@ -53,7 +53,7 @@ jobs:
         if: success()
         with:
           name: "${{ github.job }}"
-          path: "$ARTIFACTS_DIR"
+          path: dist
 
   install-test:
     needs: build
