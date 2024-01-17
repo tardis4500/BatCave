@@ -2,19 +2,27 @@
 set -eu
 
 cat /etc/os-release
-python -V
-apt-get update
-apt-get -y -qq --no-install-recommends install curl git
-python -m pip install -U pip
-pip install -U setuptools wheel
+python --version
+pip install --upgrade --upgrade-strategy eager pip
+pip install --upgrade --upgrade-strategy eager setuptools wheel
+
+# apt-get -y -qq update
+# apt-get -y -qq --no-install-recommends install curl git
+
 # pip install -U virtualenv
 # if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
 # source $VIRTUAL_ENV/bin/activate
-python -m pip install -U pip
-pip install -U setuptools wheel
-pip install -U flit
-flit install -s --deps all
+# pip install --upgrade --upgrade-strategy eager pip
+# pip install --upgrade --upgrade-strategy eager setuptools wheel
+
+if [ $1 != install-test ]
+then
+    pip install --upgrade --upgrade-strategy eager flit
+    flit install -s --deps all
+fi
 # git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
+
+echo ARTIFACTS_DIR=$ARTIFACTS_DIR
 
 case $1 in
     static-analysis )
@@ -25,4 +33,6 @@ case $1 in
         python -m xmlrunner discover -o $UNIT_TEST_DIR ;;
     build )
         flit build ;;
+    install-test )
+        pip install $ARTIFACTS_DIR/*.tar.gz ;;
 esac

@@ -63,7 +63,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4.1.0
     - uses: actions/download-artifact@v4.1.0
-    - run: pip install $ARTIFACTS_DIR/*.tar.gz
+    - run: cicd-support/build install-test
 
 #   publish-test:
 #     needs: install-test
