@@ -32,5 +32,7 @@ case $1 in
     build )
         flit build ;;
     install-test )
+        ls -lF $ARTIFACTS_DIR
+        ls -lF dist
         pip install `ls $ARTIFACTS_DIR/*.tar.gz` ;;
 esac
