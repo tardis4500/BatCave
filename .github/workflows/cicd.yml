@@ -15,13 +15,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GITLAB_USER_TOKEN: "${{ secrets.GITLAB_USER_TOKEN }}"
-  PYPIRC:  "${{ secrets.PYPIRC }}"
   PRODUCT: batcave
   VIRTUAL_ENV: venv
   ARTIFACTS_DIR: dist
   FLIT_ROOT_INSTALL: 1
   UNIT_TEST_DIR: unit_test_results
+  GITLAB_USER_TOKEN: "${{ secrets.GITLAB_USER_TOKEN }}"
+  PYPIRC:  "${{ secrets.PYPIRC }}"
   GIT_AUTHOR_NAME: "${{ github.actor }}"
   GIT_AUTHOR_EMAIL: "${{ github.actor }}"
   GIT_COMMITTER_NAME: "${{ github.actor }}"
@@ -35,7 +35,7 @@ jobs:
       image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
+      - run: cicd-support/cicd.sh "${{ github.job.name }}"
 #     - uses: actions/cache@v3
 #       with:
 #         path: "$VIRTUAL_ENV"
@@ -47,7 +47,7 @@ jobs:
       image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
+      - run: cicd-support/cicd.sh "${{ github.job.name }}"
 
   build:
     needs:
@@ -58,7 +58,7 @@ jobs:
       image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
+      - run: cicd-support/cicd.sh "${{ github.job.name }}"
       - uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -73,7 +73,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
-    - run: cicd-support/cicd.sh "${{ github.job }}"
+    - run: cicd-support/cicd.sh "${{ github.job.name }}"
 
   publish-test:
     needs: install-test
@@ -87,59 +87,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
-    - run: cicd-support/cicd.sh "${{ github.job }}"
+    - run: cicd-support/cicd.sh "${{ github.job.name }}"
 
 #   publish:
 #     needs: publish-test
 #     runs-on: ubuntu-latest
 #     container:
 #       image: python:3.10-slim
-#     if: # Unable to map conditional expression to GitHub Actions equivalent
-# #         ${{ github.event_name }} == "web" || !(${{ github.ref }} && $CI_OPEN_MERGE_REQUESTS && ${{ github.event_name }} == "push") || ${{ github.event_name }} == "merge_request_event" || !(${{ github.ref }} && $CI_OPEN_MERGE_REQUESTS) || ${{ github.ref }} == "master" || ${{ github.ref }} =~ /^release\/.*/ || ${{ github.ref }} =~ /^feature\/.*/ || ${{ github.ref }} == "master" || ${{ github.ref }} =~ /^release\/.*/ || ${{ github.ref }} =~ /^feature\/.*/
 #     environment: Production
-#     timeout-minutes: 60
 #     env:
-#       FLIT_ROOT_INSTALL: 1
 #       PYPI_REPO: pypi
 #       BUMP_ARGS: "--patch --tag rc --tag-num"
 #     steps:
 #     - uses: actions/checkout@v4
-#       with:
-#         fetch-depth: 50
-#         lfs: true
-#     - uses: actions/cache@v3
-#       with:
-#         path: "$VIRTUAL_ENV"
-#         key: default
 #     - uses: actions/download-artifact@v4
-#     - run: cat /etc/os-release
-#     - run: python -V
-#     - run: apt-get update
-#     - run: apt-get -y -qq --no-install-recommends install curl git
-#     - run: python -m pip install -U pip
-#     - run: pip install -U setuptools wheel
-#     - run: pip install -U virtualenv
-#     - run: if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
-#     - run: source $VIRTUAL_ENV/bin/activate
-#     - run: python -m pip install -U pip
-#     - run: pip install -U setuptools wheel
-#     - run: pip install -U flit
-#     - run: flit install -s --deps all
-#     - run: git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
-#     - run: curl --location --output /usr/local/bin/release-cli "https://release-cli-downloads.s3.amazonaws.com/latest/release-cli-linux-amd64"
-#     - run: chmod +x /usr/local/bin/release-cli
-#     - run: git pull $GIT_REMOTE ${{ github.ref }}
-#     - run: bumpver update --tag final --tag-commit
-#     - run: flit build
-#     - run:
-#         "!reference":
-#         - ".pypi-upload"
-#         - script
-#     - run: eval $(bumpver show --env)
-#     - run: release-cli create --name "Release $CURRENT_VERSION" --description "Release $CURRENT_VERSION" --tag-name "v$CURRENT_VERSION" --milestone "Release $CURRENT_VERSION"
-#     - run:
-#         "!reference":
-#         - ".bump-version"
-#         - script
+#     - run: cicd-support/cicd.sh "${{ github.job.name }}"
 
 # cSpell:ignore virtualenv pypirc batcave venv cicd pypi testpypi bumpver
