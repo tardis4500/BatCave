@@ -33,7 +33,7 @@ jobs:
     container:
       image: python:3.10-slim
     steps:
-      - uses: actions/checkout@v4.1.0
+      - uses: actions/checkout@v4
       - run: cicd-support/build static-analysis
 
   unit-tests:
@@ -41,7 +41,7 @@ jobs:
     container:
       image: python:3.10-slim
     steps:
-      - uses: actions/checkout@v4.1.0
+      - uses: actions/checkout@v4
       - run: cicd-support/build unit-tests
 # # 'artifacts.junit' was not transformed because there is no suitable equivalent in GitHub Actions
 
@@ -53,9 +53,9 @@ jobs:
     container:
       image: python:3.10-slim
     steps:
-      - uses: actions/checkout@v4.1.0
+      - uses: actions/checkout@v4
       - run: cicd-support/build build
-      - uses: actions/upload-artifact@v4.0.0
+      - uses: actions/upload-artifact@v4
         if: success()
         with:
           name: "${{ github.job }}"
@@ -67,8 +67,9 @@ jobs:
     container:
       image: python:3.10-slim
     steps:
-    - uses: actions/checkout@v4.1.0
-    - uses: actions/download-artifact@v4.1.0
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+    - run: ls -lF
     - run: cicd-support/build install-test
 
 #   publish-test:
@@ -85,15 +86,15 @@ jobs:
 #       PYPI_REPO: testpypi
 #       BUMP_ARGS: "--tag-num"
 #     steps:
-#     - uses: actions/checkout@v4.1.0
+#     - uses: actions/checkout@v4
 #       with:
 #         fetch-depth: 50
 #         lfs: true
-#     - uses: actions/cache@v3.3.2
+#     - uses: actions/cache@v3
 #       with:
 #         path: "$VIRTUAL_ENV"
 #         key: default
-#     - uses: actions/download-artifact@v4.1.0
+#     - uses: actions/download-artifact@v4
 #     - run: cat /etc/os-release
 #     - run: python -V
 #     - run: apt-get update
@@ -130,15 +131,15 @@ jobs:
 #       PYPI_REPO: pypi
 #       BUMP_ARGS: "--patch --tag rc --tag-num"
 #     steps:
-#     - uses: actions/checkout@v4.1.0
+#     - uses: actions/checkout@v4
 #       with:
 #         fetch-depth: 50
 #         lfs: true
-#     - uses: actions/cache@v3.3.2
+#     - uses: actions/cache@v3
 #       with:
 #         path: "$VIRTUAL_ENV"
 #         key: default
-#     - uses: actions/download-artifact@v4.1.0
+#     - uses: actions/download-artifact@v4
 #     - run: cat /etc/os-release
 #     - run: python -V
 #     - run: apt-get update
