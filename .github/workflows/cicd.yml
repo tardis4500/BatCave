@@ -1,8 +1,9 @@
 # TODO:
 # - implement cache for virtualenv
+# - limit publish to master and release branches
+# - publish unit test results
 # - parameterize python version
 # - parameterize artifact directory
-# - publish unit test results
 
 name: BatCave
 on:
@@ -34,7 +35,11 @@ jobs:
       image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/build static-analysis
+      - run: cicd-support/cicd.sh "${{ github.job }}"
+#     - uses: actions/cache@v3
+#       with:
+#         path: "$VIRTUAL_ENV"
+#         key: default
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -42,8 +47,7 @@ jobs:
       image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/build unit-tests
-# # 'artifacts.junit' was not transformed because there is no suitable equivalent in GitHub Actions
+      - run: cicd-support/cicd.sh "${{ github.job }}"
 
   build:
     needs:
@@ -54,7 +58,7 @@ jobs:
       image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/build build
+      - run: cicd-support/cicd.sh "${{ github.job }}"
       - uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -69,53 +73,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
-    - run: cicd-support/build install-test
+    - run: cicd-support/cicd.sh "${{ github.job }}"
 
-#   publish-test:
-#     needs: install-test
-#     runs-on: ubuntu-latest
-#     container:
-#       image: python:3.10-slim
-#     if: # Unable to map conditional expression to GitHub Actions equivalent
-# #         ${{ github.event_name }} == "web" || !(${{ github.ref }} && $CI_OPEN_MERGE_REQUESTS && ${{ github.event_name }} == "push") || ${{ github.event_name }} == "merge_request_event" || !(${{ github.ref }} && $CI_OPEN_MERGE_REQUESTS) || ${{ github.ref }} == "master" || ${{ github.ref }} =~ /^release\/.*/ || ${{ github.ref }} =~ /^feature\/.*/ || ${{ github.ref }} == "master" || ${{ github.ref }} =~ /^release\/.*/ || ${{ github.ref }} =~ /^feature\/.*/
-#     environment: Staging
-#     timeout-minutes: 60
-#     env:
-#       FLIT_ROOT_INSTALL: 1
-#       PYPI_REPO: testpypi
-#       BUMP_ARGS: "--tag-num"
-#     steps:
-#     - uses: actions/checkout@v4
-#       with:
-#         fetch-depth: 50
-#         lfs: true
-#     - uses: actions/cache@v3
-#       with:
-#         path: "$VIRTUAL_ENV"
-#         key: default
-#     - uses: actions/download-artifact@v4
-#     - run: cat /etc/os-release
-#     - run: python -V
-#     - run: apt-get update
-#     - run: apt-get -y -qq --no-install-recommends install curl git
-#     - run: python -m pip install -U pip
-#     - run: pip install -U setuptools wheel
-#     - run: pip install -U virtualenv
-#     - run: if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
-#     - run: source $VIRTUAL_ENV/bin/activate
-#     - run: python -m pip install -U pip
-#     - run: pip install -U setuptools wheel
-#     - run: pip install -U flit
-#     - run: flit install -s --deps all
-#     - run: git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
-#     - run:
-#         "!reference":
-#         - ".pypi-upload"
-#         - script
-#     - run:
-#         "!reference":
-#         - ".bump-version"
-#         - script
+  publish-test:
+    needs: install-test
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10-slim
+    environment: Staging
+    env:
+      PYPI_REPO: testpypi
+      BUMP_ARGS: "--tag-num"
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+    - run: cicd-support/cicd.sh "${{ github.job }}"
+
 #   publish:
 #     needs: publish-test
 #     runs-on: ubuntu-latest
@@ -169,4 +142,4 @@ jobs:
 #         - ".bump-version"
 #         - script
 
-# cSpell:ignore
+# cSpell:ignore virtualenv pypirc batcave venv cicd pypi testpypi bumpver
