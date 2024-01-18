@@ -36,6 +36,7 @@ case $1 in
     install-test )
         pip install $ARTIFACTS_DIR/*.tar.gz ;;
     publish-test )
+        install-flit
         twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
         bumpver update $BUMP_ARGS
 esac
