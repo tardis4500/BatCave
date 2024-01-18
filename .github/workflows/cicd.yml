@@ -30,7 +30,6 @@ env:
 
 jobs:
   static-analysis:
-    name: static-analysis
     runs-on: ubuntu-latest
     container:
       image: python:3.10-slim
