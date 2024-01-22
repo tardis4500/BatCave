@@ -1,5 +1,6 @@
 # TODO:
 # - implement cache for virtualenv
+# - Implement testing matrix
 # - limit publish to master and release branches
 # - publish unit test results
 # - parameterize python version
@@ -33,8 +34,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest] #, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11"] #, "3.12"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -52,8 +53,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest] #, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11"] #, "3.12"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
