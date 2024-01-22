@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 set -eu
 
-cat /etc/os-release
+unix_os=`uname`
+if [ $unix_os = Darwin ]
+then
+    sw_vers
+elif [ $unix_os = Linux ]
+then
+    cat /etc/os-release
+else
+    echo "Unsupported UNIX OS: $unix_os"
+fi
+
 python --version
 pip install --upgrade --upgrade-strategy eager pip
 pip install --upgrade --upgrade-strategy eager setuptools wheel
