@@ -42,6 +42,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "pip"
       - name: Static Analysis
         run: cicd-support/cicd.sh "${{ github.job }}"
 #     - uses: actions/cache@v3
@@ -61,24 +62,29 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "pip"
       - name: Unit Tests
         run: cicd-support/cicd.sh "${{ github.job }}"
 
-#   build:
-#     needs:
-#       - static-analysis
-#       - unit-tests
-#     runs-on: ubuntu-latest
-#     container:
-#       image: python:3.10-slim
-#     steps:
-#       - uses: actions/checkout@v4
-#       - run: cicd-support/cicd.sh "${{ github.job }}"
-#       - uses: actions/upload-artifact@v4
-#         if: success()
-#         with:
-#           name: dist
-#           path: dist
+  build:
+    needs:
+      - static-analysis
+      - unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - name: Build Package
+        run: cicd-support/cicd.sh "${{ github.job }}"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: dist
+          path: dist
 
 #   install-test:
 #     needs: build
