@@ -31,11 +31,14 @@ env:
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Static Analysis
+        run: cicd-support/cicd.sh "${{ github.job }}"
 #     - uses: actions/cache@v3
 #       with:
 #         path: "$VIRTUAL_ENV"
@@ -43,64 +46,67 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim
     steps:
       - uses: actions/checkout@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
-
-  build:
-    needs:
-      - static-analysis
-      - unit-tests
-    runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim
-    steps:
-      - uses: actions/checkout@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
-      - uses: actions/upload-artifact@v4
-        if: success()
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          name: dist
-          path: dist
+          python-version: '3.10'
+      - name: Unit Tests
+        run: cicd-support/cicd.sh "${{ github.job }}"
 
-  install-test:
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-    - run: cicd-support/cicd.sh "${{ github.job }}"
-
-  publish-test:
-    needs: install-test
-    runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim
-    environment: Staging
-    env:
-      PYPI_REPO: testpypi
-      BUMP_ARGS: "--tag-num"
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-    - run: cicd-support/cicd.sh "${{ github.job }}"
-
-#   publish:
-#     needs: publish-test
+#   build:
+#     needs:
+#       - static-analysis
+#       - unit-tests
 #     runs-on: ubuntu-latest
 #     container:
 #       image: python:3.10-slim
-#     environment: Production
-#     env:
-#       PYPI_REPO: pypi
-#       BUMP_ARGS: "--patch --tag rc --tag-num"
+#     steps:
+#       - uses: actions/checkout@v4
+#       - run: cicd-support/cicd.sh "${{ github.job }}"
+#       - uses: actions/upload-artifact@v4
+#         if: success()
+#         with:
+#           name: dist
+#           path: dist
+
+#   install-test:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     container:
+#       image: python:3.10-slim
 #     steps:
 #     - uses: actions/checkout@v4
 #     - uses: actions/download-artifact@v4
 #     - run: cicd-support/cicd.sh "${{ github.job }}"
+
+#   publish-test:
+#     needs: install-test
+#     runs-on: ubuntu-latest
+#     container:
+#       image: python:3.10-slim
+#     environment: Staging
+#     env:
+#       PYPI_REPO: testpypi
+#       BUMP_ARGS: "--tag-num"
+#     steps:
+#     - uses: actions/checkout@v4
+#     - uses: actions/download-artifact@v4
+#     - run: cicd-support/cicd.sh "${{ github.job }}"
+
+# #   publish:
+# #     needs: publish-test
+# #     runs-on: ubuntu-latest
+# #     container:
+# #       image: python:3.10-slim
+# #     environment: Production
+# #     env:
+# #       PYPI_REPO: pypi
+# #       BUMP_ARGS: "--patch --tag rc --tag-num"
+# #     steps:
+# #     - uses: actions/checkout@v4
+# #     - uses: actions/download-artifact@v4
+# #     - run: cicd-support/cicd.sh "${{ github.job }}"
 
 # cSpell:ignore virtualenv pypirc batcave venv cicd pypi testpypi bumpver
