@@ -47,6 +47,8 @@ case $1 in
         pip install $ARTIFACTS_DIR/*.tar.gz ;;
     publish-test )
         install-flit
+        git config user.name "$GIT_AUTHOR_NAME"
+        git config user.email "$GIT_AUTHOR_EMAIL"
         bumpver update --tag-num ;;
     publish )
         install-flit

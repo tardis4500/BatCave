@@ -1,6 +1,5 @@
 # TODO:
 # - Fix bumpver on test publish
-# - Restrict publish steps to primary branches
 # - implement cache for virtualenv
 # - Implement testing matrix
 # - limit publish to master and release branches
