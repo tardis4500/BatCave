@@ -1,4 +1,5 @@
 # TODO:
+# - implement publish using GitHub action
 # - implement cache for virtualenv
 # - Implement testing matrix
 # - limit publish to master and release branches
@@ -89,21 +90,24 @@ jobs:
         with:
           python-version: "3.10"
       - uses: actions/download-artifact@v4
-      - run: cicd-support/cicd.sh "${{ github.job }}"
+      - name: Install test
+        run: cicd-support/cicd.sh "${{ github.job }}"
 
-#   publish-test:
-#     needs: install-test
-#     runs-on: ubuntu-latest
-#     container:
-#       image: python:3.10-slim
-#     environment: Staging
-#     env:
-#       PYPI_REPO: testpypi
-#       BUMP_ARGS: "--tag-num"
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/download-artifact@v4
-#     - run: cicd-support/cicd.sh "${{ github.job }}"
+  publish-test:
+    needs: install-test
+    runs-on: ubuntu-latest
+    environment: Staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - uses: actions/download-artifact@v4
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
 
 # #   publish:
 # #     needs: publish-test
