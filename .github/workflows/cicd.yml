@@ -1,11 +1,13 @@
 # TODO:
-# - implement publish using GitHub action
+# - Fix bumpver on test publish
+# - Restrict publish steps to primary branches
 # - implement cache for virtualenv
 # - Implement testing matrix
 # - limit publish to master and release branches
 # - publish unit test results
 # - parameterize python version
 # - parameterize artifact directory
+# - Create release
 
 name: BatCave
 on:
@@ -22,13 +24,6 @@ env:
   ARTIFACTS_DIR: dist
   FLIT_ROOT_INSTALL: 1
   UNIT_TEST_DIR: unit_test_results
-  GITLAB_USER_TOKEN: "${{ secrets.GITLAB_USER_TOKEN }}"
-  PYPIRC: "${{ secrets.PYPIRC }}"
-  GIT_AUTHOR_NAME: "${{ github.actor }}"
-  GIT_AUTHOR_EMAIL: "${{ github.actor }}"
-  GIT_COMMITTER_NAME: "${{ github.actor }}"
-  GIT_COMMITTER_EMAIL: "${{ github.actor }}"
-  GIT_REMOTE: gitlab_pipeline_origin
 
 jobs:
   static-analysis:
@@ -97,6 +92,8 @@ jobs:
     needs: install-test
     runs-on: ubuntu-latest
     environment: Staging
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -109,18 +106,18 @@ jobs:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
-# #   publish:
-# #     needs: publish-test
-# #     runs-on: ubuntu-latest
-# #     container:
-# #       image: python:3.10-slim
-# #     environment: Production
-# #     env:
-# #       PYPI_REPO: pypi
-# #       BUMP_ARGS: "--patch --tag rc --tag-num"
-# #     steps:
-# #     - uses: actions/checkout@v4
-# #     - uses: actions/download-artifact@v4
-# #     - run: cicd-support/cicd.sh "${{ github.job }}"
+#   publish:
+#     needs: publish-test
+#     runs-on: ubuntu-latest
+#     container:
+#       image: python:3.10-slim
+#     environment: Production
+#     env:
+#       PYPI_REPO: pypi
+#       BUMP_ARGS: "--patch --tag rc --tag-num"
+#     steps:
+#     - uses: actions/checkout@v4
+#     - uses: actions/download-artifact@v4
+#     - run: cicd-support/cicd.sh "${{ github.job }}"
 
 # cSpell:ignore virtualenv pypirc batcave venv cicd pypi testpypi bumpver

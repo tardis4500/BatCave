@@ -47,8 +47,13 @@ case $1 in
         pip install $ARTIFACTS_DIR/*.tar.gz ;;
     publish-test )
         install-flit
-        # twine upload --config-file $PYPIRC -r $PYPI_REPO $ARTIFACTS_DIR/*
-        bumpver update --tag-num
+        bumpver update --tag-num ;;
+    publish )
+        install-flit
+        bumpver update --tag final --tag-commit
+        flit build
+        bumpver update --patch --tag rc --tag-num
+        ;;
 esac
 
 # cSpell:ignore virtualenv mypy xmlrunner pypirc pypi bumpver
