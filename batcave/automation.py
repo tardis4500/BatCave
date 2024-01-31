@@ -71,7 +71,7 @@ class Action:
     Attributes:
         message_guard: This string is printed by logger if the value of guard passed to logger is true.
     """
-    message_guard = f"{'*'*70}"
+    message_guard = f"{'*' * 70}"
 
     def __init__(self, **_unused_kwargs: Any):
         """
