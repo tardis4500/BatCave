@@ -355,7 +355,7 @@ def rmtree_hard(tree: PathName, /) -> None:
     Returns:
         Nothing.
     """
-    rmtree(tree, onerror=_rmtree_onerror)
+    rmtree(tree, onerror=_rmtree_onerror)  # pylint: disable=deprecated-argument
 
 
 def _rmtree_onerror(caller: Callable, path_str: PathName, excinfo: Any) -> None:
