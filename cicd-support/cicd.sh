@@ -10,26 +10,26 @@ then
     cat /etc/os-release
 else
     echo "Unsupported UNIX OS: $unix_os"
+    exit 1
 fi
-
-python --version
-pip install --upgrade --upgrade-strategy eager pip
-pip install --upgrade --upgrade-strategy eager setuptools wheel
-
-# apt-get -y -qq update
-# apt-get -y -qq --no-install-recommends install curl git
-
-# pip install -U virtualenv
-# if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
-# source $VIRTUAL_ENV/bin/activate
-# pip install --upgrade --upgrade-strategy eager pip
-# pip install --upgrade --upgrade-strategy eager setuptools wheel
-# git remote add $GIT_REMOTE https://${{ github.actor }}:$GITLAB_USER_TOKEN@${{ github.server_url }}/${{ github.repository_owner }}/${{ github.event.repository.name }}.git
 
 function install-flit {
     pip install --upgrade --upgrade-strategy eager flit
     flit install -s --deps all
 }
+
+function install-pip-tools {
+    pip install --upgrade --upgrade-strategy eager pip
+    pip install --upgrade --upgrade-strategy eager setuptools wheel
+}
+
+python --version
+install-pip-tools
+
+pip install --upgrade --upgrade-strategy eager virtualenv
+if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
+source $VIRTUAL_ENV/bin/activate
+install-pip-tools
 
 case $1 in
     static-analysis )
@@ -54,8 +54,7 @@ case $1 in
         install-flit
         bumpver update --tag final --tag-commit
         flit build
-        bumpver update --patch --tag rc --tag-num
-        ;;
+        bumpver update --patch --tag rc --tag-num ;;
 esac
 
-# cSpell:ignore virtualenv mypy xmlrunner pypirc pypi bumpver
+# cSpell:ignore virtualenv mypy xmlrunner bumpver
