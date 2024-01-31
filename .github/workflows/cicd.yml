@@ -68,7 +68,7 @@ jobs:
           key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
         if: ${{ matrix.os != 'windows' }}
-      - run: cicd-support/cicd.ps1 "${{ github.job }}"
+      - run: "cicd-support/${{ github.job }}.ps1"
         if: ${{ matrix.os == 'windows' }}
 
   build:
