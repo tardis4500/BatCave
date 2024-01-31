@@ -1,5 +1,4 @@
 # TODO:
-# - Fix bumpver on test publish
 # - implement cache for virtualenv
 # - Implement testing matrix
 # - limit publish to master and release branches
@@ -25,8 +24,6 @@ env:
   UNIT_TEST_DIR: unit_test_results
   GIT_AUTHOR_NAME: "${{ github.triggering_actor }}"
   GIT_AUTHOR_EMAIL: "${{ github.triggering_actor }}@users.noreply.github.com"
-  # GIT_COMMITTER_NAME: "${{ github.actor }}"
-  # GIT_COMMITTER_EMAIL: "${{ github.actor }}"
 
 jobs:
   static-analysis:
@@ -41,11 +38,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
+      - uses: actions/cache@v3
+        with:
+          path: venv
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
-#     - uses: actions/cache@v3
-#       with:
-#         path: "$VIRTUAL_ENV"
-#         key: default
 
   unit-tests:
     runs-on: ${{ matrix.os }}
@@ -59,6 +56,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
+      - uses: actions/cache@v3
+        with:
+          path: venv
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
   build:
@@ -72,6 +73,10 @@ jobs:
         with:
           python-version: "3.10"
           cache: "pip"
+      - uses: actions/cache@v3
+        with:
+          path: venv
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
       - uses: actions/upload-artifact@v4
         if: success()
@@ -88,8 +93,11 @@ jobs:
         with:
           python-version: "3.10"
       - uses: actions/download-artifact@v4
-      - name: Install test
-        run: cicd-support/cicd.sh "${{ github.job }}"
+      - uses: actions/cache@v3
+        with:
+          path: venv
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
 
   publish-test:
     needs: install-test
@@ -107,20 +115,31 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - uses: actions/cache@v3
+        with:
+          path: venv
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
-#   publish:
-#     needs: publish-test
-#     runs-on: ubuntu-latest
-#     container:
-#       image: python:3.10-slim
-#     environment: Production
-#     env:
-#       PYPI_REPO: pypi
-#       BUMP_ARGS: "--patch --tag rc --tag-num"
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/download-artifact@v4
-#     - run: cicd-support/cicd.sh "${{ github.job }}"
+  # publish:
+  #   needs: publish-test
+  #   runs-on: ubuntu-latest
+  #   environment: Production
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.10"
+  #     - uses: actions/download-artifact@v4
+  #     - uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         password: ${{ secrets.PYPI_API_TOKEN }}
+  #     - uses: actions/cache@v3
+  #       with:
+  #         path: venv
+  #         key: pip-${{ runner.os }}-${{ matrix.python-version }}
+  #     - run: cicd-support/cicd.sh "${{ github.job }}"
 
 # cSpell:ignore virtualenv pypirc batcave venv cicd pypi testpypi bumpver noreply pypa
