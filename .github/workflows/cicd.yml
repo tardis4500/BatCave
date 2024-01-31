@@ -1,10 +1,10 @@
 # TODO:
-# - Implement testing matrix
 # - limit publish to master and release branches and push only
 # - publish unit test results
 # - parameterize python version
 # - parameterize artifact directory
 # - Create release
+# - Determine how to get bumpver to work with branch restrictions.
 
 name: BatCave
 on:
