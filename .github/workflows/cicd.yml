@@ -1,5 +1,4 @@
 # TODO:
-# - windows unit tests
 # - limit publish to master and release branches and push only
 # - publish unit test results
 # - Create release
@@ -24,38 +23,14 @@ env:
   VIRTUAL_ENV: venv
 
 jobs:
-  # static-analysis:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       python-version:
-  #         - "3.10"
-  #         - "3.11"
-  #         - "3.12"
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #         cache: "pip"
-  #     - uses: actions/cache@v3
-  #       with:
-  #         path: ${{ env.VIRTUAL_ENV }}
-  #         key: pip-${{ runner.os }}-${{ matrix.python-version }}
-  #     - run: cicd-support/cicd.sh "${{ github.job }}"
-
-  unit-tests:
-    runs-on: ${{ matrix.os }}
+  static-analysis:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os:
-          # - ubuntu-latest
-          # - macos-latest
-          - windows-latest
         python-version:
           - "3.10"
-          # - "3.11"
-          # - "3.12"
+          - "3.11"
+          - "3.12"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -67,13 +42,37 @@ jobs:
           path: ${{ env.VIRTUAL_ENV }}
           key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
-        if: ${{ matrix.os != 'windows-latest' }}
+
+  unit-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.VIRTUAL_ENV }}
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
+        if: matrix.os != 'windows-latest'
       - run: "cicd-support/${{ github.job }}.ps1"
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: matrix.os == 'windows-latest'
 
   build:
     needs:
-      # - static-analysis
+      - static-analysis
       - unit-tests
     runs-on: ubuntu-latest
     steps:
@@ -107,27 +106,27 @@ jobs:
           key: pip-${{ runner.os }}-3.10
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
-  # publish-test:
-  #   needs: install-test
-  #   runs-on: ubuntu-latest
-  #   environment: Staging
-  #   permissions:
-  #     contents: write
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ env.PYTHON_BUILD_VER }}
-  #     - uses: actions/download-artifact@v4
-  #     - uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         repository-url: https://test.pypi.org/legacy/
-  #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-  #     - uses: actions/cache@v3
-  #       with:
-  #         path: ${{ env.VIRTUAL_ENV }}
-  #         key: pip-${{ runner.os }}-${{ matrix.python-version }}
-  #     - run: cicd-support/cicd.sh "${{ github.job }}"
+  publish-test:
+    needs: install-test
+    runs-on: ubuntu-latest
+    environment: Staging
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_BUILD_VER }}
+      - uses: actions/download-artifact@v4
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.VIRTUAL_ENV }}
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
 
   # publish:
   #   needs: publish-test
