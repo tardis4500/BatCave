@@ -66,11 +66,10 @@ jobs:
         with:
           path: ${{ env.VIRTUAL_ENV }}
           key: pip-${{ runner.os }}-${{ matrix.python-version }}
-      - run: echo ${{ matrix.os }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
-        if: ${{ matrix.os != 'windows' }}
+        if: ${{ matrix.os != 'windows-latest' }}
       - run: "cicd-support/${{ github.job }}.ps1"
-        if: ${{ matrix.os == 'windows' }}
+        if: ${{ matrix.os == 'windows-latest' }}
 
   build:
     needs:
