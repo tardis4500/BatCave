@@ -77,7 +77,7 @@ def secondary_lock_process(filename, queue):
 
 class TestDirStack(TestCase):
     def setUp(self):
-        self._tempdir = Path(mkdtemp())
+        self._tempdir = Path(mkdtemp()).resolve()
 
     def tearDown(self):
         self._tempdir.rmdir()
