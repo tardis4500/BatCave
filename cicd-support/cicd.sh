@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eu
 
+PRODUCT=batcave
+
 unix_os=`uname`
 if [ $unix_os = Darwin ]
 then
@@ -57,4 +59,4 @@ case $1 in
         bumpver update --patch --tag rc --tag-num ;;
 esac
 
-# cSpell:ignore virtualenv mypy xmlrunner bumpver
+# cSpell:ignore virtualenv mypy xmlrunner bumpver batcave
