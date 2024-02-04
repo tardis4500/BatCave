@@ -2,7 +2,7 @@
 set -eu
 
 PRODUCT=batcave
-export FLIT_ROOT_INSTALL: 1
+export FLIT_ROOT_INSTALL=1
 
 
 unix_os=`uname`
