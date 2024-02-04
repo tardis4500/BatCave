@@ -109,4 +109,9 @@ jobs:
           key: pip-${{ runner.os }}-3.10
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
+  show-run-id:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.run_id }}
+
 # cSpell:ignore noreply venv
