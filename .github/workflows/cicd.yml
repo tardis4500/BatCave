@@ -71,11 +71,17 @@ jobs:
         if: matrix.os != 'windows-latest'
       - run: "cicd-support/${{ github.job }}.ps1"
         if: matrix.os == 'windows-latest'
-      - name: Publish ${{ matrix.os }} Unit Tests
-        uses: EnricoMi/publish-unit-test-result-action@v2
+      - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always() && (matrix.os == 'ubuntu-latest')
         with:
+          check_name: ${{ matrix.os }} Unit Tests
           files: ${{ env.UNIT_TEST_DIR }}/*.xml
+      - uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: always() && (matrix.os != 'ubuntu-latest')
+        with:
+          check_name: ${{ matrix.os }} Unit Tests
+          files: ${{ env.UNIT_TEST_DIR }}/*.xml
+
   build:
     needs:
       - static-analysis
