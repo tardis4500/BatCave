@@ -69,7 +69,10 @@ jobs:
         if: matrix.os != 'windows-latest'
       - run: "cicd-support/${{ github.job }}.ps1"
         if: matrix.os == 'windows-latest'
-
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: ${{ env.UNIT_TEST_DIR }}/*.xml
   build:
     needs:
       - static-analysis
@@ -128,25 +131,25 @@ jobs:
           key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
-  # publish:
-  #   needs: publish-test
-  #   runs-on: ubuntu-latest
-  #   environment: Production
-  #   permissions:
-  #     contents: write
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ env.PYTHON_BUILD_VER }}
-  #     - uses: actions/download-artifact@v4
-  #     - uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         password: ${{ secrets.PYPI_API_TOKEN }}
-  #     - uses: actions/cache@v3
-  #       with:
-  #         path: ${{ env.VIRTUAL_ENV }}
-  #         key: pip-${{ runner.os }}-${{ matrix.python-version }}
-  #     - run: cicd-support/cicd.sh "${{ github.job }}"
+  publish:
+    needs: publish-test
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_BUILD_VER }}
+      - uses: actions/download-artifact@v4
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.VIRTUAL_ENV }}
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
 
 # cSpell:ignore virtualenv pypirc batcave venv cicd pypi testpypi bumpver noreply pypa
