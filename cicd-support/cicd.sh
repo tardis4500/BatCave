@@ -2,6 +2,8 @@
 set -eu
 
 PRODUCT=batcave
+export FLIT_ROOT_INSTALL: 1
+
 
 unix_os=`uname`
 if [ $unix_os = Darwin ]
@@ -56,6 +58,11 @@ case $1 in
         install-flit
         bumpver update --tag final --tag-commit
         flit build
+        eval $(bumpver show --env)
+        gh release create $CURRENT_VERSION \
+              --title="Release $CURRENT_VERSION" \
+              --latest \
+              --generate-notes
         bumpver update --patch --tag rc --tag-num ;;
 esac
 

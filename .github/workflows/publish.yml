@@ -1,0 +1,60 @@
+# TODO:
+# - Determine how to get bumpver to work with branch restrictions.
+
+name: BatCave Publish
+on:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  GIT_AUTHOR_NAME: "${{ github.triggering_actor }}"
+  GIT_AUTHOR_EMAIL: "${{ github.triggering_actor }}@users.noreply.github.com"
+  PYTHON_BUILD_VER: "3.10"
+  VIRTUAL_ENV: venv
+
+jobs:
+  publish-test:
+    runs-on: ubuntu-latest
+    environment: Staging
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_BUILD_VER }}
+      - uses: actions/download-artifact@v4
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.VIRTUAL_ENV }}
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
+
+  publish:
+    needs: publish-test
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_BUILD_VER }}
+      - uses: actions/download-artifact@v4
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.VIRTUAL_ENV }}
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}
+      - run: cicd-support/cicd.sh "${{ github.job }}"
+
+# cSpell:ignore bumpver noreply venv pypa pypi
