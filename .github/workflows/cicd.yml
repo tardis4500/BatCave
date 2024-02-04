@@ -45,6 +45,8 @@ jobs:
 
   unit-tests:
     runs-on: ${{ matrix.os }}
+    permissions:
+      checks: write
     strategy:
       matrix:
         os:
