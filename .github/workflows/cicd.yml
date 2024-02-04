@@ -1,6 +1,5 @@
 # TODO:
 # - limit publish to master and release branches and push only
-# - publish unit test results
 # - Create release
 # - Determine how to get bumpver to work with branch restrictions.
 
@@ -74,12 +73,12 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: always() && (matrix.os == 'ubuntu-latest')
         with:
-          check_name: ${{ matrix.os }} Unit Tests
+          check_name: ${{ matrix.os }} ${{ matrix.python-version }} Unit Tests
           files: ${{ env.UNIT_TEST_DIR }}/*.xml
       - uses: EnricoMi/publish-unit-test-result-action/composite@v2
         if: always() && (matrix.os != 'ubuntu-latest')
         with:
-          check_name: ${{ matrix.os }} Unit Tests
+          check_name: ${{ matrix.os }} ${{ matrix.python-version }} Unit Tests
           files: ${{ env.UNIT_TEST_DIR }}/*.xml
 
   build:
