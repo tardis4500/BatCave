@@ -4,6 +4,11 @@
 name: BatCave Publish
 on:
   workflow_dispatch:
+    inputs:
+      run_id:
+        description: The run to publish
+        required: true
+        type: number
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -27,6 +32,8 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_BUILD_VER }}
       - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.inputs.run_id }}
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
