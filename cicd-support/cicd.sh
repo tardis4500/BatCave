@@ -35,6 +35,8 @@ if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
 source $VIRTUAL_ENV/bin/activate
 install-pip-tools
 
+git config user.name "$GIT_AUTHOR_NAME"
+git config user.email "$GIT_AUTHOR_EMAIL"
 case $1 in
     static-analysis )
         install-flit
@@ -51,18 +53,13 @@ case $1 in
         pip install $ARTIFACTS_DIR/*.tar.gz ;;
     publish-test )
         install-flit
-        git config user.name "$GIT_AUTHOR_NAME"
-        git config user.email "$GIT_AUTHOR_EMAIL"
         bumpver update --tag-num ;;
     publish )
         install-flit
         bumpver update --tag final --tag-commit
         flit build
         eval $(bumpver show --env)
-        gh release create $CURRENT_VERSION \
-              --title="Release $CURRENT_VERSION" \
-              --latest \
-              --generate-notes
+        gh release create $CURRENT_VERSION --title="Release $CURRENT_VERSION" --latest --generate-notes
         bumpver update --patch --tag rc --tag-num ;;
 esac
 
