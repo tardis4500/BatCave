@@ -50,6 +50,7 @@ case $1 in
     install-test )
         pip install $ARTIFACTS_DIR/*.tar.gz ;;
     publish-test )
+        ls -laF
         install-flit
         git config user.name "$GIT_AUTHOR_NAME"
         git config user.email "$GIT_AUTHOR_EMAIL"
