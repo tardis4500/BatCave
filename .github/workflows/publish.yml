@@ -33,6 +33,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           run-id: ${{ github.event.inputs.run_id }}
+      - run: ls -laF
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
