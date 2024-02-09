@@ -7,13 +7,16 @@ A useful collection of tools for writing Python programs.
 Development is best accomplished using virtualenv or virtualenv-wrapper where a virtual environment can be generated:
 
     mkvirtualenv batcave
-    python -m pip install -U pip
-    pip install -U setuptools wheel
-    pip install -U flit
-    flit install -s --deps all (on Windows omit the -s)
+    python -m pip install --upgrade pip
+    pip install --upgrade --upgrade-strategy eager setuptools wheel
+    pip install --upgrade --upgrade-strategy eager flit
+    Windows: flit install --deps all
+    Linux: flit install -s --deps all
 
 To update the current development environment
 
+    python -m pip install --upgrade pip
+    pip install --upgrade --upgrade-strategy eager setuptools wheel
     Windows: pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}
     Linux: pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install --upgrade
 
