@@ -35,7 +35,7 @@ if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
 source $VIRTUAL_ENV/bin/activate
 install-pip-tools
 
-if [ $1 != "install-test"]
+if [ $1 != "install-test" ]
 then
     pip install --upgrade --upgrade-strategy eager flit
     flit install -s --deps all
