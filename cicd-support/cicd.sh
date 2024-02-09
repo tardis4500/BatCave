@@ -24,6 +24,7 @@ function install-pip-tools {
 function run-bumpver {
     git config user.name "$GIT_AUTHOR_NAME"
     git config user.email "$GIT_AUTHOR_EMAIL"
+    git pull
     bumpver $*
 }
 
@@ -55,7 +56,6 @@ case $1 in
     publish-test )
         run-bumpver update --tag-num ;;
     publish )
-        git pull
         run-bumpver update --tag final --tag-commit
         flit build
         eval $(bumpver show --env)
