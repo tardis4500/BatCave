@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [43.0.0] - Unreleased
+
+- Changed:
+
+## Release History
+
 ### [42.2.1] - 2024-02-08
 
 - Changed:
   - Moved repo and pipelines from GitLab to GitHub. (GitHub #100)
   - Fixed pushd/popd unit test on MacOS.
-
-## Release History
 
 ### [42.2.0] - 2023-08-11
 
