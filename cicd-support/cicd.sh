@@ -55,6 +55,7 @@ case $1 in
     publish-test )
         run-bumpver update --tag-num ;;
     publish )
+        git pull
         run-bumpver update --tag final --tag-commit
         flit build
         eval $(bumpver show --env)
