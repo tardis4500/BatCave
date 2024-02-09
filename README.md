@@ -53,5 +53,6 @@ This is the procedure for releasing BatCave
 1. Validate PyPi
 1. Move issues to "Closed"
 1. Close Milestone
+1. Update source in Perforce
 
 <!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy xmlrunner utest -->
