@@ -9,7 +9,7 @@ concurrency:
 
 env:
   ARTIFACTS_DIR: dist
-  PYTHON_BUILD_VER: "3.10"
+  PYTHON_BUILD_VER: "3.11"
   UNIT_TEST_DIR: unit_test_results
   VIRTUAL_ENV: venv
 
@@ -19,7 +19,6 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
     steps:
@@ -45,7 +44,6 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          - "3.10"
           - "3.11"
           - "3.12"
     steps:
@@ -87,7 +85,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.VIRTUAL_ENV }}
-          key: pip-${{ runner.os }}-3.10
+          key: pip-${{ runner.os }}-${{ env.PYTHON_BUILD_VER }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
       - uses: actions/upload-artifact@v4
         with:
@@ -106,7 +104,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.VIRTUAL_ENV }}
-          key: pip-${{ runner.os }}-3.10
+          key: pip-${{ runner.os }}-${{ env.PYTHON_BUILD_VER }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
   show-run-id:

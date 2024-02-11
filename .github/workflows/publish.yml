@@ -17,7 +17,7 @@ env:
   ARTIFACTS_DIR: dist
   GIT_AUTHOR_NAME: "${{ github.triggering_actor }}"
   GIT_AUTHOR_EMAIL: "${{ github.triggering_actor }}@users.noreply.github.com"
-  PYTHON_BUILD_VER: "3.10"
+  PYTHON_BUILD_VER: "3.11"
   VIRTUAL_ENV: venv
 
 jobs:
