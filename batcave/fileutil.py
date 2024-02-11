@@ -9,19 +9,23 @@ Attributes:
 # Import standard modules
 from bz2 import BZ2File
 from enum import Enum
+from errno import EACCES
 from gzip import GzipFile
 from lzma import LZMAFile
 from os import walk
 from pathlib import Path
 from shutil import copy
+from stat import S_IRWXU
 from string import Template
+from sys import stderr
 from tarfile import open as tar_open
-from typing import Any, Iterable, List, Optional, Tuple
+from time import time
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Import internal modules
-from .sysutil import popd, pushd
-from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, PathName
+from .sysutil import popd, pushd, rmtree, rmtree_hard
+from .lang import DEFAULT_ENCODING, BatCaveError, BatCaveException, PathName, xor
 
 
 class ConvertError(BatCaveException):
@@ -176,6 +180,121 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         popd()
 
 
+def prune(directory: PathName, *, age: Optional[int] = None, count: Optional[int] = None, exts: Optional[List[str]] = None,  # pylint: disable=too-many-locals
+          recurse: bool = False, force: bool = False, directories: bool = False, ignore_case: bool = False, quiet: bool = False) -> None:
+    """Recursively prune a directory of files or directories based on age or count.
+
+    Args:
+        directory: The directory from which to prune files.
+        Exactly one of these must be specified:
+            age (optional): The number days after which to prune files.
+            count (optional): The number of files to prune.
+        directories (optional, default=False): If true, remove directories also.
+        exts (optional, default=all): The extensions to prune.
+        force (optional, default=False): If true, ignore permissions restricting removal.
+        ignore_case (optional, default=False): If true, ignore case in extensions.
+        quiet (optional, default=False): If true, print status during pruning.
+        recurse (optional, default=False): If true, recurse into subdirectories.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        ValueError: If exactly one of age or count are not specified.
+    """
+    if xor(age, count):
+        raise ValueError('Exactly one of age or count must be specified.')
+    exts = ([e.lower() for e in exts] if ignore_case else exts) if exts else []
+    age_from = time()
+
+    if not quiet:
+        info = f'{age} days' if (count is None) else f'a count of {count}'
+        remove_what = 'directories' if directories else (('/'.join(exts) + ' files') if exts else 'all')
+        remove_also = ' and subdirectories' if recurse else ''
+        print(f'Removing {remove_what} in {directory}{remove_also} older than {info}')
+
+    if recurse:
+        for (dirpath, dirnames, filenames) in walk(directory, topdown=False):
+            prune_in_directory(dirpath, [Path(f) for f in (dirnames + filenames)], age_from, age=age, count=count, exts=exts,
+                               force=force, directories=directories, ignore_case=ignore_case, quiet=quiet)
+    else:
+        prune_in_directory(directory, list(Path(directory).iterdir()), age_from, age=age, count=count, exts=exts,
+                           force=force, directories=directories, ignore_case=ignore_case, quiet=quiet)
+
+
+def prune_in_directory(directory: PathName, items: List[PathName], age_from: float, *, age: Optional[int] = None, count: Optional[int] = None,  # pylint: disable=too-many-locals,too-many-branches
+                       exts: Optional[List[str]] = None, force: bool = False, directories: bool = False, ignore_case: bool = False, quiet: bool = False) -> None:
+    """Prune a directory of files or directories based on age or count.
+
+    Args:
+        directory: The directory from which to prune files.
+        age_from: The date from which to prune.
+        Exactly one of these must be specified:
+            age (optional): The number days after which to prune files.
+            count (optional): The number of files to prune.
+        directories (optional, default=False): If true, remove directories also.
+        exts (optional, default=all): The extensions to prune.
+        force (optional, default=False): If true, ignore permissions restricting removal.
+        ignore_case (optional, default=False): If true, ignore case in extensions.
+        quiet (optional, default=False): If true, print status during pruning.
+
+    Returns:
+        Nothing.
+
+    Raises:
+        ValueError: If exactly one of age or count are not specified.
+    """
+    if xor(age, count):
+        raise ValueError('Exactly one of age or count must be specified.')
+    directory = Path(directory)
+    items_to_remove = []
+    item_candidates: Dict[float, List[Path]] = {}
+    for item in items:
+        item_path = directory / item
+        if not directories:
+            if not item_path.is_file():
+                continue
+            item_ext = Path(item).suffix
+            if ignore_case:
+                item_ext = item_ext.lower()
+            if not exts:
+                exts = [item_ext]
+            if item_ext not in exts:
+                continue
+        elif not item_path.is_dir():
+            continue
+
+        item_age = (age_from - item_path.stat().st_mtime) / 86400
+        if age:
+            if item_age > age:
+                items_to_remove.append(item_path)
+        else:
+            if item_age not in item_candidates:
+                item_candidates[item_age] = []
+            item_candidates[item_age].append(item_path)
+
+    if count:
+        for count_item in sorted(item_candidates.keys(), reverse=True)[count:]:
+            items_to_remove += item_candidates[count_item]
+
+    for item in items_to_remove:
+        if not quiet:
+            print(f"  removing {'directory' if directories else 'file'} {item.name} in {directory}...")
+        try:
+            if force:
+                item.chmod(S_IRWXU)
+            if item.is_dir():
+                if force:
+                    rmtree_hard(item)
+                else:
+                    rmtree(item)
+            else:
+                item.unlink()
+        except OSError as err:
+            if err.errno == EACCES:
+                print('unable to remove: no permission', file=stderr)
+
+
 def slurp(filename: PathName, /) -> List[str]:
     """Return all the lines of a file as a list.
 
@@ -252,3 +371,5 @@ def unpack(archive_file: PathName, dest: Optional[PathName] = None, /, *, archiv
 
     if dest:
         popd()
+
+# cSpell:ignore topdown

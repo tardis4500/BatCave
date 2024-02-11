@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### [43.0.0] - Unreleased
 
+- Added:
+  - Added fileutil.prune function. (GitHub #101)
+
 - Changed:
   - Upgrade minimum Python to 3.11. (GitHub #69)
 
