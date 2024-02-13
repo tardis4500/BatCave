@@ -20,19 +20,19 @@ class TestIsDebug(TestCase):
         if self._keeper:
             os.environ['BATCAVE_DEBUG'] = self._keeper
 
-    def test_is_debug_False(self):
+    def test_is_debug_1_False(self):
         self.assertFalse(is_debug())
 
-    def test_is_debug_True(self):
+    def test_is_debug_2_True(self):
         os.environ['BATCAVE_DEBUG'] = '1'
         self.assertTrue(is_debug())
 
-    def test_is_debug_SingleValue(self):
+    def test_is_debug_3_SingleValue(self):
         os.environ['BATCAVE_DEBUG'] = 'TestValue'
         self.assertTrue(is_debug('TestValue'))
         self.assertFalse(is_debug('TestBadValue'))
 
-    def test_is_debug_MultiValue(self):
+    def test_is_debug_4_MultiValue(self):
         os.environ['BATCAVE_DEBUG'] = 'TestValue1:TestValue2'
         self.assertTrue(is_debug('TestValue1'))
         self.assertTrue(is_debug('TestValue2'))

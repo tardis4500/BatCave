@@ -37,18 +37,18 @@ class TestLockFile(TestCase):
         if self._fn.exists():
             self._fn.unlink()
 
-    def test_cleanup(self):
+    def test_1_cleanup(self):
         with LockFile(self._fn, handle=self._fh, cleanup=True):
             pass
         self.assertFalse(self._fn.exists())
 
-    def test_no_cleanup(self):
+    def test_2_no_cleanup(self):
         with LockFile(self._fn, handle=self._fh, cleanup=False):
             pass
         self.assertTrue(self._fn.exists())
 
     @skip('Problems with secondary process')
-    def test_lock(self):
+    def test_3_lock(self):
         with LockFile(self._fn, handle=self._fh, cleanup=True):
             self._lock_again.start()
             got_lock = self._got_lock.get()
@@ -56,7 +56,7 @@ class TestLockFile(TestCase):
             self.assertTrue(got_lock == LockSignal.false)
 
     @skip('Problems with secondary process')
-    def test_unlock(self):
+    def test_4_unlock(self):
         with LockFile(self._fn, handle=self._fh, cleanup=True) as lockfile:
             lockfile.action(LockMode.unlock)
             self._lock_again.start()
