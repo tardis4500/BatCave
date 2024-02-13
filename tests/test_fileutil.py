@@ -6,11 +6,13 @@
 from datetime import datetime as dt, timedelta
 from os import utime
 from pathlib import Path
+from stat import S_IREAD
 from tempfile import mkdtemp
 from time import mktime, time
 from unittest import main, TestCase
 
-from batcave.fileutil import prune_in_directory, rmtree_hard
+from batcave.fileutil import prune
+from batcave.sysutil import rmtree_hard
 
 
 class TestDirStack(TestCase):
@@ -18,48 +20,55 @@ class TestDirStack(TestCase):
     def _file_list(self):
         return sorted(list(self._tempdir.iterdir()))
 
-    def _prune_in_directory(self, **kwargs):
-        prune_in_directory(self._tempdir, self._file_list, self._time, **kwargs, quiet=True)
+    def _prune(self, age, **kwargs):
+        prune(self._tempdir, age, **kwargs)
 
     def setUp(self):
         self._tempdir = Path(mkdtemp()).resolve()
         self._time = time()
         file_time = dt.now()
-        for c in 'abcd':
+        for c in 'ab':
             for i in (1, 2):
-                Path(temp_file := self._tempdir / f'{c}{i}.txt').touch()
+                Path(temp_file1 := self._tempdir / f'{c}{i}.ext{i}').touch()
+                Path(temp_file2 := self._tempdir / f'{c}{i}.Txt{i}').touch()
                 if i == 1:
                     file_time += timedelta(days=2)
-                utime(temp_file, (file_epoch_time := mktime(file_time.timetuple()), file_epoch_time))
+                utime(temp_file1, (file_epoch_time := mktime(file_time.timetuple()), file_epoch_time))
+                utime(temp_file2, (file_epoch_time, file_epoch_time))
         self._full_file_list = self._file_list
 
     def tearDown(self):
         rmtree_hard(self._tempdir)
 
-    def test_prune_in_directory_1_no_removal(self):
-        self._prune_in_directory()
+    def test_prune_1_no_removal(self):
+        self._prune(10)
         self.assertEqual(self._full_file_list, self._file_list)
 
-    def test_prune_in_directory_2_by_age(self):
-        self._prune_in_directory(age=10)
+    def test_prune_2_simple(self):
+        self._prune(age=10)
         self.assertEqual(self._full_file_list, self._file_list)
-        self._prune_in_directory(age=6)
-        self.assertEqual(self._full_file_list[:-2], self._file_list)
-        self._prune_in_directory(age=4)
+        self._prune(age=2)
         self.assertEqual(self._full_file_list[:-4], self._file_list)
 
-    def test_prune_in_directory_3_by_count(self):
-        self._prune_in_directory(count=10)
+    def test_prune_3_by_ext(self):
+        self._prune(age=2, exts=['.txt'])
         self.assertEqual(self._full_file_list, self._file_list)
-        self._prune_in_directory(count=2)
-        print([f.name for f in self._full_file_list])
-        print([f.name for f in self._file_list])
-        self.assertEqual(self._full_file_list[:-2], self._file_list)
-        self._prune_in_directory(count=4)
-        self.assertEqual(self._full_file_list[:-4], self._file_list)
+        self._prune(age=2, exts=['.Txt2'])
+        self.assertEqual(self._full_file_list[:-1], self._file_list)
 
+    def test_prune_4_by_ext_ignore_case(self):
+        self._prune(age=2, exts=['.txt2'], ignore_case=True)
+        self.assertEqual(self._full_file_list[:-1], self._file_list)
+
+    def test_prune_4_force(self):
+        for item in self._full_file_list:
+            item.chmod(S_IREAD)
+        self.assertRaises(PermissionError, lambda: self._prune(age=2))
+        self.assertEqual(self._full_file_list, self._file_list)
+        self._prune(age=2, force=True)
+        self.assertEqual(self._full_file_list[:-4], self._file_list)
 
 if __name__ == '__main__':
     main()
 
-# cSpell:ignore batcave fileutil dcba
+# cSpell:ignore batcave fileutil
