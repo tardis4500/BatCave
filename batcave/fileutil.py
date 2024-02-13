@@ -202,7 +202,7 @@ def prune(directory: PathName, *, age: Optional[int] = None, count: Optional[int
     Raises:
         ValueError: If exactly one of age or count are not specified.
     """
-    if xor(age, count):
+    if not xor(age, count):
         raise ValueError('Exactly one of age or count must be specified.')
     exts = ([e.lower() for e in exts] if ignore_case else exts) if exts else []
     age_from = time()
@@ -244,7 +244,7 @@ def prune_in_directory(directory: PathName, items: List[PathName], age_from: flo
     Raises:
         ValueError: If exactly one of age or count are not specified.
     """
-    if xor(age, count):
+    if not xor(age is not None, count is not None):
         raise ValueError('Exactly one of age or count must be specified.')
     directory = Path(directory)
     items_to_remove = []
@@ -264,8 +264,8 @@ def prune_in_directory(directory: PathName, items: List[PathName], age_from: flo
         elif not item_path.is_dir():
             continue
 
-        item_age = (age_from - item_path.stat().st_mtime) / 86400
-        if age:
+        item_age = abs(int((age_from - item_path.stat().st_mtime) / 86400))
+        if age is not None:
             if item_age > age:
                 items_to_remove.append(item_path)
         else:
@@ -273,7 +273,7 @@ def prune_in_directory(directory: PathName, items: List[PathName], age_from: flo
                 item_candidates[item_age] = []
             item_candidates[item_age].append(item_path)
 
-    if count:
+    if count is not None:
         for count_item in sorted(item_candidates.keys(), reverse=True)[count:]:
             items_to_remove += item_candidates[count_item]
 
