@@ -18,7 +18,7 @@ LockSignal = Enum('LockSignal', ('true', 'false'))
 class TestExceptions(TestCase):
     def test_PlatformException(self):
         try:
-            raise CMDError(CMDError.INVALID_OPERATION, platform='badplatform')
+            raise CMDError(CMDError.INVALID_OPERATION, platform='bad-platform')
         except CMDError as err:
             self.assertEqual(CMDError.INVALID_OPERATION.code, err.code)
 
@@ -28,11 +28,11 @@ class TestLockFile(TestCase):
         (fd, fn) = mkstemp()
         self._fh = fdopen(fd)
         self._fn = Path(fn)
-        self._gotlock = Queue()
-        self._lockagain = Process(target=secondary_lock_process, args=(self._fn, self._gotlock))
+        self._got_lock = Queue()
+        self._lock_again = Process(target=secondary_lock_process, args=(self._fn, self._got_lock))
 
     def tearDown(self):
-        self._gotlock.close()
+        self._got_lock.close()
         self._fh.close()
         if self._fn.exists():
             self._fn.unlink()
@@ -50,26 +50,26 @@ class TestLockFile(TestCase):
     @skip('Problems with secondary process')
     def test_lock(self):
         with LockFile(self._fn, handle=self._fh, cleanup=True):
-            self._lockagain.start()
-            gotlock = self._gotlock.get()
-            self._lockagain.join()
-            self.assertTrue(gotlock == LockSignal.false)
+            self._lock_again.start()
+            got_lock = self._got_lock.get()
+            self._lock_again.join()
+            self.assertTrue(got_lock == LockSignal.false)
 
     @skip('Problems with secondary process')
     def test_unlock(self):
         with LockFile(self._fn, handle=self._fh, cleanup=True) as lockfile:
             lockfile.action(LockMode.unlock)
-            self._lockagain.start()
-            gotlock = self._gotlock.get()
-            self._lockagain.join()
+            self._lock_again.start()
+            got_lock = self._got_lock.get()
+            self._lock_again.join()
             lockfile.action(LockMode.lock)
-            self.assertTrue(gotlock == LockSignal.true)
+            self.assertTrue(got_lock == LockSignal.true)
 
 
 def secondary_lock_process(filename, queue):
     try:
-        with LockFile(filename, cleanup=False) as lockagain:
-            lockagain.action(LockMode.unlock)
+        with LockFile(filename, cleanup=False) as lock_again:
+            lock_again.action(LockMode.unlock)
             queue.put(LockSignal.true)
     except LockError:
         queue.put(LockSignal.false)
@@ -85,16 +85,18 @@ class TestDirStack(TestCase):
     def test_push_and_pop(self):
         start = Path.cwd()
 
-        olddir = pushd(self._tempdir)
-        newdir = Path.cwd()
-        self.assertEqual(olddir, start)
-        self.assertEqual(newdir, self._tempdir)
+        old_dir = pushd(self._tempdir)
+        new_dir = Path.cwd()
+        self.assertEqual(old_dir, start)
+        self.assertEqual(new_dir, self._tempdir)
 
-        olddir = popd()
-        newdir = Path.cwd()
-        self.assertEqual(olddir, start)
-        self.assertEqual(newdir, start)
+        old_dir = popd()
+        new_dir = Path.cwd()
+        self.assertEqual(old_dir, start)
+        self.assertEqual(new_dir, start)
 
 
 if __name__ == '__main__':
     main()
+
+# cSpell:ignore batcave

@@ -41,3 +41,5 @@ class TestIsDebug(TestCase):
 
 if __name__ == '__main__':
     main()
+
+# cSpell:ignore batcave

@@ -20,7 +20,7 @@ class TestStateMachine(TestCase):
     def tearDown(self):
         self.setUp()
 
-    def test_statemachine_happypath(self):
+    def test_statemachine_happy_path(self):
         with StateMachine(self.STATES) as sm:
             self.assertEqual(sm.status, StateStatus.exited)
             self.assertEqual(sm.state, 'None')
@@ -41,13 +41,13 @@ class TestStateMachine(TestCase):
         self.assertTrue(StateMachine._DEFAULT_STATEFILE.exists())
         self.assertFalse(StateMachine._DEFAULT_LOCKFILE.exists())
 
-    def test_statemachine_savestate(self):
+    def test_statemachine_save_state(self):
         for _unused_state in self.STATES:
             with StateMachine(self.STATES) as sm:
                 sm.enter_next_state()
                 sm.exit_state()
 
-    def test_statemachine_badentry(self):
+    def test_statemachine_bad_entry(self):
         with StateMachine(self.STATES) as sm:
             sm.enter_next_state()
             self.assertRaises(StateMachineError, sm.enter_next_state)
@@ -56,7 +56,7 @@ class TestStateMachine(TestCase):
             except StateMachineError as err:
                 self.assertEqual(StateMachineError.BAD_ENTRY.code, err.code)
 
-    def test_statemachine_badexit(self):
+    def test_statemachine_bad_exit(self):
         with StateMachine(self.STATES) as sm:
             sm.enter_next_state()
             sm.exit_state()
@@ -69,3 +69,5 @@ class TestStateMachine(TestCase):
 
 if __name__ == '__main__':
     main()
+
+# cSpell:ignore batcave statemachine statefile
