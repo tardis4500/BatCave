@@ -18,7 +18,7 @@ To update the current development environment
     python -m pip install --upgrade pip
     pip install --upgrade --upgrade-strategy eager setuptools wheel
     Windows: pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}
-    Linux: pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install --upgrade
+    Linux: pip freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install --upgrade
 
 ## Testing
 
@@ -34,7 +34,7 @@ The static analysis test can be run with
 
 The unit tests can be run with
 
-    python -m xmlrunner discover -o unit_test_results
+    python -m unittest -v
 
 ## Building
 
