@@ -180,15 +180,14 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         popd()
 
 
-def prune(directory: PathName, *, age: Optional[int] = None, count: Optional[int] = None, exts: Optional[List[str]] = None,  # pylint: disable=too-many-locals
+def prune(directory: PathName, *, age: int = 0, count: int = 0, exts: Optional[List[str]] = None,  # pylint: disable=too-many-locals
           recurse: bool = False, force: bool = False, directories: bool = False, ignore_case: bool = False, quiet: bool = False) -> None:
     """Recursively prune a directory of files or directories based on age or count.
 
     Args:
         directory: The directory from which to prune files.
-        Exactly one of these must be specified:
-            age (optional): The number days after which to prune files.
-            count (optional): The number of files to prune.
+        age (optional, default=0): The number days after which to prune files.
+        count (optional, default=all): The number of files to keep.
         directories (optional, default=False): If true, remove directories also.
         exts (optional, default=all): The extensions to prune.
         force (optional, default=False): If true, ignore permissions restricting removal.
@@ -222,16 +221,15 @@ def prune(directory: PathName, *, age: Optional[int] = None, count: Optional[int
                            force=force, directories=directories, ignore_case=ignore_case, quiet=quiet)
 
 
-def prune_in_directory(directory: PathName, items: List[PathName], age_from: float, *, age: Optional[int] = None, count: Optional[int] = None,  # pylint: disable=too-many-locals,too-many-branches
+def prune_in_directory(directory: PathName, items: List[PathName], age_from: float, *, age: int = 0, count: int = 0,  # pylint: disable=too-many-locals,too-many-branches
                        exts: Optional[List[str]] = None, force: bool = False, directories: bool = False, ignore_case: bool = False, quiet: bool = False) -> None:
     """Prune a directory of files or directories based on age or count.
 
     Args:
         directory: The directory from which to prune files.
         age_from: The date from which to prune.
-        Exactly one of these must be specified:
-            age (optional): The number days after which to prune files.
-            count (optional): The number of files to prune.
+        age (optional, default=0): The number days after which to prune files.
+        count (optional, default=all): The number of files to keep.
         directories (optional, default=False): If true, remove directories also.
         exts (optional, default=all): The extensions to prune.
         force (optional, default=False): If true, ignore permissions restricting removal.
@@ -244,8 +242,6 @@ def prune_in_directory(directory: PathName, items: List[PathName], age_from: flo
     Raises:
         ValueError: If exactly one of age or count are not specified.
     """
-    if not xor(age is not None, count is not None):
-        raise ValueError('Exactly one of age or count must be specified.')
     directory = Path(directory)
     items_to_remove = []
     item_candidates: Dict[float, List[Path]] = {}
@@ -265,7 +261,7 @@ def prune_in_directory(directory: PathName, items: List[PathName], age_from: flo
             continue
 
         item_age = abs(int((age_from - item_path.stat().st_mtime) / 86400))
-        if age is not None:
+        if age:
             if item_age > age:
                 items_to_remove.append(item_path)
         else:
@@ -273,8 +269,8 @@ def prune_in_directory(directory: PathName, items: List[PathName], age_from: flo
                 item_candidates[item_age] = []
             item_candidates[item_age].append(item_path)
 
-    if count is not None:
-        for count_item in sorted(item_candidates.keys(), reverse=True)[count:]:
+    if count:
+        for count_item in sorted(item_candidates.keys())[count:]:
             items_to_remove += item_candidates[count_item]
 
     for item in items_to_remove:
