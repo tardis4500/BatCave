@@ -355,6 +355,7 @@ def rmtree_hard(tree: PathName, /) -> None:
     Returns:
         Nothing.
     """
+    Path(tree).chmod(S_IRWXU)
     rmtree(tree, onerror=_rmtree_onerror)  # pylint: disable=deprecated-argument
 
 

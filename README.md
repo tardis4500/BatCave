@@ -34,7 +34,7 @@ The static analysis test can be run with
 
 The unit tests can be run with
 
-    python -m unittest -v
+    python -m unittest -v [tests.test_suite[.test_class[.test_case]]]
 
 ## Building
 

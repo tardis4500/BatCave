@@ -193,7 +193,11 @@ def prune(directory: PathName, age: int, exts: Optional[List[str]] = None, force
     """
     age_from = time()
     ext_list = [ext.lower() for ext in exts] if (exts and ignore_case) else exts
-    for item in Path(directory).iterdir():
+    target = Path(directory)
+    if force:
+        current_mode = target.stat().st_mode
+        target.chmod(S_IRWXU)
+    for item in target.iterdir():
         item_ext = item.suffix
         if ignore_case:
             item_ext = item_ext.lower()
@@ -205,6 +209,8 @@ def prune(directory: PathName, age: int, exts: Optional[List[str]] = None, force
             if force:
                 item.chmod(S_IRWXU)
             item.unlink()
+    if force:
+        target.chmod(current_mode)
 
 
 def slurp(filename: PathName, /) -> List[str]:

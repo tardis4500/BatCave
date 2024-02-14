@@ -15,13 +15,16 @@ from batcave.fileutil import prune
 from batcave.sysutil import rmtree_hard
 
 
-class TestDirStack(TestCase):
+class TestPrune(TestCase):
     @property
     def _file_list(self):
         return sorted(list(self._tempdir.iterdir()))
 
     def _prune(self, age, **kwargs):
         prune(self._tempdir, age, **kwargs)
+
+    def _print_list(self, full=False):
+        print([f.name for f in (self._full_file_list if full else self._file_list)])
 
     def setUp(self):
         self._tempdir = Path(mkdtemp()).resolve()
@@ -53,16 +56,17 @@ class TestDirStack(TestCase):
     def test_prune_3_by_ext(self):
         self._prune(age=2, exts=['.txt'])
         self.assertEqual(self._full_file_list, self._file_list)
-        self._prune(age=2, exts=['.Txt2'])
+        self._prune(age=2, exts=['.ext2'])
         self.assertEqual(self._full_file_list[:-1], self._file_list)
 
     def test_prune_4_by_ext_ignore_case(self):
-        self._prune(age=2, exts=['.txt2'], ignore_case=True)
+        self._prune(age=2, exts=['.Ext2'], ignore_case=True)
         self.assertEqual(self._full_file_list[:-1], self._file_list)
 
-    def test_prune_4_force(self):
+    def test_prune_5_force(self):
         for item in self._full_file_list:
             item.chmod(S_IREAD)
+        self._tempdir.chmod(S_IREAD)
         self.assertRaises(PermissionError, lambda: self._prune(age=2))
         self.assertEqual(self._full_file_list, self._file_list)
         self._prune(age=2, force=True)
