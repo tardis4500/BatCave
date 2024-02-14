@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed:
   - Upgrade minimum Python to 3.11. (GitHub #69)
+  - Fixed the version tagging. (GitHub #103)
 
 ## Release History
 
