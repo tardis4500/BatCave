@@ -12,6 +12,7 @@ from time import mktime, time
 from unittest import main, TestCase
 
 from batcave.fileutil import prune
+from batcave.lang import WIN32
 from batcave.sysutil import rmtree_hard
 
 
@@ -32,7 +33,7 @@ class TestPrune(TestCase):
         file_time = dt.now()
         for c in 'ab':
             for i in (1, 2):
-                Path(temp_file1 := self._tempdir / f'{c}{i}.ext{i}').touch()
+                Path(temp_file1 := self._tempdir / f'{c}{i}.Ext{i}').touch()
                 Path(temp_file2 := self._tempdir / f'{c}{i}.Txt{i}').touch()
                 if i == 1:
                     file_time += timedelta(days=2)
@@ -56,11 +57,11 @@ class TestPrune(TestCase):
     def test_prune_3_by_ext(self):
         self._prune(age=2, exts=['.txt'])
         self.assertEqual(self._full_file_list, self._file_list)
-        self._prune(age=2, exts=['.ext2'])
+        self._prune(age=2, exts=['.Txt2'])
         self.assertEqual(self._full_file_list[:-1], self._file_list)
 
     def test_prune_4_by_ext_ignore_case(self):
-        self._prune(age=2, exts=['.Ext2'], ignore_case=True)
+        self._prune(age=2, exts=['.txt2'], ignore_case=True)
         self.assertEqual(self._full_file_list[:-1], self._file_list)
 
     def test_prune_5_force(self):
