@@ -54,7 +54,7 @@ case $1 in
     install-test )
         pip install $ARTIFACTS_DIR/*.tar.gz ;;
     publish-test )
-        run-bumpver update --tag-num --tag-commit ;;
+        run-bumpver update --tag-num ;;
     publish )
         run-bumpver update --tag final --tag-commit
         flit build
