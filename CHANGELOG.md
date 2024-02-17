@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [43.0.0] - Unreleased
+### [43.0.0] - 2024-02-17
 
 - Added:
   - Added fileutil.prune(). (GitHub #101)
