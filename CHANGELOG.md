@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [43.1.0] - Unreleased
+
+- Added:
+  - Added argument switch to fileutil.prune. (GitHub #106)
+
+- Changed:
+  - Allow fileutil.prune exts arg to be any iterable. (GitHub #107)
+
+## Release History
+
 ### [43.0.0] - 2024-02-17
 
 - Added:
@@ -15,8 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed:
   - Upgrade minimum Python to 3.11. (GitHub #69)
   - Fixed the version tagging. (GitHub #103)
-
-## Release History
 
 ### [42.2.1] - 2024-02-08
 

@@ -178,7 +178,7 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         popd()
 
 
-def prune(directory: PathName, age: int, exts: Optional[List[str]] = None, force: bool = False, ignore_case: bool = False) -> None:
+def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None, force: bool = False, ignore_case: bool = False, verbose: bool = False) -> None:
     """Prune a directory of files or directories based on age or count.
 
     Args:
@@ -187,6 +187,7 @@ def prune(directory: PathName, age: int, exts: Optional[List[str]] = None, force
         exts (optional, default=all): The extensions to prune.
         force (optional, default=False): If true, ignore permissions restricting removal.
         ignore_case (optional, default=False): If true, ignore case in extensions.
+        verbose (optional, default=True): If true, print the names of files that are pruned.
 
     Returns:
         Nothing.
@@ -194,6 +195,9 @@ def prune(directory: PathName, age: int, exts: Optional[List[str]] = None, force
     age_from = time()
     ext_list = [ext.lower() for ext in exts] if (exts and ignore_case) else exts
     target = Path(directory)
+    if verbose:
+        remove_what = ('/'.join(exts) + ' files') if exts else 'all'
+        print(f'Removing {remove_what} in {directory} older than {age} days')
     if force:
         current_mode = target.stat().st_mode
         target.chmod(S_IRWXU)
@@ -206,6 +210,8 @@ def prune(directory: PathName, age: int, exts: Optional[List[str]] = None, force
 
         item_age = abs(int((age_from - item.stat().st_mtime) / 86400))
         if item_age > age:
+            if verbose:
+                print(f'  removing {item.name}...')
             if force:
                 item.chmod(S_IRWXU)
             item.unlink()
