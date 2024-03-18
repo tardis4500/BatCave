@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed:
   - Allow fileutil.prune exts arg to be any iterable. (GitHub #107)
+  - Allow Path as first argument to syscmd. (GitHub #107)
+  - Update variable names in servermgr to be camel case. (GitHub #108)
 
 ## Release History
 
@@ -35,53 +37,53 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [42.2.0] - 2023-08-11
 
 - Added:
-  - Added more Kubernetes objects to k8s module. (GitLab #76)
+  - Added more Kubernetes objects to k8s module. (GitHub #76)
 
 ### [42.1.0] - 2023-07-05
 
 - Added:
-  - Added the time module. (GitLab #75)
+  - Added the time module. (GitHub #75)
 
 ### [42.0.4] - 2023-06-2
 
 - Changed:
-  - Fix menu.SimpleMenu class. (GitLab #74)
+  - Fix menu.SimpleMenu class. (GitHub #74)
 
 ### [42.0.3] - 2023-06-24
 
 - Changed:
-  - Fix reporter.ReportObject creation when specifying an attribute. (GitLab #73)
+  - Fix reporter.ReportObject creation when specifying an attribute. (GitHub #73)
 
 ### [42.0.2] - 2023-06-14
 
 - Added:
-  - Added pywin32-stubs as a requirement. (GitLab #72)
+  - Added pywin32-stubs as a requirement. (GitHub #72)
 
 ### [42.0.1] - 2023-06-08
 
 - Changed:
-  - Fixed issue with types and new union operator. (GitLab #70)
+  - Fixed issue with types and new union operator. (GitHub #70)
 
 ### [42.0.0] - 2023-06-06
 
 - Added:
-  - Added new TypeAlias typing. (GitLab #62)
-  - Added dotmap_to_yaml and yaml_to_dotmap functions to the lang module. (GitLab #64)
+  - Added new TypeAlias typing. (GitHub #62)
+  - Added dotmap_to_yaml and yaml_to_dotmap functions to the lang module. (GitHub #64)
   - Implement virtual environment in build pipeline.
 
 - Changed
-  - Improved version module. (GitLab #55)
-  - Require full path to Google Cloud service account key file. (GitLab #57)
-  - Support ssh authentication on remote server actions. (GitLab #61)
-  - Upgrade minimum Python to 3.10. (GitLab #62)
-  - Replaced switch with new match syntax. (GitLab #62)
-  - Upgrade build tooling. (GitLab #65)
-  - Use bumpver. (GitLab #67)
-  - Update pipeline to use flit. (GitLab #68)
+  - Improved version module. (GitHub #55)
+  - Require full path to Google Cloud service account key file. (GitHub #57)
+  - Support ssh authentication on remote server actions. (GitHub #61)
+  - Upgrade minimum Python to 3.10. (GitHub #62)
+  - Replaced switch with new match syntax. (GitHub #62)
+  - Upgrade build tooling. (GitHub #65)
+  - Use bumpver. (GitHub #67)
+  - Update pipeline to use flit. (GitHub #68)
 
 - Removed
-  - Removed switch support. (GitLab #66)
-  - Removed xml_flat and xml_single support from data module. (GitLab #66)
+  - Removed switch support. (GitHub #66)
+  - Removed xml_flat and xml_single support from data module. (GitHub #66)
 
 ### [41.0.0] - 2022-09-20
 
@@ -90,147 +92,147 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed linting issues.
 
 - Removed
-  - Removed LoadBalancer module. (GitLab #63)
+  - Removed LoadBalancer module. (GitHub #63)
 
 ### [40.0.0] - 2021-10-26
 
 - Changed
-  - Upgrade minimum Python to 3.9. (GitLab #51)
-  - Use new dict union operators. (GitLab #51)
-  - Use removeprefix. (GitLab #51)
+  - Upgrade minimum Python to 3.9. (GitHub #51)
+  - Use new dict union operators. (GitHub #51)
+  - Use removeprefix. (GitHub #51)
   - Fixed linting issues.
 
 ### [39.0.5] - 2021-05-18
 
 - Changed
-  - Fixed k8s delete_item for non-namespaced objects. (GitLab #60)
+  - Fixed k8s delete_item for non-namespaced objects. (GitHub #60)
   - Fix consider-using-with linting errors.
 
 ### [39.0.4] - 2021-05-18
 
 - Changed
-  - Allow namespace args in k8s module to be either positional or named. (GitLab #58)
+  - Allow namespace args in k8s module to be either positional or named. (GitHub #58)
 
 ### [39.0.3] - 2021-05-18
 
 - Changed
-  - Assume container output always has Linux endings. (GitLab #59)
+  - Assume container output always has Linux endings. (GitHub #59)
 
 ### [39.0.2] - 2021-05-18
 
 - Added
-  - Add requirement for pywin32-stubs. (GitLab #56)
+  - Add requirement for pywin32-stubs. (GitHub #56)
 
 - Changed
-  - Fixed issue with k8s module usage. (GitLab #58)
+  - Fixed issue with k8s module usage. (GitHub #58)
 
 ### [39.0.1] - 2021-03-04
 
 - Added
-  - Add marker file to indicate typing support. (GitLab #54)
+  - Add marker file to indicate typing support. (GitHub #54)
 
 ### [39.0.0] - 2021-03-03
 
 - Added
-  - Added user documentation generation. (GitLab #1)
-  - Added close/__enter__/__exit__ to ConfigurationSet and Configuration in configmgr. (GitLab #35)
-  - Added Namespace support to k8s module. (GitLab #44)
-  - Improve SysCmdRunner. (GitLab #53)
+  - Added user documentation generation. (GitHub #1)
+  - Added close/__enter__/__exit__ to ConfigurationSet and Configuration in configmgr. (GitHub #35)
+  - Added Namespace support to k8s module. (GitHub #44)
+  - Improve SysCmdRunner. (GitHub #53)
 
 - Changed
-  - Use dataclasses where applicable. (GitLab #5)
-  - Upgrade minimum Python to 3.8. (GitLab #6)
-  - Use walrus operator where applicable. (GitLab #6)
-  - Use position only parameters where applicable. (GitLab #6)
-  - Create PyPi facing DOCUMENTATION.md. (GitLab #26)
-  - More variable renames due to rename to BatCave. (GitLab #27)
-  - Improved docstrings. (GitLab #29)
-  - Create an annotated tag on release. (GitLab #30)
-  - Removed pylint unused argument warnings by prefixing _unused. (GitLab #33)
-  - Protect read-only public members behind property definition. (GitLab #38)
-  - Don't install PyQt5 on Android architectures. (GitLab #39)
-  - Don't install psutil on arm architectures. (GitLab #39)
-  - Use splitlines() instead of split('\n'). (GitLab #40)
-  - Fixed failure on cloudmgr.Image.pull method. (GitLab #41)
-  - Move build.py to root of project. (GitLab #45)
-  - Use exception chaining where appropriate. (GitLab #49)
-  - Fix errors in cms.Client.switch method for existing branches in Git. (GitLab #50)
+  - Use dataclasses where applicable. (GitHub #5)
+  - Upgrade minimum Python to 3.8. (GitHub #6)
+  - Use walrus operator where applicable. (GitHub #6)
+  - Use position only parameters where applicable. (GitHub #6)
+  - Create PyPi facing DOCUMENTATION.md. (GitHub #26)
+  - More variable renames due to rename to BatCave. (GitHub #27)
+  - Improved docstrings. (GitHub #29)
+  - Create an annotated tag on release. (GitHub #30)
+  - Removed pylint unused argument warnings by prefixing _unused. (GitHub #33)
+  - Protect read-only public members behind property definition. (GitHub #38)
+  - Don't install PyQt5 on Android architectures. (GitHub #39)
+  - Don't install psutil on arm architectures. (GitHub #39)
+  - Use splitlines() instead of split('\n'). (GitHub #40)
+  - Fixed failure on cloudmgr.Image.pull method. (GitHub #41)
+  - Move build.py to root of project. (GitHub #45)
+  - Use exception chaining where appropriate. (GitHub #49)
+  - Fix errors in cms.Client.switch method for existing branches in Git. (GitHub #50)
   - Fix pylance linting errors.
   - Only install WMI module on Windows platform.
   - Improve freeze utility function.
   - Switch to slim image for builds.
 
 - Removed
-  - Removed logger module. (GitLab #37)
+  - Removed logger module. (GitHub #37)
 
 ### [38.1.2] - 2020-05-18
 
 - Changed
-  - Pass Kubernetes API call parameters to exec call. (GitLab #48)
+  - Pass Kubernetes API call parameters to exec call. (GitHub #48)
 
 ### [38.1.1] - 2020-05-04
 
 - Changed
-  - Set the required WMI version to be less than 1.5. (GitLab #47)
+  - Set the required WMI version to be less than 1.5. (GitHub #47)
 
 ### [38.1.0] - 2020-02-14
 
 - Added
-  - Added context parameter to k8s.Cluster initializer. (GitLab #43)### [38.0.1] - 2020-02-13
+  - Added context parameter to k8s.Cluster initializer. (GitHub #43)### [38.0.1] - 2020-02-13
 
 - Changed
-  - Fixed str_to_pythonval when ~ in value. (GitLab #42)
+  - Fixed str_to_pythonval when ~ in value. (GitHub #42)
 
 ### [38.0.0] - 2019-10-30
 
 - Added
-  - Added auto-increment of the release during production publish. (GitLab #15)
-  - Added release instructions to README.rst. (GitLab #20)
-  - Added better control on k8s.Cluster.create_job with wait_for and timeout options. (GitLab #24)
+  - Added auto-increment of the release during production publish. (GitHub #15)
+  - Added release instructions to README.rst. (GitHub #20)
+  - Added better control on k8s.Cluster.create_job with wait_for and timeout options. (GitHub #24)
 
 - Changed
-  - Renamed logger module. (GitLab #25)
+  - Renamed logger module. (GitHub #25)
   - Converted README and CHANGELOG from restructuredText to Markdown.
 
 ### [37.1.2] - 2019-10-29
 
 - Changed
-  - Fixed kubectl issue. (GitLab #22)
+  - Fixed kubectl issue. (GitHub #22)
 
 ### [37.1.1] - 2019-10-28
 
 - Added
-  - Added missing Kubernetes module requirement. (GitLab #21)
+  - Added missing Kubernetes module requirement. (GitHub #21)
 
 ### [37.1.0] - 2019-10-28
 
 - Added
-  - Added initial Kubernetes support module. (GitLab #17)
+  - Added initial Kubernetes support module. (GitHub #17)
 
 - Changed
-  - Fix installation on Android. (GitLab #10)
-  - Use cmd.Client for git interactions in build.py. (GitLab #16)
-  - Need to pass the release number in when publishing. (GitLab #18)
-  - Converted from pipenv to standard pip requirements file. (GitLab #19)
+  - Fix installation on Android. (GitHub #10)
+  - Use cmd.Client for git interactions in build.py. (GitHub #16)
+  - Need to pass the release number in when publishing. (GitHub #18)
+  - Converted from pipenv to standard pip requirements file. (GitHub #19)
   - Improved logging in build.py.
 
 ### [37.0.1] - 2019-10-24
 
 - Added
-  - Added project links to setup.py. (GitLab #3)
-  - Added GitLab CI/CD file. (GitLab #7, #14)
-  - Create GitLab release at release time in build.py. (GitLab #9)
+  - Added project links to setup.py. (GitHub #3)
+  - Added GitLab CI/CD file. (GitHub #7, #14)
+  - Create GitLab release at release time in build.py. (GitHub #9)
 
 - Changed
-  - Made dependencies less restrictive. (GitLab #2)
-  - Cleaned up setup.py. (GitLab #3)
-  - Downgraded build environment to Python 3.7 since psutil not built for 3.8 yet. (GitLab #4)
-  - Added GitLab CI/CD support to build.py. (GitLab #7)
+  - Made dependencies less restrictive. (GitHub #2)
+  - Cleaned up setup.py. (GitHub #3)
+  - Downgraded build environment to Python 3.7 since psutil not built for 3.8 yet. (GitHub #4)
+  - Added GitLab CI/CD support to build.py. (GitHub #7)
   - Fixed switch for Python 3.7 StopIteration behavior.
 
 - Removed
-  - Removed build related dependencies. (GitLab #3)
-  - Removed old dependencies. (GitLab #3, #11)
+  - Removed build related dependencies. (GitHub #3)
+  - Removed old dependencies. (GitHub #3, #11)
 
 ### [37.0.0] - 2019-10-15
 

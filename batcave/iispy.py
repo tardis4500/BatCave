@@ -168,19 +168,19 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         self.manage_item('add', VirtualDirectory, f'/app.name:{website}/', f'/path:/{vdir_name}', f'/physicalPath:{vdir_location}')
         return self.get_virtual_dir(vdir_name)
 
-    def create_webapp(self, app_name: str, appdir: PathName, website: str, pool: Optional[WebApplicationPool] = None) -> WebApplication:
+    def create_webapp(self, app_name: str, app_dir: PathName, website: str, pool: Optional[WebApplicationPool] = None) -> WebApplication:
         """Create the specified web application in the IIS instance.
 
         Args:
             app_name: The name of the web application to create.
-            appdir: The physical path for the web application.
+            app_dir: The physical path for the web application.
             website: The website for which to create the virtual directory.
             pool (optional, default=None): If not None, the application pool to which to assign the web application.
 
         Returns:
             The newly created web application.
         """
-        self.manage_item('add', WebApplication, f'/site.name:{website}', f'/path:/{app_name}/', f'/physicalPath:{appdir}', f'/applicationPool:{pool}' if pool else '')
+        self.manage_item('add', WebApplication, f'/site.name:{website}', f'/path:/{app_name}/', f'/physicalPath:{app_dir}', f'/applicationPool:{pool}' if pool else '')
         return self.get_webapp(app_name)
 
     def create_webapp_pool(self, pool_name: str, /) -> WebApplicationPool:
@@ -209,18 +209,18 @@ class IISInstance:  # pylint: disable=too-many-public-methods
             raise
         return True
 
-    def get_advanced_logger(self, path: Optional[PathName] = None, logtype: str = 'server', set_location: str = 'apphost') -> 'IISAdvancedLogger':
+    def get_advanced_logger(self, path: Optional[PathName] = None, log_type: str = 'server', set_location: str = 'apphost') -> 'IISAdvancedLogger':
         """Get the advanced logger object from the IIS instance.
 
         Args:
             path (optional, default=None): If not None, return the advanced logger from the specified path.
-            logtype (optional, default='server'): Use the specified set location to search for the advanced logger.
+            log_type (optional, default='server'): Use the specified set location to search for the advanced logger.
             set_location (optional, default='apphost'): Use the specified set location to search for the advanced logger.
 
         Returns:
             The specified advanced logger.
         """
-        return IISAdvancedLogger(path, logtype=logtype, set_location=set_location, hostname=self.hostname)
+        return IISAdvancedLogger(path, log_type=log_type, set_location=set_location, hostname=self.hostname)
 
     advanced_logger = property(get_advanced_logger, doc='A read-only property which returns the advanced logger object from the IIS instance.')
 
@@ -350,22 +350,22 @@ class IISInstance:  # pylint: disable=too-many-public-methods
         """
         return appcmd(action, self._IIS_TYPE_MAP[item_type], *args, hostname=self.hostname, remote_powershell=self._remote_powershell)
 
-    def remove_webapp(self, appname: str, /) -> None:
+    def remove_webapp(self, app_name: str, /) -> None:
         """Remove the specified web application from the IIS instance.
 
         Args:
-            appname: The name of the web application to remove.
+            app_name: The name of the web application to remove.
 
         Returns:
             Nothing.
         """
-        self.manage_item('delete', WebApplication, appname)
+        self.manage_item('delete', WebApplication, app_name)
 
     def remove_webapp_pool(self, pool_name: str, /) -> None:
         """Remove the specified web application pool from the IIS instance.
 
         Args:
-            appname: The name of the web application pool to remove.
+            pool_name: The name of the web application pool to remove.
 
         Returns:
             Nothing.
@@ -492,17 +492,17 @@ class IISConfigurationSection:
         """
         self.add_property(collection, dict2expat((properties | changes) if changes else properties))
 
-    def add_property(self, propname: str, value: str, /) -> None:
+    def add_property(self, prop_name: str, value: str, /) -> None:
         """Add a property with the specified value.
 
         Args:
-            propname: The name of the property to add.
+            prop_name: The name of the property to add.
             value: The value of the property to add.
 
         Returns:
             Nothing.
         """
-        self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/+{propname}.{value}')
+        self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/+{prop_name}.{value}')
 
     def has_collection_member(self, collection: str, /, filter_on: str, value: str) -> bool:
         """Determine if a collection has a specified member.
@@ -529,35 +529,35 @@ class IISConfigurationSection:
         """
         self.rm_property(collection, dict2expat(selectors))
 
-    def rm_property(self, propname: str, value: Optional[str] = None, /) -> None:
+    def rm_property(self, prop_name: str, value: Optional[str] = None, /) -> None:
         """Remove a property conditionally with the specified value.
 
         Args:
-            propname: The name of the property to remove.
+            prop_name: The name of the property to remove.
             value (optional, default=None): If not None, only remove the property if it has the specified value.
 
         Returns:
             Nothing.
         """
-        propspec = f'{propname}.{value}' if value else propname
-        self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/-{propspec}')
+        prop_spec = f'{prop_name}.{value}' if value else prop_name
+        self._run_appcmd('set', 'config', self._path, f'/section:{self._name}', f'/-{prop_spec}')
 
 
 class IISAdvancedLogger(IISConfigurationSection):
     """Class to create a universal abstract interface for the IIS advanced logger."""
 
-    def __init__(self, path: Optional[PathName], /, logtype: str, set_location: str,
+    def __init__(self, path: Optional[PathName], /, log_type: str, set_location: str,
                  hostname: Optional[str] = None, remote_powershell: Optional[bool] = None):
         """
         Args:
             path: The path to AdvancedLogger configuration section.
-            logtype: The AdvancedLogger type.
+            log_type: The AdvancedLogger type.
             set_location: Passed to the base class.
             hostname (optional, default=localhost): The name of the IIS server hosting the instance.
             remote_powershell (optional): Determines if PowerShell remoting is used when executing appcmd against a remote server.
                 Defaults to False for hostname is None, otherwise defaults to True.
         """
-        super().__init__(f'advancedLogging/{logtype}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
+        super().__init__(f'advancedLogging/{log_type}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
 
     def _run_appcmd(self, *cmd_args) -> CommandResult:
         """Run the IIS appcmd against this IIS advanced logger configuration.
@@ -698,16 +698,16 @@ def appcmd(*cmd_args, hostname: Optional[str], **sys_cmd_args) -> CommandResult:
     if hostname and ('remote_powershell' not in sys_cmd_args):
         sys_cmd_args['remote_powershell'] = True
     try:
-        return syscmd(str(_appcmd), *cmd_args, '/xml', remote=hostname, **sys_cmd_args)
+        return syscmd(_appcmd, *cmd_args, '/xml', remote=hostname, **sys_cmd_args)
     except CMDError as err:
         if ('outlines' not in err.vars) or not err.vars['outlines']:
             raise
 
-        if (errmsg := xmlparse_list(err.vars['outlines']).find('ERROR')) is None:
+        if (err_msg := xmlparse_list(err.vars['outlines']).find('ERROR')) is None:
             raise
         return_code = err.vars['returncode']
 
-    err_object = AppCmdError(AppCmdError.APPCMD_ERROR, message=errmsg.attrib['message'])
+    err_object = AppCmdError(AppCmdError.APPCMD_ERROR, message=err_msg.attrib['message'])
     err_object.vars['returncode'] = return_code
     raise err_object
 
@@ -723,4 +723,4 @@ def dict2expat(py_dict: Dict, /) -> str:
     """
     return '[' + ','.join([f"{k}='{v}'" for k, v in py_dict.items()]) + "]"
 
-# cSpell:ignore iisreset inetsrv syscmd vdir
+# cSpell:ignore iisreset xmlparse syscmd pythonval vdir apppool apphost logfield inetsrv

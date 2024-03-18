@@ -435,11 +435,11 @@ def _construct_remote_driver(remote: Optional[bool | str] = False, remote_is_win
     return remote_driver
 
 
-def syscmd(command: str, /, *cmd_args, input_lines: Optional[Iterable] = None, show_stdout: bool = False,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements,too-many-arguments
-           ignore_stderr: bool = False, append_stderr: bool = False, fail_on_error: bool = True, show_cmd: bool = False,
-           use_shell: bool = False, flatten_output: bool = False, remote: Optional[bool | str] = False,
-           remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False, remote_auth: Optional[ServerAuthType] = None,
-           remote_powershell: bool = False) -> CommandResult:
+def syscmd(command: PathName, /, *cmd_args, input_lines: Optional[Iterable] = None,  # pylint: disable=too-many-locals,too-many-branches,too-many-statements,too-many-arguments
+           show_stdout: bool = False, ignore_stderr: bool = False, append_stderr: bool = False, fail_on_error: bool = True,
+           show_cmd: bool = False, use_shell: bool = False, flatten_output: bool = False,
+           remote: Optional[bool | str] = False, remote_is_windows: Optional[bool] = None, copy_for_remote: bool = False,
+           remote_auth: Optional[ServerAuthType] = None, remote_powershell: bool = False) -> CommandResult:
     """Wrapper to provide a better interface to subprocess.Popen().
 
     Args:
