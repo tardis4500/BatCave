@@ -56,10 +56,10 @@ test = [
 # doc = []
 
 [project.urls]
-homepage = "https://gitlab.com/arisilon/batcave/"                            # batcave.__uri__,
+homepage = "https://github.com/tardis4500/batcave/"
 documentation = "https://batcave.readthedocs.io"
-repository = "https://gitlab.com/arisilon/batcave/"
-changelog = "https://gitlab.com/arisilon/batcave/-/blob/master/CHANGELOG.md"
+repository = "https://github.com/tardis4500/batcave/"
+changelog = "https://github.com/tardis4500/batcave/blob/master/CHANGELOG.md"
 
 [tool.flake8]
 max-line-length = 200

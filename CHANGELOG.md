@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [43.1.0] - Unreleased
+### [43.1.1] - Unreleased
+
+- Changed:
+  - Fixed project URLs. (GitHub #110)
+  - Fixed release number. (GitHub #110)
+
+## Release History
+
+### [43.1.0] - 2024-03-18
 
 - Added:
   - Added argument switch to fileutil.prune. (GitHub #106)
@@ -16,8 +24,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Allow fileutil.prune exts arg to be any iterable. (GitHub #107)
   - Allow Path as first argument to syscmd. (GitHub #107)
   - Update variable names in servermgr to be camel case. (GitHub #108)
-
-## Release History
 
 ### [43.0.0] - 2024-02-17
 
