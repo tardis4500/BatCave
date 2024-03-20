@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [43.1.2] - Unreleased
+
+- Changed:
+  - Switch to OICD for publishing. (GitHub #111)
+
+## Release History
+
 ### [43.1.1] - 2024-03-18
 
 - Changed:
   - Fixed project URLs. (GitHub #110)
   - Fixed release number. (GitHub #110)
-
-## Release History
 
 ### [43.1.0] - 2024-03-18
 
@@ -1475,4 +1480,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--- cSpell:ignore docstrings platarch cmds psutil servermgr pywin sqlscript verfiles cloudmgr qbpy pkgtype unittest recopytree pathlib pypiwin
       cSpell:ignore pythonval fileutil cmsclient civars chmodtree sysutl cmdspec webapp virtualwrapper configmgr buildname vsver hasapp useshell
       cSpell:ignore GNUC envcfg pipenv statemachine psexec getattr contextlib logname xmltodict ignorestderr USERPROFILE netutil assemblyinfo
-      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance removeprefix dotmap bumpver -->
+      cSpell:ignore setattr iispy virtualenv prdb syscmd splitlines dataclasses pylance removeprefix dotmap bumpver oicd -->
