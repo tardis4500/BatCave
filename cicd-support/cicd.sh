@@ -1,24 +1,38 @@
 #!/usr/bin/env bash
 set -eu
 
+if [[ -z ${1:-''} ]]; then
+    echo $0 action
+    exit 1
+fi
+
 PRODUCT=batcave
 export FLIT_ROOT_INSTALL=1
 
-unix_os=`uname`
-if [ $unix_os = Darwin ]
-then
+unix_os=$(uname)
+case $unix_os in
+Darwin)
     sw_vers
-elif [ $unix_os = Linux ]
-then
+    ;;
+Linux)
     cat /etc/os-release
-else
+    ;;
+*)
     echo "Unsupported UNIX OS: $unix_os"
     exit 1
-fi
+    ;;
+esac
+python --version
 
 function install-pip-tools {
     pip install --upgrade --upgrade-strategy eager pip
     pip install --upgrade --upgrade-strategy eager setuptools wheel
+}
+
+function static-analysis {
+    pylint $PRODUCT
+    flake8 $PRODUCT
+    mypy $PRODUCT
 }
 
 function run-bumpver {
@@ -28,39 +42,46 @@ function run-bumpver {
     bumpver $*
 }
 
-python --version
-install-pip-tools
+if [[ $1 != local-build ]]; then
+    install-pip-tools
 
-pip install --upgrade --upgrade-strategy eager virtualenv
-if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
-source $VIRTUAL_ENV/bin/activate
-install-pip-tools
+    pip install --upgrade --upgrade-strategy eager virtualenv
+    if [ ! -e $VIRTUAL_ENV ]; then virtualenv $VIRTUAL_ENV; fi
+    source $VIRTUAL_ENV/bin/activate
+    install-pip-tools
 
-if [ $1 != "install-test" ]
-then
-    pip install --upgrade --upgrade-strategy eager flit
-    flit install -s --deps all
+    if [ $1 != "install-test" ]; then
+        pip install --upgrade --upgrade-strategy eager flit
+        flit install -s --deps all
+    fi
 fi
 
 case $1 in
-    static-analysis )
-        pylint $PRODUCT
-        flake8 $PRODUCT
-        mypy $PRODUCT ;;
-    unit-tests )
-        python -m xmlrunner discover -o $UNIT_TEST_DIR ;;
-    build )
-        flit build ;;
-    install-test )
-        pip install $ARTIFACTS_DIR/*.tar.gz ;;
-    publish-test )
-        run-bumpver update --tag-num ;;
-    publish )
-        run-bumpver update --tag final --tag-commit
-        flit build
-        eval $(bumpver show --env)
-        gh release create $CURRENT_VERSION --title="Release $CURRENT_VERSION" --latest --generate-notes
-        run-bumpver update --patch --tag rc --tag-num ;;
+local-build)
+    if [[ -e dist ]]; then rm -rf dist; fi
+    static-analysis
+    bumpver update --tag-num --no-commit --no-push
+    flit build
+    ;;
+static-analysis)
+    static-analysis
+    ;;
+build)
+    flit build
+    ;;
+install-test)
+    pip install $ARTIFACTS_DIR/*.tar.gz
+    ;;
+publish-test)
+    run-bumpver update --tag-num
+    ;;
+publish)
+    run-bumpver update --tag final --tag-commit
+    flit build
+    eval $(bumpver show --env)
+    gh release create $CURRENT_VERSION --title="Release $CURRENT_VERSION" --latest --generate-notes
+    run-bumpver update --patch --tag rc --tag-num
+    ;;
 esac
 
-# cSpell:ignore virtualenv mypy xmlrunner bumpver batcave
+# cSpell:ignore batcave bumpver virtualenv
