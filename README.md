@@ -51,7 +51,7 @@ This is the procedure for releasing BatCave
 1. Run the publish workflow against the Production environment
 1. Validate GitHub release
 1. Validate PyPi
-1. Move issues to "Closed"
+1. Move issues to "Closed" and label res::complete
 1. Close Milestone
 1. Update source in Perforce
 
