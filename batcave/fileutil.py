@@ -10,6 +10,7 @@ Attributes:
 from bz2 import BZ2File
 from enum import Enum
 from gzip import GzipFile
+from logging import getLogger
 from lzma import LZMAFile
 from os import walk
 from pathlib import Path
@@ -178,7 +179,7 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         popd()
 
 
-def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None, force: bool = False, ignore_case: bool = False, verbose: bool = False) -> None:
+def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None, force: bool = False, ignore_case: bool = False, log_handle: Optional[str] = None) -> None:
     """Prune a directory of files or directories based on age or count.
 
     Args:
@@ -187,17 +188,18 @@ def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None, f
         exts (optional, default=all): The extensions to prune.
         force (optional, default=False): If true, ignore permissions restricting removal.
         ignore_case (optional, default=False): If true, ignore case in extensions.
-        verbose (optional, default=True): If true, print the names of files that are pruned.
+        log_handle (optional, default=None): If not None, status will be logged to the specified log handle.
 
     Returns:
         Nothing.
     """
+    logger = getLogger(log_handle) if log_handle else None
     age_from = time()
     ext_list = [ext.lower() for ext in exts] if (exts and ignore_case) else exts
     target = Path(directory)
-    if verbose:
-        remove_what = ('/'.join(exts) + ' files') if exts else 'all'
-        print(f'Removing {remove_what} in {directory} older than {age} days')
+    if logger:
+        logger.info('Removing %s in %s older than %d days',
+                    ('/'.join(exts) + ' files') if exts else 'all', directory, age)
     if force:
         current_mode = target.stat().st_mode
         target.chmod(S_IRWXU)
@@ -210,8 +212,8 @@ def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None, f
 
         item_age = abs(int((age_from - item.stat().st_mtime) / 86400))
         if item_age > age:
-            if verbose:
-                print(f'  removing {item.name}...')
+            if logger:
+                logger.info('  removing %s...', item.name)
             if force:
                 item.chmod(S_IRWXU)
             item.unlink()

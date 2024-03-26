@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [43.1.2] - Unreleased
+### [44.0.0] - Unreleased
+
+- Added:
+  - Added log_handle argument to fileutil.prune. (GitHub #112)
 
 - Changed:
   - Switch to OICD for publishing. (GitHub #111)
+
+- Removed:
+  - Removed the verbose argument from fileutil.prune. (GitHub #112)
 
 ## Release History
 
