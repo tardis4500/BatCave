@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [43.2.0] - 2024-04-11
+
+- Added:
+  - Added patch support to objects in the k8s module. (GitHub #113)
+
+## Release History
+
 ### [43.1.1] - 2024-03-18
 
 - Changed:
   - Fixed project URLs. (GitHub #110)
   - Fixed release number. (GitHub #110)
-
-## Release History
 
 ### [43.1.0] - 2024-03-18
 
