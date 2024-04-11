@@ -38,11 +38,10 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           run-id: ${{ github.event.inputs.run_id }}
-          github-token: ${{ secrets.ARTIFACT_TOKEN_NEW }}
+          github-token: ${{ secrets.ARTIFACT_TOKEN }}
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
   publish:
