@@ -302,7 +302,7 @@ class Cluster:
         args: list[Any] = [name]
         if item_class.NAMESPACED:
             args.append(namespace)
-        args.append(item_spec.spec)
+        args.append(item_spec.api_object)
         return item_class(self, self.find_method(item_class, 'patch')(*args))
 
 
