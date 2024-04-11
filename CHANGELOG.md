@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [43.2.2] - 2024-04-11
+
+- Changed:
+  - Fixed k8s.ClusterObject.api_object return. (GitHub #115)
+
+## Release History
+
 ### [43.2.1] - 2024-04-11
 
 - Changed:
   - Fixed issue with new spec attribute. (GitHub #114)
-
-## Release History
 
 ### [43.2.0] - 2024-04-11
 
