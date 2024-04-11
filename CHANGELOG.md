@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [43.2.1] - 2024-04-11
+
+- Changed:
+  - Fixed issue with new spec attribute. (GitHub #114)
+
+## Release History
+
 ### [43.2.0] - 2024-04-11
 
 - Added:
@@ -14,8 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Changed:
   - Switch to OICD for publishing. (GitHub #111)
-
-## Release History
 
 ### [43.1.1] - 2024-03-18
 

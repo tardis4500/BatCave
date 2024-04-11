@@ -332,7 +332,7 @@ class ClusterObject:  # pylint: disable=too-few-public-methods
             return getattr(self._object_ref, attr)
         return getattr(self._object_ref.metadata, attr)
 
-    spec = property(lambda s: s._cluster_obj, doc='A read-only property which returns Kubernetes API spec for the object.')
+    api_object = property(lambda s: s._cluster_obj, doc='A read-only property which returns Kubernetes API object.')
 
 
 class Binding(ClusterObject):  # pylint: disable=too-few-public-methods
