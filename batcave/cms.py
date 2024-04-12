@@ -1683,7 +1683,7 @@ def validate_type(ctype: ClientType, /) -> None:
         raise CMSError(CMSError.INVALID_TYPE, ctype=ctype)
 
 
-def walk_git_tree(tree: GitTree, /, *, parent: Optional[GitTree] = None) -> Generator[Tuple, Tuple, None]:
+def walk_git_tree(tree: GitTree, /, *, parent: Optional[str] = '') -> Generator[Tuple, Tuple, None]:
     """Walk the git tree similar to os.walk().
 
     Attributes:
@@ -1702,7 +1702,7 @@ def walk_git_tree(tree: GitTree, /, *, parent: Optional[GitTree] = None) -> Gene
         else:
             blobs.append(entry.name)
 
-    new_parent: str = f'{parent}/{tree.name}' if parent else tree.name
+    new_parent = f'{parent}/{tree.name}' if parent else tree.name
     for subtree in trees:
         yield from walk_git_tree(subtree, parent=new_parent)
 

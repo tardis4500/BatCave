@@ -287,6 +287,24 @@ class Cluster:
             config_args['context'] = self._context
         return kubectl(*args, **config_args, **kwargs)
 
+    def patch_item(self, item_class: Type[K8sObject], name: str, item_spec: K8sObject, /, namespace: str = 'default') -> K8sObject:
+        """Patch the named item.
+
+        Args:
+            item_class: The class of the item to patch.
+            name: The name of the item to patch.
+            item_spec: The new specification for the patched item.
+            namespace (optional, default='default'): The Kubernetes namespace from which to return the item.
+
+        Returns:
+            The patched item.
+        """
+        args: list[Any] = [name]
+        if item_class.NAMESPACED:
+            args.append(namespace)
+        args.append(item_spec.api_object)
+        return item_class(self, self.find_method(item_class, 'patch')(*args))
+
 
 class ClusterObject:  # pylint: disable=too-few-public-methods
     """Class to create a universal abstract interface for a Kubernetes cluster object.
@@ -313,6 +331,8 @@ class ClusterObject:  # pylint: disable=too-few-public-methods
         if hasattr(self._object_ref, attr):
             return getattr(self._object_ref, attr)
         return getattr(self._object_ref.metadata, attr)
+
+    api_object = property(lambda s: s._object_ref, doc='A read-only property which returns Kubernetes API object.')
 
 
 class Binding(ClusterObject):  # pylint: disable=too-few-public-methods
