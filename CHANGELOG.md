@@ -20,6 +20,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Release History
 
+### [43.2.3] - 2024-04-11
+
+- Changed:
+  - Fixed k8s.Cluster.patch_item. (GitHub #116)
+
+### [43.2.2] - 2024-04-11
+
+- Changed:
+  - Fixed k8s.ClusterObject.api_object return. (GitHub #115)
+
+### [43.2.1] - 2024-04-11
+
+- Changed:
+  - Fixed issue with new spec attribute. (GitHub #114)
+
+### [43.2.0] - 2024-04-11
+
+- Added:
+  - Added patch support to objects in the k8s module. (GitHub #113)
+
+- Changed:
+  - Switch to OICD for publishing. (GitHub #111)
+
 ### [43.1.1] - 2024-03-18
 
 - Changed:
