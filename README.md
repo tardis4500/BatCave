@@ -6,19 +6,13 @@ A useful collection of tools for writing Python programs.
 
 Development is best accomplished using virtualenv or virtualenv-wrapper where a virtual environment can be generated:
 
-    mkvirtualenv batcave
-    python -m pip install --upgrade pip
-    pip install --upgrade --upgrade-strategy eager setuptools wheel
-    pip install --upgrade --upgrade-strategy eager flit
-    Windows: flit install --deps all
-    Linux: flit install -s --deps all
+    UNIX: util/new-env.sh
+    Windows: util\New-Env.ps1
 
 To update the current development environment
 
-    python -m pip install --upgrade pip
-    pip install --upgrade --upgrade-strategy eager setuptools wheel
-    Windows: pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}
-    Linux: pip freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install --upgrade
+    UNIX: util/update-env.sh
+    Windows: util\Update-Env.ps1
 
 ## Testing
 
@@ -26,9 +20,7 @@ To update the current development environment
 
 The static analysis test can be run with
 
-    pylint batcave
-    flake8 batcave
-    mypy batcave
+    vjer test
 
 ### Unit Tests
 
@@ -55,4 +47,4 @@ This is the procedure for releasing BatCave
 1. Close Milestone
 1. Update source in Perforce
 
-<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy xmlrunner utest -->
+<!--- cSpell:ignore virtualenv mkvirtualenv batcave stest mypy xmlrunner utest vjer -->

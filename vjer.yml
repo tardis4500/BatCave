@@ -1,0 +1,28 @@
+schema: 3
+project:
+  name: batcave
+  version_service:
+    type: bumpver
+test:
+  steps:
+    - type: flake8
+    - type: pylint
+    - type: mypy
+build:
+  steps:
+    - type: flit
+release:
+  steps:
+    - type: bumpver
+    - type: flit_build
+      release_only: true
+    - type: github
+      release_only: true
+    - type: bumpver
+      release_only: true
+      args:
+        patch: True
+        tag: rc
+        tag-num: True
+
+# cSpell: ignore bumpver batcave
