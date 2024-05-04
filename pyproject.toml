@@ -29,7 +29,7 @@ dependencies = [
     "GitPython ~= 3.1",
     "google-api-core",
     "kubernetes ~= 29.0",
-    "requests ~= 2.30",
+    "requests ~= 2.31",
     "PyYAML ~= 6.0",
     "pywin32-stubs; sys_platform == 'win32'",
     "WMI ~= 1.5; sys_platform == 'win32'",
@@ -38,7 +38,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["flit", "twine", "bumpver"]
+dev = ["flit", "twine", "bumpver", "vjer"]
 test = [
     "flake8",
     "flake8-annotations",
@@ -51,7 +51,7 @@ test = [
     "types-psutil",
     "types-requests",
     "types-pywin32; sys_platform == 'win32'",
-    "unittest-xml-reporting",
+    "unittest-xml-reporting"
 ]
 # doc = []
 
