@@ -8,13 +8,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ARTIFACTS_DIR: dist
+  ARTIFACTS_DIR: artifacts
   PYTHON_BUILD_VER: "3.11"
   UNIT_TEST_DIR: unit_test_results
   VIRTUAL_ENV: venv
 
 jobs:
-  static-analysis:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,7 +33,7 @@ jobs:
           key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
-  unit-tests:
+  unit-test:
     runs-on: ${{ matrix.os }}
     permissions:
       checks: write
@@ -73,8 +73,8 @@ jobs:
 
   build:
     needs:
-      - static-analysis
-      - unit-tests
+      - test
+      - unit-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -101,10 +101,6 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_BUILD_VER }}
       - uses: actions/download-artifact@v4
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.VIRTUAL_ENV }}
-          key: pip-${{ runner.os }}-${{ env.PYTHON_BUILD_VER }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
   show-run-id:
@@ -112,4 +108,4 @@ jobs:
     steps:
       - run: echo ${{ github.run_id }}
 
-# cSpell:ignore noreply venv
+# cSpell:ignore vjer venv

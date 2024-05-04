@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: The run to publish
+        description: The run to release
         required: true
         type: number
 concurrency:
@@ -11,14 +11,14 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ARTIFACTS_DIR: dist
+  ARTIFACTS_DIR: artifacts
   GIT_AUTHOR_NAME: "${{ github.triggering_actor }}"
   GIT_AUTHOR_EMAIL: "${{ github.triggering_actor }}@users.noreply.github.com"
   PYTHON_BUILD_VER: "3.11"
   VIRTUAL_ENV: venv
 
 jobs:
-  publish-test:
+  pre_release:
     runs-on: ubuntu-latest
     environment: Staging
     permissions:
@@ -40,10 +40,11 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          packages-dir: ${{ env.ARTIFACTS_DIR }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
 
-  publish:
-    needs: publish-test
+  release:
+    needs: pre_release
     runs-on: ubuntu-latest
     environment: Production
     permissions:
@@ -62,9 +63,11 @@ jobs:
           key: pip-${{ runner.os }}-${{ matrix.python-version }}
       - run: cicd-support/cicd.sh "${{ github.job }}"
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ${{ env.ARTIFACTS_DIR }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACTS_DIR }}
           path: ${{ env.ARTIFACTS_DIR }}
 
-# cSpell:ignore bumpver noreply venv pypa pypi
+# cSpell:ignore bumpver vjer noreply venv pypa pypi
