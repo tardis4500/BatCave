@@ -56,10 +56,16 @@ if [[ $1 == 'pre_release' || $1 == 'release' ]]; then
     git pull
 fi
 
-if [[ $1 == unit-test ]]; then
+case $2 in
+unit-test)
     python -m xmlrunner discover -o $UNIT_TEST_DIR
-else
+    ;;
+install-test)
+    pip install $ARTIFACTS_DIR/*.tar.gz
+    ;;
+*)
     vjer $1
-fi
+    ;;
+esac
 
 # cSpell:ignore batcave virtualenv vjer xmlrunner
