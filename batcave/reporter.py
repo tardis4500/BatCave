@@ -499,7 +499,7 @@ class Cell(ReportObject):
 class Table(ReportObject):
     """Class to create a universal abstract interface for a report section table."""
 
-    def __init__(self, data: str, /, *, header: str = '', footer: str = '', **attr):
+    def __init__(self, data: List[List[str]], /, *, header: str = '', footer: str = '', **attr):
         """
         Args:
             data: The table data.

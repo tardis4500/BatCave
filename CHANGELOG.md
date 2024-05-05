@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed:
   - Use Vjer for builds. (GitHub #109)
   - Switch to OICD for publishing. (GitHub #111)
+  - Fix reporter.Table first argument type. (GitHub #117)
 
 - Removed:
   - Removed the verbose argument from fileutil.prune. (GitHub #112)

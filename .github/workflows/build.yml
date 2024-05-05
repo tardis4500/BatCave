@@ -35,11 +35,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
       - run: pip install vjer && vjer "${{ github.job }}"
-      # - uses: EnricoMi/publish-unit-test-result-action@v2
-      #   if: always() && (matrix.os == 'ubuntu-latest')
-      #   with:
-      #     check_name: ${{ matrix.os }} ${{ matrix.python-version }} Unit Tests
-      #     files: ${{ env.UNIT_TEST_DIR }}/*.xml
       - uses: EnricoMi/publish-unit-test-result-action/composite@v2
         if: always()
         with:
