@@ -8,6 +8,7 @@ test:
     - type: flake8
     - type: pylint
     - type: mypy
+    - type: python_unittest
 build:
   steps:
     - type: flit
