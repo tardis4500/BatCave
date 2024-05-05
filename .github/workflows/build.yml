@@ -10,7 +10,7 @@ concurrency:
 env:
   ARTIFACTS_DIR: artifacts
   PYTHON_BUILD_VER: "3.11"
-  UNIT_TEST_DIR: unit_test_results
+  UNIT_TEST_DIR: test_results
   VJER_ENV: development
   VJER_USE_FLIT: true
 
