@@ -39,7 +39,7 @@ jobs:
           packages-dir: ${{ env.ARTIFACTS_DIR }}
       - run: |
           set -eu
-          pip install $ARTIFACTS_DIR/*.whl
+          pip install vjer
           git config user.name "$GIT_AUTHOR_NAME"
           git config user.email "$GIT_AUTHOR_EMAIL"
           git pull
@@ -65,7 +65,7 @@ jobs:
           github-token: ${{ secrets.ARTIFACT_TOKEN }}
       - run: |
           set -eu
-          pip install $ARTIFACTS_DIR/*.whl
+          pip install vjer
           git config user.name "$GIT_AUTHOR_NAME"
           git config user.email "$GIT_AUTHOR_EMAIL"
           git pull
