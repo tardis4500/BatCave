@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [44.0.0] - Unreleased
+### [44.0.0] - 2024-05-05
 
 - Added:
   - Added log_handle argument to fileutil.prune. (GitHub #112)
