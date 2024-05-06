@@ -44,7 +44,7 @@ __title__ = 'BatCave'
 __summary__ = 'Python Programming Toolkit'
 __uri__ = 'https://github.com/tardis4500/batcave/'
 
-__version__ = '44.0.0'
+__version__ = '44.0.1rc0'
 __build_name__ = '{var:build_name}'
 __build_date__ = '{var:build_date}'
 
