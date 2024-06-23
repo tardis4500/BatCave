@@ -7,18 +7,13 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  ARTIFACTS_DIR: artifacts
-  PYTHON_BUILD_VER: "3.11"
-  UNIT_TEST_DIR: test_results
-  VJER_ENV: development
-  VJER_USE_FLIT: true
-
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    permissions:
-      checks: write
+    uses: tardis4500/shared-actions/.github/workflows/vjer.yml@main
+    with:
+      action: test
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
     strategy:
       matrix:
         os:
@@ -28,38 +23,24 @@ jobs:
         python-version:
           - "3.11"
           - "3.12"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "pip"
-      - run: pip install vjer && vjer "${{ github.job }}"
-      - uses: EnricoMi/publish-unit-test-result-action/composite@v2
-        if: always()
-        with:
-          check_name: ${{ matrix.os }} ${{ matrix.python-version }} Unit Tests
-          files: ${{ env.UNIT_TEST_DIR }}/*.xml
 
   build:
-    needs:
-      - test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_BUILD_VER }}
-          cache: "pip"
-      - run: pip install vjer && vjer "${{ github.job }}"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACTS_DIR }}
-          path: ${{ env.ARTIFACTS_DIR }}
+    needs: test
+    uses: tardis4500/shared-actions/.github/workflows/vjer.yml@main
+    with:
+      action: build
+      os: ubuntu-latest
+      python-version: "3.11"
+      use-flit: true
+      vjer-local: true
 
   install-test:
     needs: build
-    runs-on: ${{ matrix.os }}
+    uses: tardis4500/shared-actions/.github/workflows/install-test.yml@main
+    with:
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
+      test-action: "python -c 'import batcave; print(batcave.__version__)'"
     strategy:
       matrix:
         os:
@@ -69,20 +50,3 @@ jobs:
         python-version:
           - "3.11"
           - "3.12"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_BUILD_VER }}
-      - uses: actions/download-artifact@v4
-      - run: pip install $ARTIFACTS_DIR/*.whl
-        if: matrix.os != 'windows-latest'
-      - run: pip install (Get-Item $env:ARTIFACTS_DIR\*.whl)
-        if: matrix.os == 'windows-latest'
-
-  show-run-id:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ${{ github.run_id }}
-
-# cSpell:ignore vjer venv
