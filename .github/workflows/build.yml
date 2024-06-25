@@ -7,6 +7,9 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  UNIT_TEST_DIR: unit_test_results
+
 jobs:
   test:
     uses: tardis4500/shared-actions/.github/workflows/vjer.yml@main
@@ -23,6 +26,23 @@ jobs:
         python-version:
           - "3.11"
           - "3.12"
+
+  publish-test-results:
+    name: "Publish Tests Results"
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.UNIT_TEST_DIR }}
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "${{ env.UNIT_TEST_DIR }}/**/*.xml"
 
   build:
     needs: test
