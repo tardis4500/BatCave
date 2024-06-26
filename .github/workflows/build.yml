@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  UNIT_TEST_DIR: unit_test_results
+  UNIT_TEST_DIR: test_results
 
 jobs:
   test:
