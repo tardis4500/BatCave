@@ -52,7 +52,6 @@ jobs:
       os: ubuntu-latest
       python-version: "3.11"
       use-flit: true
-      vjer-local: true
 
   install-test:
     needs: build
