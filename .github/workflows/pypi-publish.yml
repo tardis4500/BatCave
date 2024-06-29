@@ -1,0 +1,77 @@
+name: Shared PyPi Publish Action
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      publish-mode:
+        required: true
+        type: string
+      run-id:
+        required: true
+        type: string
+      python-version:
+        required: false
+        type: string
+        default: "3.11"
+      use-local-vjer:
+        required: false
+        type: boolean
+        default: false
+
+env:
+  ARTIFACTS_DIR: artifacts
+  GH_TOKEN: ${{ github.token }}
+  VJER_ENV: development
+
+jobs:
+  pypi-publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Setup Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: "pip"
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.run-id }}
+          github-token: ${{ secrets.ARTIFACT_TOKEN }}
+      - name: Install local vjer
+        run: pip install $ARTIFACTS_DIR/*.whl
+        if: inputs.use-local-vjer
+      - name: Install vjer
+        run: pip install vjer
+        if: ${{ ! inputs.use-local-vjer }}
+      - name: Prepare Git
+        run: |
+          git config user.name "${{ github.triggering_actor }}"
+          git config user.email "${{ github.triggering_actor }}@users.noreply.github.com"
+          git pull
+      - name: Publish to Test PyPi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: ${{ env.ARTIFACTS_DIR }}
+        if: inputs.publish-mode == 'pre_release'
+      - name: Run post-publish steps
+        run: vjer ${{ inputs.publish-mode }}
+      - name: Publish to PyPi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ${{ env.ARTIFACTS_DIR }}
+        if: inputs.publish-mode == 'release'
+      - name: Upload released artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACTS_DIR }}
+          path: ${{ env.ARTIFACTS_DIR }}
+        if: inputs.publish-mode == 'release'
+
+# cSpell:ignore pypa noreply

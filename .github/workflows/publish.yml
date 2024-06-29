@@ -1,8 +1,9 @@
 name: BatCave Publish
+
 on:
   workflow_dispatch:
     inputs:
-      run_id:
+      run-id:
         description: The run to release
         required: true
         type: number
@@ -10,72 +11,26 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-env:
-  ARTIFACTS_DIR: artifacts
-  GIT_AUTHOR_NAME: "${{ github.triggering_actor }}"
-  GIT_AUTHOR_EMAIL: "${{ github.triggering_actor }}@users.noreply.github.com"
-  PYTHON_BUILD_VER: "3.11"
-  VJER_ENV: development
+permissions:
+  contents: write
+  id-token: write
 
 jobs:
   pre_release:
-    runs-on: ubuntu-latest
-    environment: Staging
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_BUILD_VER }}
-      - uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.inputs.run_id }}
-          github-token: ${{ secrets.ARTIFACT_TOKEN }}
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: ${{ env.ARTIFACTS_DIR }}
-      - run: |
-          set -eu
-          pip install vjer
-          git config user.name "$GIT_AUTHOR_NAME"
-          git config user.email "$GIT_AUTHOR_EMAIL"
-          git pull
-          vjer "${{ github.job }}"
+    uses: ./.github/workflows/pypi-publish.yml
+    # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
+    secrets: inherit
+    with:
+      environment: Staging
+      publish-mode: pre_release
+      run-id: ${{ inputs.run-id }}
 
   release:
     needs: pre_release
-    runs-on: ubuntu-latest
-    environment: Production
-    permissions:
-      contents: write
-      id-token: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_BUILD_VER }}
-      - uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.inputs.run_id }}
-          github-token: ${{ secrets.ARTIFACT_TOKEN }}
-      - run: |
-          set -eu
-          pip install vjer
-          git config user.name "$GIT_AUTHOR_NAME"
-          git config user.email "$GIT_AUTHOR_EMAIL"
-          git pull
-          vjer "${{ github.job }}"
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: ${{ env.ARTIFACTS_DIR }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACTS_DIR }}
-          path: ${{ env.ARTIFACTS_DIR }}
-
-# cSpell:ignore bumpver vjer noreply venv pypa pypi
+    uses: ./.github/workflows/pypi-publish.yml
+    # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
+    secrets: inherit
+    with:
+      environment: Production
+      publish-mode: release
+      run-id: ${{ inputs.run-id }}
