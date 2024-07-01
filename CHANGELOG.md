@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [44.0.1] - Unreleased
+### [44.0.1] - 2024-06-30
 
 - Changed:
   - Use reusable workflows. (GitHub #119)
