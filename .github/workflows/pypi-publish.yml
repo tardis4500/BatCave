@@ -60,6 +60,7 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: ${{ env.ARTIFACTS_DIR }}
         if: inputs.publish-mode == 'pre_release'
+      - run: git status
       - name: Run post-publish steps
         run: vjer ${{ inputs.publish-mode }}
       - name: Publish to PyPi
