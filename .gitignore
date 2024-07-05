@@ -240,7 +240,7 @@ $RECYCLE.BIN/
 
 artifacts/
 BatCave-0.0.0/
-test_results/
+test_results*/
 tmp/
 
 # cSpell:ignore gitignore, pycache, writefys
