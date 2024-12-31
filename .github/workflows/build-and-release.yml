@@ -1,5 +1,5 @@
-name: BatCave Build
-run-name: BatCave Build - ${{ github.run_id }}
+name: BatCave Build and Release
+run-name: BatCave Build and Release - ${{ github.run_id }}
 on:
   workflow_dispatch:
   push:
@@ -80,6 +80,7 @@ jobs:
           - "3.13"
 
   pre_release:
+    needs: install-test
     if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
     uses: ./.github/workflows/pypi-publish.yml
     # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
@@ -88,8 +89,8 @@ jobs:
       environment: pre_release
 
   release:
-    if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
     needs: pre_release
+    if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
     uses: ./.github/workflows/pypi-publish.yml
     # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
     secrets: inherit
