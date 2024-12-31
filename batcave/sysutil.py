@@ -356,7 +356,7 @@ def rmtree_hard(tree: PathName, /) -> None:
         Nothing.
     """
     Path(tree).chmod(S_IRWXU)
-    rmtree(tree, onerror=_rmtree_onerror)  # pylint: disable=deprecated-argument
+    rmtree(tree, onexc=_rmtree_onerror)
 
 
 def _rmtree_onerror(caller: Callable, path_str: PathName, excinfo: Any) -> None:
@@ -581,4 +581,4 @@ def popd() -> int | PathName:
     chdir(dirname)
     return dirname
 
-# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped accepteula
+# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped accepteula onexc
