@@ -40,7 +40,6 @@ An instantiation of this class will convert an XML into the procedure object::
 from collections import OrderedDict as odict
 from copy import deepcopy
 from enum import Enum
-from os import walk
 from pathlib import Path
 from re import compile as re_compile
 from shutil import copyfile
@@ -370,14 +369,14 @@ class Expander:
             print('Using source directory:', source_dir)
             print('Using target directory:', target_dir)
         target_dir.mkdir(parents=True, exist_ok=not err_if_exists)
-        for (root, _unused_dirs, files) in walk(source_dir):
+        for (root, _unused_dirs, files) in source_dir.walk():
             for file_name in files:
                 if is_debug('EXPANDER'):
                     print('Checking', file_name, 'against', ignore_files)
                 if file_name in ignore_files:
                     continue
                 source_file = Path(root, file_name)
-                target_file = target_dir / root.replace(str(source_dir), '').lstrip('\\' if WIN32 else '/') / file_name
+                target_file = target_dir / str(root).replace(str(source_dir), '').lstrip('\\' if WIN32 else '/') / file_name
                 if file_name in no_expand_files:
                     if is_debug('EXPANDER'):
                         print(f'Copying {source_file} to {target_file} (root={root})')

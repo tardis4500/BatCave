@@ -12,7 +12,6 @@ from enum import Enum
 from gzip import GzipFile
 from logging import getLogger
 from lzma import LZMAFile
-from os import walk
 from pathlib import Path
 from shutil import copy
 from stat import S_IRWXU
@@ -153,7 +152,7 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         else:
             tar_name = archive
 
-        pkg_file = tar_open(tar_name, 'w:' + compression)  # pylint: disable=consider-using-with
+        pkg_file = tar_open(tar_name, mode='w:' + compression)  # pylint: disable=consider-using-with
         adder = 'add'
 
     added = False
@@ -161,7 +160,7 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         for item in glob_item.parent.glob(glob_item.name):
             added = True
             if (adder == 'write') and item.is_dir():
-                for (root, _unused_dirs, files) in walk(item):
+                for (root, _unused_dirs, files) in item.walk():
                     for files_name in files:
                         getattr(pkg_file, adder)(Path(root, files_name))
             else:

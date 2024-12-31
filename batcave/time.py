@@ -4,7 +4,7 @@
 from copy import deepcopy
 from datetime import datetime, timezone
 from string import Template
-from typing import Optional, TypeAlias, Union
+from typing import Optional, Union
 
 # Import third-party modules
 from dateutil.parser import parse as parse_timestamp
@@ -13,7 +13,7 @@ from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 # Import internal modules
 from .lang import BatCaveError, BatCaveException
 
-BatCaveDateTimeType: TypeAlias = Union[DatetimeWithNanoseconds, float, str, datetime, 'BatCaveDateTime']
+type BatCaveDateTimeType = Union[DatetimeWithNanoseconds, float, str, datetime, 'BatCaveDateTime']
 
 
 class TimeError(BatCaveException):

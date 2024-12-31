@@ -9,14 +9,14 @@ readme = "DOCUMENTATION.md"
 license = { file = "LICENSE" }
 dynamic = ["version", "description"]
 
-requires-python = "~=3.11"
+requires-python = "~=3.12"
 keywords = ["python", "programming", "utilities"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: MIT License",
 
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 
     "Intended Audience :: Developers",
     "Topic :: Software Development",
@@ -28,12 +28,12 @@ dependencies = [
     "DotMap ~= 1.3",
     "GitPython ~= 3.1",
     "google-api-core",
-    "kubernetes ~= 30.0",
+    "kubernetes ~= 31.0",
     "requests ~= 2.32",
     "PyYAML ~= 6.0",
     "pywin32-stubs; sys_platform == 'win32'",
     "WMI ~= 1.5; sys_platform == 'win32'",
-    "psutil ~= 6.0; platform_machine not in 'armv6l armv7l armv8b armv8l'",
+    "psutil ~= 6.1; platform_machine not in 'armv6l armv7l armv8b armv8l'",
     "PyQt5 ~= 5.15; platform_machine not in 'aarch64 aarch64_be armv6l armv7l armv8b armv8l'",
 ]
 
@@ -71,6 +71,7 @@ max-line-length = 200
 [tool.pylint.design]
 max-attributes = 10
 max-args = 10
+max-positional-arguments = 10
 
 [tool.pylint.messages_control]
 disable = ["duplicate-code", "fixme"]
@@ -104,7 +105,7 @@ module = "wmi.*"
 ignore_missing_imports = true
 
 [tool.bumpver]
-current_version = "v44.0.3rc0"
+current_version = "v45.0.0rc0"
 version_pattern = "vMAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version} [skip ci]"
 commit = true
@@ -113,3 +114,5 @@ push = true
 
 [tool.bumpver.file_patterns]
 "batcave/__init__.py" = ["__version__ = '{pep440_version}'"]
+
+# cSpell:ignore buildapi pywin psutil armv bumpver pyproject dateutil pytagnum

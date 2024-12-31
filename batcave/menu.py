@@ -2,7 +2,7 @@
 
 # Import standard modules
 from dataclasses import dataclass
-from typing import cast, List
+from typing import cast, List, override
 
 
 @dataclass(frozen=True)
@@ -81,6 +81,7 @@ class SimpleMenu(Menu):
     def __post_init__(self):
         self.items = [MenuItem(str(i), self.items[i - 1]) for i in range(1, len(self.items) + 1)] + [MenuItem('0', 'Exit')]
 
+    @override
     def show(self) -> str:
         """Show the menu.
 
