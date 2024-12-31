@@ -15,7 +15,7 @@ on:
       python-version:
         required: false
         type: string
-        default: "3.11"
+        default: "3.12"
       use-local-vjer:
         required: false
         type: boolean

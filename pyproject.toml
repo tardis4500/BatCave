@@ -9,14 +9,14 @@ readme = "DOCUMENTATION.md"
 license = { file = "LICENSE" }
 dynamic = ["version", "description"]
 
-requires-python = "~=3.11"
+requires-python = "~=3.12"
 keywords = ["python", "programming", "utilities"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: MIT License",
 
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 
     "Intended Audience :: Developers",
     "Topic :: Software Development",
@@ -71,6 +71,7 @@ max-line-length = 200
 [tool.pylint.design]
 max-attributes = 10
 max-args = 10
+max-positional-arguments = 10
 
 [tool.pylint.messages_control]
 disable = ["duplicate-code", "fixme"]
@@ -113,3 +114,5 @@ push = true
 
 [tool.bumpver.file_patterns]
 "batcave/__init__.py" = ["__version__ = '{pep440_version}'"]
+
+# cSpell:ignore buildapi pywin psutil armv bumpver pyproject dateutil pytagnum

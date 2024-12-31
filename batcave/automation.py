@@ -15,7 +15,7 @@ from .sysutil import popd, SysCmdRunner
 class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-methods
     """Class to wrap SysCmdRunner for simple usage with auto-logging."""
 
-    def __init__(self, command: str, /, *args, logger: Optional[Callable | Logger] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
+    def __init__(self, command: str, /, *args, logger: Optional[Callable | Logger] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs):
         """
         Args:
             command: The command passed to SysCmdRunner.
@@ -71,7 +71,7 @@ class Action:
     Attributes:
         message_guard: This string is printed by logger if the value of guard passed to logger is true.
     """
-    message_guard = f"{'*' * 70}"
+    message_guard = f'{'*' * 70}'
 
     def __init__(self, **_unused_kwargs: Any):
         """

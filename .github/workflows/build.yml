@@ -31,8 +31,8 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          - "3.11"
           - "3.12"
+          - "3.13"
 
   publish-test-results:
     name: "Publish Tests Results"
@@ -57,7 +57,7 @@ jobs:
     with:
       action: build
       os: ubuntu-latest
-      python-version: "3.11"
+      python-version: "3.12"
       use-flit: true
 
   install-test:
@@ -74,5 +74,5 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          - "3.11"
           - "3.12"
+          - "3.13"

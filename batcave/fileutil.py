@@ -153,7 +153,7 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         else:
             tar_name = archive
 
-        pkg_file = tar_open(tar_name, 'w:' + compression)  # pylint: disable=consider-using-with
+        pkg_file = tar_open(tar_name, mode='w:' + compression)  # pylint: disable=consider-using-with
         adder = 'add'
 
     added = False

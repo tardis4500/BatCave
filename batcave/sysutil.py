@@ -63,7 +63,7 @@ class CMDError(BatCaveException):
     def __str__(self):
         if self._err_obj.code == CMDError.CMD_ERROR.code:
             err_lines = self.vars['err_lines'] if self.vars['err_lines'] else self.vars['outlines']
-            return f"Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n" + ''.join(err_lines)
+            return f'Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n' + ''.join(err_lines)
         return BatCaveException.__str__(self)
 
 
@@ -164,7 +164,7 @@ class LockFile:
 class SysCmdRunner:  # pylint: disable=too-few-public-methods
     """This class provides a simplified interface to sysutil.syscmd()."""
 
-    def __init__(self, command: str, /, *args, show_cmd: bool = True, show_stdout: bool = True, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
+    def __init__(self, command: str, /, *args, show_cmd: bool = True, show_stdout: bool = True, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs):
         """
         Args:
             command: The command to run.

@@ -918,7 +918,7 @@ class ManagementObject:
             value: The value of the value argument.
         """
         self.type = self.OBJECT_PREFIX + type(self).__name__
-        self.object_ref = object_ref
+        self.object_ref: Optional[ManagementObject] = object_ref
         self.manager = manager
         self.key = key
         self.value = value
@@ -945,7 +945,7 @@ class ManagementObject:
             ServerObjectManagementError.NOT_UNIQUE: If the object is not unique.
         """
         if self.object_ref:
-            if len(results := getattr(self.manager, self.type)(**{self.key: self.value}, **self.key_values)) > 1:
+            if len(results := cast(List[ManagementObject], getattr(self.manager, self.type)(**{self.key: self.value}, **self.key_values))) > 1:
                 raise ServerObjectManagementError(ServerObjectManagementError.NOT_UNIQUE, type=self.type, key=self.key, val=self.value)
             self.object_ref = results[0] if results else None
 
