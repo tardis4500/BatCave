@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Use type in place of TypeAlias.
     - Use improved f-strings.
     - Use new override decorator.
+    - Use pathlib.Path.walk in place of os.walk
 
 ## Release History
 

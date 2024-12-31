@@ -16,7 +16,7 @@ import sys
 from copy import copy as copy_object
 from enum import Enum
 from errno import EACCES, EAGAIN, ECHILD
-from os import chdir, getenv, remove, unlink, walk
+from os import chdir, getenv, remove, unlink
 from pathlib import Path
 from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
@@ -231,7 +231,7 @@ def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: 
     if not files_only:
         dirname.chmod(mode)
     if recursive:
-        for (root, dirs, files) in walk(dirname):
+        for (root, dirs, files) in dirname.walk():
             for pathname in (files if files_only else (dirs + files)):  # pylint: disable=superfluous-parens
                 Path(root, pathname).chmod(mode)
 
@@ -249,7 +249,7 @@ def chown(pathname: PathName, user: str | int, group: Optional[str | int] = None
     """
     os_chown(path := Path(pathname), user, group)
     if recursive:
-        for (root, dirs, files) in walk(path):
+        for (root, dirs, files) in path.walk():
             for sub_path in dirs + files:
                 os_chown(Path(root, sub_path), user, group)
 
