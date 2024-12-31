@@ -22,7 +22,7 @@ from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
-from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO, TypeAlias
+from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO
 
 # Import internal modules
 from .lang import DEFAULT_ENCODING, flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
@@ -45,7 +45,7 @@ S_664 = S_660 | S_IROTH
 S_770 = S_IRWXU | S_IRWXG
 S_775 = S_770 | S_IROTH | S_IXOTH
 
-ServerAuthType: TypeAlias = str | Path | Tuple[str, str] | None
+type ServerAuthType = str | Path | Tuple[str, str] | None
 
 
 class CMDError(BatCaveException):

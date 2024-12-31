@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [45.0.2] - Unreleased
+
+- Changed:
+  - Upgraded to Python 3.12. (GitHub #78)
+    - Use type in place of TypeAlias.
+
+## Release History
+
 ### [44.0.2] - 2024-07-06
 
 - Changed:
   - Use reusable workflows. (GitHub #119)
-
-## Release History
 
 ### [44.0.1] - Skipped
 
