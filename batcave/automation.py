@@ -5,7 +5,7 @@ import sys
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, override
 
 # Import internal modules
 from .lang import CommandResult
@@ -34,6 +34,7 @@ class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-metho
         self.logger = logger.info if isinstance(logger, Logger) else logger
         self.guard = guard
 
+    @override
     def run(self, message: str, *args, post_option_args: Optional[Dict] = None,  # type: ignore[override]  # pylint: disable=arguments-differ
             syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
         """Run the action.

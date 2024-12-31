@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed:
   - Upgraded to Python 3.12. (GitHub #78)
     - Use type in place of TypeAlias.
+    - Use improved f-strings.
+    - Use new override decorator.
 
 ## Release History
 
