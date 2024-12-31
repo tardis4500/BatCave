@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [45.0.2] - Unreleased
+### [45.0.0] - 2024-12-31
 
 - Changed:
+  - Fixed crash on CMS close for Git clients. (GitHub #77)
   - Upgraded to Python 3.12. (GitHub #78)
     - Use type in place of TypeAlias.
     - Use improved f-strings.
     - Use new override decorator.
     - Use pathlib.Path.walk in place of os.walk
     - Update rmtree deprecated argument.
+  - Updated dependencies.
 
 ## Release History
 
