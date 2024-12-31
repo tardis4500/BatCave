@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Use new override decorator.
     - Use pathlib.Path.walk in place of os.walk
     - Update rmtree deprecated argument.
+  - Add publish to the main workflow. (GitHub #121)
   - Updated dependencies.
 
 ## Release History
