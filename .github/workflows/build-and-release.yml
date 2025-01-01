@@ -20,6 +20,9 @@ concurrency:
 
 env:
   UNIT_TEST_DIR: test_results
+  ARTIFACTS_DIR: artifacts
+  GH_TOKEN: ${{ github.token }}
+  VJER_ENV: development
 
 jobs:
   test:
@@ -83,22 +86,69 @@ jobs:
 
   pre_release:
     needs: install-test
-    uses: ./.github/workflows/pypi-publish.yml
-    # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
-    with:
-      environment: pre_release
     if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
-    secrets: inherit
     permissions:
       id-token: write
+    runs-on: ubuntu-latest
+    environment: pre_release
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+      - name: Install vjer
+        run: pip install vjer
+      - name: Prepare Git
+        run: |
+          git config user.name "${{ github.triggering_actor }}"
+          git config user.email "${{ github.triggering_actor }}@users.noreply.github.com"
+          git pull
+      - name: Publish to Test PyPi
+        uses: pypa/gh-action-pypi-publish@v1.12.3
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: ${{ env.ARTIFACTS_DIR }}
+          verbose: true
+      - name: Run post-publish steps
+        run: vjer pre_release
 
   release:
     needs: pre_release
-    uses: ./.github/workflows/pypi-publish.yml
-    # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
-    with:
-      environment: release
     if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
-    secrets: inherit
     permissions:
       id-token: write
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+      - name: Install vjer
+        run: pip install vjer
+      - name: Prepare Git
+        run: |
+          git config user.name "${{ github.triggering_actor }}"
+          git config user.email "${{ github.triggering_actor }}@users.noreply.github.com"
+          git pull
+      - name: Run post-publish steps
+        run: vjer release
+      - name: Publish to PyPi
+        uses: pypa/gh-action-pypi-publish@v1.12.3
+        with:
+          packages-dir: ${{ env.ARTIFACTS_DIR }}
+      - name: Upload released artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACTS_DIR }}
+          path: ${{ env.ARTIFACTS_DIR }}
