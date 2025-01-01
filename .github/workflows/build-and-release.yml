@@ -94,6 +94,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -113,7 +115,6 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: ${{ env.ARTIFACTS_DIR }}
-          verbose: true
       - name: Run post-publish steps
         run: vjer pre_release
 
@@ -127,6 +128,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
