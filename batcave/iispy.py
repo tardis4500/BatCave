@@ -4,7 +4,7 @@
 from os import getenv
 from pathlib import Path
 from string import Template
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, override, Type
 from xml.etree.ElementTree import fromstring as xmlparse_str, fromstringlist as xmlparse_list
 
 # Import internal modules
@@ -559,6 +559,7 @@ class IISAdvancedLogger(IISConfigurationSection):
         """
         super().__init__(f'advancedLogging/{log_type}', path=path, set_location=set_location, hostname=hostname, remote_powershell=remote_powershell)
 
+    @override
     def _run_appcmd(self, *cmd_args) -> CommandResult:
         """Run the IIS appcmd against this IIS advanced logger configuration.
 

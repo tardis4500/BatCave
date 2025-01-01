@@ -1,15 +1,19 @@
-name: BatCave Build
-run-name: BatCave Build - ${{ github.run_id }}
+name: BatCave Build and Release
+run-name: BatCave Build and Release - ${{ github.run_id }}
+
 on:
   workflow_dispatch:
   push:
     branches:
       - main
       - release/*
+      - feature/*
   pull_request:
     branches:
       - main
       - release/*
+      - feature/*
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -31,8 +35,8 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          - "3.11"
           - "3.12"
+          - "3.13"
 
   publish-test-results:
     name: "Publish Tests Results"
@@ -57,7 +61,7 @@ jobs:
     with:
       action: build
       os: ubuntu-latest
-      python-version: "3.11"
+      python-version: "3.12"
       use-flit: true
 
   install-test:
@@ -74,5 +78,27 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          - "3.11"
           - "3.12"
+          - "3.13"
+
+  pre_release:
+    needs: install-test
+    uses: ./.github/workflows/pypi-publish.yml
+    # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
+    with:
+      environment: pre_release
+    if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
+    secrets: inherit
+    permissions:
+      id-token: write
+
+  release:
+    needs: pre_release
+    uses: ./.github/workflows/pypi-publish.yml
+    # uses: tardis4500/shared-actions/.github/workflows/pypi-publish.yml@main
+    with:
+      environment: release
+    if: (github.event_name != 'pull_request') && ((github.ref_name == 'main') || startsWith(github.ref_name, 'release/'))
+    secrets: inherit
+    permissions:
+      id-token: write

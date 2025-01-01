@@ -6,16 +6,10 @@ on:
       environment:
         required: true
         type: string
-      publish-mode:
-        required: true
-        type: string
-      run-id:
-        required: true
-        type: string
       python-version:
         required: false
         type: string
-        default: "3.11"
+        default: "3.12"
       use-local-vjer:
         required: false
         type: boolean
@@ -40,9 +34,6 @@ jobs:
           cache: "pip"
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ inputs.run-id }}
-          github-token: ${{ secrets.ARTIFACT_TOKEN }}
       - name: Install local vjer
         run: pip install $ARTIFACTS_DIR/*.whl
         if: inputs.use-local-vjer
@@ -59,19 +50,19 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: ${{ env.ARTIFACTS_DIR }}
-        if: inputs.publish-mode == 'pre_release'
+        if: inputs.environment == 'pre_release'
       - name: Run post-publish steps
-        run: vjer ${{ inputs.publish-mode }}
+        run: vjer ${{ inputs.environment }}
       - name: Publish to PyPi
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ${{ env.ARTIFACTS_DIR }}
-        if: inputs.publish-mode == 'release'
+        if: inputs.environment == 'release'
       - name: Upload released artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACTS_DIR }}
           path: ${{ env.ARTIFACTS_DIR }}
-        if: inputs.publish-mode == 'release'
+        if: inputs.environment == 'release'
 
 # cSpell:ignore pypa noreply

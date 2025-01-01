@@ -15,7 +15,7 @@ from pathlib import Path, PurePath
 from string import Template
 import sys
 from sys import executable, platform, version_info, path as sys_path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TypeAlias
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 # Import third-party modules
 from dotmap import DotMap
@@ -28,9 +28,9 @@ BATCAVE_HOME = Path(executable).parent if FROZEN else Path(sys_path[0])
 VALIDATE_PYTHON = True
 WIN32 = platform == 'win32'
 
-CommandResult: TypeAlias = str | List[str]
-MessageString: TypeAlias = str | Template
-PathName: TypeAlias = str | Path | PurePath
+type CommandResult = str | List[str]
+type MessageString = str | Template
+type PathName = str | Path | PurePath
 
 
 class MsgStr:

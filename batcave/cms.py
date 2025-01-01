@@ -806,13 +806,13 @@ class Client:
         Returns:
             Nothing.
         """
-        if self._connected and self._type == ClientType.git:
-            del self._client
-            self._connected = False
         if self._cleanup:
             self.remove(CleanType.all)
             if self._tmpdir and self._tmpdir.exists() and (self._tmpdir != self.root):
                 rmtree_hard(self._tmpdir)
+        if self._connected and self._type == ClientType.git:
+            del self._client
+            self._connected = False
         if self._connected and self._type == ClientType.perforce:
             self._p4run('disconnect')
             self._connected = False

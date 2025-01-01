@@ -5,7 +5,7 @@ import sys
 from abc import abstractmethod
 from logging import Logger
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, override
 
 # Import internal modules
 from .lang import CommandResult
@@ -15,7 +15,7 @@ from .sysutil import popd, SysCmdRunner
 class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-methods
     """Class to wrap SysCmdRunner for simple usage with auto-logging."""
 
-    def __init__(self, command: str, /, *args, logger: Optional[Callable | Logger] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
+    def __init__(self, command: str, /, *args, logger: Optional[Callable | Logger] = print, guard: str = '', syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs):
         """
         Args:
             command: The command passed to SysCmdRunner.
@@ -34,6 +34,7 @@ class ActionCommandRunner(SysCmdRunner):  # pylint: disable=too-few-public-metho
         self.logger = logger.info if isinstance(logger, Logger) else logger
         self.guard = guard
 
+    @override
     def run(self, message: str, *args, post_option_args: Optional[Dict] = None,  # type: ignore[override]  # pylint: disable=arguments-differ
             syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs) -> CommandResult:
         """Run the action.
@@ -71,7 +72,7 @@ class Action:
     Attributes:
         message_guard: This string is printed by logger if the value of guard passed to logger is true.
     """
-    message_guard = f"{'*' * 70}"
+    message_guard = f'{'*' * 70}'
 
     def __init__(self, **_unused_kwargs: Any):
         """

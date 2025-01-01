@@ -16,13 +16,13 @@ import sys
 from copy import copy as copy_object
 from enum import Enum
 from errno import EACCES, EAGAIN, ECHILD
-from os import chdir, getenv, remove, unlink, walk
+from os import chdir, getenv, remove, unlink
 from pathlib import Path
 from shutil import rmtree, chown as os_chown
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, S_IRWXU, S_IRWXG, S_IXOTH
 from string import Template
 from subprocess import Popen, PIPE
-from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO, TypeAlias
+from typing import cast, Any, Dict, Callable, IO, Iterable, List, Optional, Tuple, TextIO
 
 # Import internal modules
 from .lang import DEFAULT_ENCODING, flatten_string_list, is_debug, BatCaveError, BatCaveException, CommandResult, PathName, WIN32
@@ -45,7 +45,7 @@ S_664 = S_660 | S_IROTH
 S_770 = S_IRWXU | S_IRWXG
 S_775 = S_770 | S_IROTH | S_IXOTH
 
-ServerAuthType: TypeAlias = str | Path | Tuple[str, str] | None
+type ServerAuthType = str | Path | Tuple[str, str] | None
 
 
 class CMDError(BatCaveException):
@@ -63,7 +63,7 @@ class CMDError(BatCaveException):
     def __str__(self):
         if self._err_obj.code == CMDError.CMD_ERROR.code:
             err_lines = self.vars['err_lines'] if self.vars['err_lines'] else self.vars['outlines']
-            return f"Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n" + ''.join(err_lines)
+            return f'Error {self.vars['returncode']} when running: {self.vars['cmd']}\nError output:\n' + ''.join(err_lines)
         return BatCaveException.__str__(self)
 
 
@@ -164,7 +164,7 @@ class LockFile:
 class SysCmdRunner:  # pylint: disable=too-few-public-methods
     """This class provides a simplified interface to sysutil.syscmd()."""
 
-    def __init__(self, command: str, /, *args, show_cmd: bool = True, show_stdout: bool = True, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs: Any):
+    def __init__(self, command: str, /, *args, show_cmd: bool = True, show_stdout: bool = True, syscmd_args: Optional[Dict[Any, Any]] = None, **kwargs):
         """
         Args:
             command: The command to run.
@@ -231,7 +231,7 @@ def chmod(dirname: PathName, mode: int, *, recursive: bool = False, files_only: 
     if not files_only:
         dirname.chmod(mode)
     if recursive:
-        for (root, dirs, files) in walk(dirname):
+        for (root, dirs, files) in dirname.walk():
             for pathname in (files if files_only else (dirs + files)):  # pylint: disable=superfluous-parens
                 Path(root, pathname).chmod(mode)
 
@@ -249,7 +249,7 @@ def chown(pathname: PathName, user: str | int, group: Optional[str | int] = None
     """
     os_chown(path := Path(pathname), user, group)
     if recursive:
-        for (root, dirs, files) in walk(path):
+        for (root, dirs, files) in path.walk():
             for sub_path in dirs + files:
                 os_chown(Path(root, sub_path), user, group)
 
@@ -356,7 +356,7 @@ def rmtree_hard(tree: PathName, /) -> None:
         Nothing.
     """
     Path(tree).chmod(S_IRWXU)
-    rmtree(tree, onerror=_rmtree_onerror)  # pylint: disable=deprecated-argument
+    rmtree(tree, onexc=_rmtree_onerror)
 
 
 def _rmtree_onerror(caller: Callable, path_str: PathName, excinfo: Any) -> None:
@@ -581,4 +581,4 @@ def popd() -> int | PathName:
     chdir(dirname)
     return dirname
 
-# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped accepteula
+# cSpell:ignore chgrp geteuid getpwnam IRGRP IROTH IRWXG IXOTH lockf NBLCK nobanner psexec pylance syscmd unlck ungrouped accepteula onexc
