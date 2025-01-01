@@ -155,7 +155,7 @@ jobs:
       - name: Upload released artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACTS_DIR }}
+          name: ${{ env.ARTIFACTS_DIR }}-released
           path: ${{ env.ARTIFACTS_DIR }}
 
 # cSpell:ignore pypa
