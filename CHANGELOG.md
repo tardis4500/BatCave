@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [45.0.0] - 2024-12-31
+### [45.0.0] - 2025-01-01
 
 - Changed:
   - Fixed crash on CMS close for Git clients. (GitHub #77)
