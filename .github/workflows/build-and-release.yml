@@ -19,9 +19,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  UNIT_TEST_DIR: test_results
   ARTIFACTS_DIR: artifacts
   GH_TOKEN: ${{ github.token }}
+  UNIT_TEST_DIR: test_results
   VJER_ENV: development
 
 jobs:
@@ -137,8 +137,6 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
       - name: Install vjer
         run: pip install vjer
       - name: Prepare Git
