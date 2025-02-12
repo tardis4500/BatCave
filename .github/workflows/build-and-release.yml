@@ -26,7 +26,7 @@ env:
 
 jobs:
   test:
-    uses: tardis4500/shared-actions/.github/workflows/vjer.yml@main
+    uses: arisilon/shared-actions/.github/workflows/vjer.yml@released
     with:
       action: test
       os: ${{ matrix.os }}
@@ -60,7 +60,7 @@ jobs:
 
   build:
     needs: test
-    uses: tardis4500/shared-actions/.github/workflows/vjer.yml@main
+    uses: arisilon/shared-actions/.github/workflows/vjer.yml@released
     with:
       action: build
       os: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
 
   install-test:
     needs: build
-    uses: tardis4500/shared-actions/.github/workflows/install-test.yml@main
+    uses: arisilon/shared-actions/.github/workflows/install-test.yml@released
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
@@ -112,7 +112,7 @@ jobs:
           git config user.email "${{ github.triggering_actor }}@users.noreply.github.com"
           git pull
       - name: Publish to Test PyPi
-        uses: pypa/gh-action-pypi-publish@v1.12.3
+        uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: ${{ env.ARTIFACTS_DIR }}
@@ -147,7 +147,7 @@ jobs:
       - name: Run post-publish steps
         run: vjer release
       - name: Publish to PyPi
-        uses: pypa/gh-action-pypi-publish@v1.12.3
+        uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
           packages-dir: ${{ env.ARTIFACTS_DIR }}
       - name: Upload released artifacts

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
+### [45.0.1] - Unreleased
+
+- Changed:
+  - Migrate repo to Arisilon organization. (GitHub #125)
+
+## Release History
+
 ### [45.0.0] - 2025-01-01
 
 - Changed:
@@ -19,8 +26,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Update rmtree deprecated argument.
   - Add publish to the main workflow. (GitHub #121)
   - Updated dependencies.
-
-## Release History
 
 ### [44.0.2] - 2024-07-06
 
