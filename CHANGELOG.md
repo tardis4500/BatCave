@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### [45.0.1] - Unreleased
 
 - Changed:
+  - Use setuptools instead of flit. (GitHub #123)
   - Migrate repo to Arisilon organization. (GitHub #125)
 
 ## Release History
