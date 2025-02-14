@@ -178,7 +178,8 @@ def pack(archive_file: PathName, items: Iterable, /, item_location: Optional[Pat
         popd()
 
 
-def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None, force: bool = False, ignore_case: bool = False, log_handle: Optional[str] = None) -> None:
+def prune(directory: PathName, age: int, exts: Optional[Iterable[str]] = None,
+          force: bool = False, ignore_case: bool = False, log_handle: Optional[str] = None) -> None:
     """Prune a directory of files or directories based on age or count.
 
     Args:

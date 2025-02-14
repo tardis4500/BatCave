@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "batcave"
-description = "'ython Programming Toolkit"
+description = "Python Programming Toolkit"
 authors = [{ name = "Jeffery G. Smith", email = "web@pobox.com" }]
 readme = "DOCUMENTATION.md"
 license = { file = "LICENSE" }

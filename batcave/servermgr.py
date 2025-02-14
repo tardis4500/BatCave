@@ -30,7 +30,7 @@ from .lang import BatCaveError, BatCaveException, CommandResult, PathName, WIN32
 if sys.platform == 'win32':
     from pywintypes import com_error  # pylint: disable=no-name-in-module,import-error
     from win32com.client import CDispatch, DispatchEx  # pylint: disable=import-error
-    from wmi import WMI, x_wmi  # pylint: disable=import-error
+    from wmi import connect as WMI, x_wmi  # pylint: disable=import-error
     from .iispy import IISInstance
     _DEFAULT_WMI = True
 else:
