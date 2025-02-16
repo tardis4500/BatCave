@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Current Release
 
-### [45.0.1] - Unreleased
+### [45.0.1] - 2025-02-16
 
 - Changed:
   - Use setuptools instead of flit. (GitHub #123)
+  - Improve is_debug logic. (GitHub #124)
   - Migrate repo to Arisilon organization. (GitHub #125)
 
 ## Release History

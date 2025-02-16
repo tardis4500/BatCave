@@ -224,13 +224,7 @@ def is_debug(test_value: Optional[str] = None, /) -> bool:
     Return:
         True if the OS environment variable BATCAVE_DEBUG is set, False otherwise.
     """
-    if not (debug_value := getenv('BATCAVE_DEBUG')):
-        return False
-    if not test_value:
-        return True
-    if test_value in debug_value:
-        return True
-    return False
+    return bool(debug_value := getenv('BATCAVE_DEBUG', '')) and ((not test_value) or (test_value in debug_value))
 
 
 def str_to_pythonval(the_string: str, /, *, parse_python: bool = False) -> Any:
