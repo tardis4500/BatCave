@@ -65,7 +65,6 @@ jobs:
       action: build
       os: ubuntu-latest
       python-version: "3.12"
-      use-flit: true
 
   install-test:
     needs: build
